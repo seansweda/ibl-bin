@@ -26,7 +26,7 @@ $lines = 0;
 
 use DBI;
 
-$dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$host", "$username", "$password");
+$dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$host", "$username", "$password", {AutoCommit => 0});
 
 sub find {
     $mlb = shift;
