@@ -4,8 +4,8 @@
 
 $host = 'localhost';
 $dbname = ibl_stats;
-$username = tig;
-$password = p1aZZa;
+$username = 'stats';
+$password = 'st@ts=Fun';
 
 $startsdb = starts2004;
 $batdb = bat2004;
