@@ -270,7 +270,7 @@ while (<>) {
 		    $pr = 0;
 		}
 
-		$dbh->do( "insert into $batdb values ( $week, '$home', '$away', '$ibl', '$mlb', '$name', $ab, $r, $h, $bi, $d, $t, $hr, $sb, $cs, $bb, $k );" );
+		$dbh->do( "insert into $batdb values ( $week, '$home', '$away', '$ibl', '$mlb', '$name', 1, $ab, $r, $h, $bi, $d, $t, $hr, $sb, $cs, $bb, $k );" );
 		$dbh->do( "insert into $startsdb values ( '$mlb', '$name', $g, 0, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, $pl, $pr, $week, '$home', '$away' );" );
 	    }
 	    elsif ( $updates ) {
