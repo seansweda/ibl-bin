@@ -10,6 +10,8 @@ $password = p1aZZa;
 $startsdb = starts2004;
 $batdb = bat2004;
 $pitdb = pit2004;
+$teamdb = teams2004;
+$scheddb = sched2004;
 
 # constants
 $BCOLS = 17;
@@ -87,6 +89,17 @@ sub outs {
     return ( $whole * 3 + $thirds );
 }
 
+sub iblck {
+    $team = shift;
+    @s = $dbh->selectrow_array("select code from $teamdb where ibl = '$team';");
+    if ( @s ) {
+	return 0;
+    }
+    else {
+	return 1;
+    }
+}
+
 while (<>) {
 
     $lines++;
@@ -98,7 +111,7 @@ while (<>) {
 	    print "WEEK: $week\n";
 	}
 	else {
-	    print "WEEK format error: $week\n";
+	    print "line $lines WEEK format error: $week\n";
 	    $fatalerr++;
 	    $week = '';
 	}
@@ -106,25 +119,25 @@ while (<>) {
     elsif ( $keyword eq 'HOME' ) {
 	$home = (split)[1];
 	$home =~ tr/a-z/A-Z/;
-	if ( length($home) == 2 || length($home) == 3 ) {
-	    print "HOME: $home\n";
-	}
-	else {
-	    print "HOME format error: $home\n";
+	if ( iblck($home) ) {
+	    print "line $lines invalid IBL team designation: $home\n";
 	    $fatalerr++;
 	    $home = '';
+	}
+	else {
+	    print "HOME: $home\n";
 	}
     }
     elsif ( $keyword eq 'AWAY' ) {
 	$away = (split)[1];
 	$away =~ tr/a-z/A-Z/;
-	if ( length($away) == 2 || length($away) == 3 ) {
-	    print "AWAY: $away\n";
-	}
-	else {
-	    print "AWAY format error: $away\n";
+	if ( iblck($away) ) {
+	    print "line $lines invalid IBL team designation: $away\n";
 	    $fatalerr++;
 	    $away = '';
+	}
+	else {
+	    print "AWAY: $away\n";
 	}
     }
     else {
@@ -134,12 +147,16 @@ while (<>) {
 
     $keyword =~ tr/a-z/A-Z/;
 
-    if ( $keyword eq 'BATTERS' ) {
+    if ( $keyword eq 'BATTERS' && $team ) {
 	$batters++;
 	$order = 1;
 	$start = 0;
 	$sc = $s1b = $s2b = $s3b = $sss = $slf = $scf = $srf = 0;
 	if ( $updates && !($week && $home && $away) ) {
+	    $fatalerr++;
+	}
+	if ( iblck($team) ) {
+	    print "line $lines invalid IBL team designation: $team\n";
 	    $fatalerr++;
 	}
 	while (<>) {
@@ -152,9 +169,14 @@ while (<>) {
 	    elsif ( $#line != $BCOLS ) {
 		print "line $lines BATTERS format error\n";
 		$fatalerr++;
+		last;
 	    }
 	    else {
 		( $slot, $pos, $ibl, $mlb, $name, $ab, $r, $h, $bi, $d, $t, $hr, $sb, $cs, $bb, $k, $pl, $pr ) = @line;
+		if ( $team ne $ibl ) {
+		    print "line $lines team mismatch: $team != $ibl\n";
+		    $fatalerr++;
+		}
 		@starts = find( $mlb, $name, $lines);
 		if ( @starts ) {
 		    if ( $starts[2] == 0 ) {
@@ -318,10 +340,14 @@ while (<>) {
 	}
     }
 
-    elsif ( $keyword eq 'PITCHERS') {
+    elsif ( $keyword eq 'PITCHERS' && $team ) {
 	$pitchers++;
 	$start = 1;
 	if ( $updates && !($week && $home && $away) ) {
+	    $fatalerr++;
+	}
+	if ( iblck($team) ) {
+	    print "line $lines invalid IBL team designation: $team\n";
 	    $fatalerr++;
 	}
 	while (<>) {
@@ -334,9 +360,14 @@ while (<>) {
 	    elsif ( $#line != $PCOLS ) {
 		print "line $lines PITCHERS format error\n";
 		$fatalerr++;
+		last;
 	    }
 	    else {
 		( $dec, $ibl, $mlb, $name, $ip, $h, $r, $er, $bb, $k, $hr ) = @line;
+		if ( $team ne $ibl ) {
+		    print "line $lines team mismatch: $team != $ibl\n";
+		    $fatalerr++;
+		}
 		@starts = find( $mlb, $name, $lines);
 		if ( @starts && $starts[2] == 0) {
 		    printf("line %s %-3s %s illegal appearance\n", $lines, $mlb, $name);
@@ -387,6 +418,7 @@ while (<>) {
 	    elsif ( $#line < $SCOLS ) {
 		print "line $lines STARTS format error\n";
 		$fatalerr++;
+		last;
 	    }
 	    else {
 		( $slot, $pos, $ibl, $mlb, $name ) = @line;
@@ -487,6 +519,10 @@ while (<>) {
 		}
 	    }
 
+	    if ( iblck($team) ) {
+		print "line $lines invalid IBL team designation: $team\n";
+		$fatalerr++;
+	    }
 	    if ( $updates && !$fatalerr ) {
 		$dbh->do( "insert into $startsdb values ( '$mlb', '$name', 0, 0, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, 0, 0, $week, '$home', '$away' );" );
 	    }
@@ -507,6 +543,7 @@ while (<>) {
 	    elsif ( $#line < $ICOLS ) {
 		print "line $lines INJURIES format error\n";
 		$fatalerr++;
+		last;
 	    }
 	    else {
 		( $slot, $pos, $ibl, $mlb, $name, $inj ) = @line;
@@ -517,6 +554,10 @@ while (<>) {
 		}
 	    }
 
+	    if ( iblck($team) ) {
+		print "line $lines invalid IBL team designation: $team\n";
+		$fatalerr++;
+	    }
 	    if ( $updates && !$fatalerr ) {
 		$dbh->do( "insert into $startsdb values ( '$mlb', '$name', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $inj, 0, 0, $week, '$home', '$away' );" );
 	    }
@@ -532,11 +573,52 @@ printf ("Total WINS: %s\n", $wins);
 printf ("Total LOSSES: %s\n", $losses);
 print "\n";
 
-if ( $updates && !($week && $home && $away) ) {
-    print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
+if ( $wins != $losses ) {
+    print "WINS & LOSSES not equal\n";
+    $fatalerr++;
+}
+if ( $batters != $pitchers ) {
+    print "BATTERS & PITCHERS not equal\n";
+    $fatalerr++;
+}
+if ( (($batters / 2) - int($batters / 2)) != 0 ) {
+    print "BATTERS imbalanced\n";
+    $fatalerr++;
+}
+if ( (($pitchers / 2) - int($pitchers / 2)) != 0 ) {
+    print "PITCHERS imbalanced\n";
+    $fatalerr++;
 }
 
 if ( $updates ) {
+    print "\n";
+    if ( !($week && $home && $away) ) {
+	print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
+	$fatalerr++;
+    }
+    else {
+	@hcode = $dbh->selectrow_array("select code from $teamdb where ibl = '$home';");
+	@acode = $dbh->selectrow_array("select code from $teamdb where ibl = '$away';");
+	if ( @hcode && @acode ) {
+	    @status = $dbh->selectrow_array("select status from $scheddb where 
+	    		week = $week and home = '$hcode[0]' and away = '$acode[0]';");
+	    if ( @status ) {
+		if ( shift @status ) {
+		    print "week $week, $away @ $home already submitted\n";
+		    $fatalerr++;
+		}
+	    }
+	    else {
+		print "$away @ $home not valid matchup for week $week\n";
+		$fatalerr++;
+	    }
+	}
+	else {
+	    print "$away @ $home not valid matchup for week $week\n";
+	    $fatalerr++;
+	}
+    }
+
     if ( $fatalerr ) {
 	$dbh->rollback;
 	print "stats database not updated, boxscore needs correction\n";
@@ -548,11 +630,15 @@ if ( $updates ) {
 	exit 1;
     }
     elsif ( $softerr && $updates == 2 ) {
+	$dbh->do( "update $scheddb set status = 1 where
+		week = $week and home = '$hcode[0]' and away = '$acode[0]';");
 	$dbh->commit;
 	print "stats database updated successfully!\n";
 	exit 0;
     }
     else {
+	$dbh->do( "update $scheddb set status = 1 where
+		week = $week and home = '$hcode[0]' and away = '$acode[0]';");
 	$dbh->commit;
 	print "stats database updated successfully!\n";
 	exit 0;
