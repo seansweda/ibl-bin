@@ -337,6 +337,7 @@ while (<>) {
 	    if ( $srf == 0 ) {
 		print "rf ";
 	    }
+	    print "\n";
 	}
     }
 
@@ -519,8 +520,8 @@ while (<>) {
 		}
 	    }
 
-	    if ( iblck($team) ) {
-		print "line $lines invalid IBL team designation: $team\n";
+	    if ( iblck($ibl) ) {
+		print "line $lines invalid IBL team designation: $ibl\n";
 		$fatalerr++;
 	    }
 	    if ( $updates && !$fatalerr ) {
@@ -554,8 +555,8 @@ while (<>) {
 		}
 	    }
 
-	    if ( iblck($team) ) {
-		print "line $lines invalid IBL team designation: $team\n";
+	    if ( iblck($ibl) ) {
+		print "line $lines invalid IBL team designation: $ibl\n";
 		$fatalerr++;
 	    }
 	    if ( $updates && !$fatalerr ) {
