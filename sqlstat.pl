@@ -71,6 +71,22 @@ while (<>) {
 	    else {
 		( $slot, $pos, $ibl, $mlb, $name, $ab, $r, $h, $bi, $d, $t, $hr, $sb, $cs, $bb, $k, $pl, $pr ) = @line;
 		@starts = find( $mlb, $name, $lines);
+		if ( @starts ) {
+		    if ( $starts[2] == 0 ) {
+			printf("%-3s %s illegal appearance, line %s\n", $mlb, $name, $lines);
+		    }
+		    if ( defined($starts[13]) ) {
+			if ( $pl > 0 && $starts[13] == 0 ) {
+			    printf("%-3s %s illegal PA vLHP, line %s\n", $mlb, $name, $lines);
+			}
+		    }
+		    if ( defined($starts[14]) ) {
+			if ( $pr > 0 && $starts[14] == 0 ) {
+			    printf("%-3s %s illegal PA vRHP, line %s\n", $mlb, $name, $lines);
+			}
+		    }
+		}
+
 		$pos =~ tr/A-Z/a-z/;
 		$pos =~ s/\-.*$//;
 		if ($order == $slot) {
@@ -196,15 +212,16 @@ while (<>) {
 	    else {
 		( $dec, $ibl, $mlb, $name, $ip, $h, $r, $er, $bb, $k, $hr ) = @line;
 		@starts = find( $mlb, $name, $lines);
+		if ( @starts && $starts[2] == 0) {
+		    printf("%-3s %s illegal appearance, line %s\n", $mlb, $name, $lines);
+		}
 		$dec =~ tr/a-z/A-Z/;
-
-		if ( $start ) {
+		if ( @starts && $start ) {
 		    if ( $starts[3] == 0 ) {
 			printf("%-3s %s illegal start @ p, line %s\n", $mlb, $name, $lines);
 		    }
-		$start = 0;
+		    $start = 0;
 		}
-
 		if ( $dec eq 'W' ) {
 		    $wins++;
 		    $w = 1;
