@@ -25,18 +25,27 @@ $injuries = 0;
 $wins = 0;
 $losses = 0;
 $lines = 0;
-$errors = 0;
 $week = 0;
 $home = '';
 $away = '';
 $updates = 0;
+
+# err flags
+$softerr = 0;
+$fatalerr = 0;
 
 use DBI;
 
 if ( $#ARGV > 0 ) {
     if ( $ARGV[0] eq '-u' ) {
 	shift @ARGV;
+	# update if no errors (for auto update)
 	$updates = 1;
+    }
+    if ( $ARGV[0] eq '-U' ) {
+	shift @ARGV;
+	# update, ignore soft errors (for statistician)
+	$updates = 2;
     }
 }
 
@@ -53,7 +62,7 @@ sub find {
     		where mlb = '$mlb' and trim(name) ~* '\^$name\$'
 		group by mlb, name;");
     if ($#s == -1 ) {
-	printf("%-3s %s line %s not found, perhaps:\n", $mlb, $name, $where);
+	printf("line %s %-3s %s not found, perhaps:\n", $where, $mlb, $name);
 	$loop = $dbh->prepare("select mlb, name from $startsdb
 		where name ~* ? order by mlb, name desc;");
 	$loop->execute($name);
@@ -90,7 +99,7 @@ while (<>) {
 	}
 	else {
 	    print "WEEK format error: $week\n";
-	    $errors++;
+	    $fatalerr++;
 	    $week = '';
 	}
     }
@@ -102,7 +111,7 @@ while (<>) {
 	}
 	else {
 	    print "HOME format error: $home\n";
-	    $errors++;
+	    $fatalerr++;
 	    $home = '';
 	}
     }
@@ -114,7 +123,7 @@ while (<>) {
 	}
 	else {
 	    print "AWAY format error: $away\n";
-	    $errors++;
+	    $fatalerr++;
 	    $away = '';
 	}
     }
@@ -130,6 +139,9 @@ while (<>) {
 	$order = 1;
 	$start = 0;
 	$sc = $s1b = $s2b = $s3b = $sss = $slf = $scf = $srf = 0;
+	if ( $updates && !($week && $home && $away) ) {
+	    $fatalerr++;
+	}
 	while (<>) {
 	    $g = $psc = $ps1b = $ps2b = $ps3b = $psss = $pslf = $pscf = $psrf = 0;
 	    $lines++;
@@ -138,27 +150,27 @@ while (<>) {
 		last;
 	    }
 	    elsif ( $#line != $BCOLS ) {
-		print "BATTERS format error, line $lines\n";
-		$errors++;
+		print "line $lines BATTERS format error\n";
+		$fatalerr++;
 	    }
 	    else {
 		( $slot, $pos, $ibl, $mlb, $name, $ab, $r, $h, $bi, $d, $t, $hr, $sb, $cs, $bb, $k, $pl, $pr ) = @line;
 		@starts = find( $mlb, $name, $lines);
 		if ( @starts ) {
 		    if ( $starts[2] == 0 ) {
-			printf("%-3s %s illegal appearance, line %s\n", $mlb, $name, $lines);
-			$errors++;
+			printf("line %s %-3s %s illegal appearance\n", $lines, $mlb, $name);
+			$softerr++;
 		    }
 		    if ( defined($starts[13]) ) {
 			if ( $pl > 0 && $starts[13] < 1 ) {
-			    printf("%-3s %s illegal PA vLHP, line %s\n", $mlb, $name, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal PA vLHP\n", $lines, $mlb, $name);
+			    $softerr++;
 			}
 		    }
 		    if ( defined($starts[14]) ) {
 			if ( $pr > 0 && $starts[14] < 1 ) {
-			    printf("%-3s %s illegal PA vRHP, line %s\n", $mlb, $name, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal PA vRHP\n", $lines, $mlb, $name);
+			    $softerr++;
 			}
 		    }
 		}
@@ -176,8 +188,8 @@ while (<>) {
 		    #printf("%-3s %s start @ %s\n", $mlb, $name, $pos);
 		    if ( $pos eq 'c' ) {
 			if ( $starts[4] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    $psc = $sc = -1;
@@ -185,8 +197,8 @@ while (<>) {
 		    }
 		    elsif ( $pos eq '1b' ) {
 			if ( $starts[5] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    $ps1b = $s1b = -1;
@@ -194,8 +206,8 @@ while (<>) {
 		    }
 		    elsif ( $pos eq '2b' ) {
 			if ( $starts[6] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    $ps2b = $s2b = -1;
@@ -203,8 +215,8 @@ while (<>) {
 		    }
 		    elsif ( $pos eq '3b' ) {
 			if ( $starts[7] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    $ps3b = $s3b = -1;
@@ -212,8 +224,8 @@ while (<>) {
 		    }
 		    elsif ( $pos eq 'ss' ) {
 			if ( $starts[8] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    $psss = $sss = -1;
@@ -221,8 +233,8 @@ while (<>) {
 		    }
 		    elsif ( $pos eq 'lf' ) {
 			if ( $starts[9] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    $pslf = $slf = -1;
@@ -230,8 +242,8 @@ while (<>) {
 		    }
 		    elsif ( $pos eq 'cf' ) {
 			if ( $starts[10] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    $pscf = $scf = -1;
@@ -239,8 +251,8 @@ while (<>) {
 		    }
 		    elsif ( $pos eq 'rf' ) {
 			if ( $starts[11] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    $psrf = $srf = -1;
@@ -249,7 +261,7 @@ while (<>) {
 		}
 	    }
 
-	    if ( $updates && $week && $home && $away ) {
+	    if ( $updates && !$fatalerr ) {
 		# assign pitcher games in PITCHERS block
 		if ( $pos eq 'p' ) {
 		    $g = 0;
@@ -273,15 +285,12 @@ while (<>) {
 		$dbh->do( "insert into $batdb values ( $week, '$home', '$away', '$ibl', '$mlb', '$name', 1, $ab, $r, $h, $bi, $d, $t, $hr, $sb, $cs, $bb, $k );" );
 		$dbh->do( "insert into $startsdb values ( '$mlb', '$name', $g, 0, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, $pl, $pr, $week, '$home', '$away' );" );
 	    }
-	    elsif ( $updates ) {
-	    	$errors++;
-	    }
 
 	}
 	
 	if ( !($sc && $s1b && $s2b && $s3b && $sss && $slf && $scf && $srf) ) {
-	    print "$team line $lines missing starters: ";
-	    $errors++;
+	    print "line $lines $team missing starters: ";
+	    $fatalerr++;
 	    if ( $sc == 0 ) {
 		print "c ";
 	    }
@@ -312,6 +321,9 @@ while (<>) {
     elsif ( $keyword eq 'PITCHERS') {
 	$pitchers++;
 	$start = 1;
+	if ( $updates && !($week && $home && $away) ) {
+	    $fatalerr++;
+	}
 	while (<>) {
 	    $pgs = $pw = $pl = $ps = 0;
 	    $lines++;
@@ -320,21 +332,21 @@ while (<>) {
 		last;
 	    }
 	    elsif ( $#line != $PCOLS ) {
-		print "PITCHERS format error, line $lines\n";
-		$errors++;
+		print "line $lines PITCHERS format error\n";
+		$fatalerr++;
 	    }
 	    else {
 		( $dec, $ibl, $mlb, $name, $ip, $h, $r, $er, $bb, $k, $hr ) = @line;
 		@starts = find( $mlb, $name, $lines);
 		if ( @starts && $starts[2] == 0) {
-		    printf("%-3s %s illegal appearance, line %s\n", $mlb, $name, $lines);
-		    $errors++;
+		    printf("line %s %-3s %s illegal appearance\n", $lines, $mlb, $name);
+		    $softerr++;
 		}
 		$dec =~ tr/a-z/A-Z/;
 		if ( @starts && $start ) {
 		    if ( $starts[3] == 0 ) {
-			printf("%-3s %s illegal start @ p, line %s\n", $mlb, $name, $lines);
-			$errors++;
+			printf("line %s %-3s %s illegal start @ p\n", $lines, $mlb, $name);
+			$softerr++;
 		    }
 		    $start = 0;
 		    $pgs = 1;
@@ -352,19 +364,19 @@ while (<>) {
 		}
 	    }
 
-	    if ( $updates && $week && $home && $away ) {
+	    if ( $updates && !$fatalerr ) {
 		$ip = outs($ip);
 		$dbh->do( "insert into $pitdb values ( $week, '$home', '$away', '$ibl', '$mlb', '$name', $pw, $pl, $ps, 1, $pgs, $ip, $h, $r, $er, $bb, $k, $hr );" );
 		$dbh->do( "insert into $startsdb values ( '$mlb', '$name', 1, $pgs, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $week, '$home', '$away' );" );
-	    }
-	    elsif ( $updates ) {
-	    	$errors++;
 	    }
 	}
     }
     
     elsif ( $keyword eq 'STARTS' ) {
 	#print "STARTS\n";
+	if ( $updates && !($week && $home && $away) ) {
+	    $fatalerr++;
+	}
 	while (<>) {
 	    $psc = $ps1b = $ps2b = $ps3b = $psss = $pslf = $pscf = $psrf = 0;
 	    $lines++;
@@ -373,8 +385,8 @@ while (<>) {
 		last;
 	    }
 	    elsif ( $#line < $SCOLS ) {
-		print "STARTS format error, line $lines\n";
-		$errors++;
+		print "line $lines STARTS format error\n";
+		$fatalerr++;
 	    }
 	    else {
 		( $slot, $pos, $ibl, $mlb, $name ) = @line;
@@ -382,10 +394,20 @@ while (<>) {
 		$pos =~ tr/A-Z/a-z/;
 		$pos =~ s/\-.*$//;
 		if ( @starts ) {
+		    if ( $pos eq 'p' ) {
+			if ( $starts[3] == 0 ) {
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
+			}
+			else {
+			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
+			    $psc = -1;
+			}
+		    }
 		    if ( $pos eq 'c' ) {
 			if ( $starts[4] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
@@ -394,8 +416,8 @@ while (<>) {
 		    }
 		    elsif ( $pos eq '1b' ) {
 			if ( $starts[5] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
@@ -404,8 +426,8 @@ while (<>) {
 		    }
 		    elsif ( $pos eq '2b' ) {
 			if ( $starts[6] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
@@ -414,8 +436,8 @@ while (<>) {
 		    }
 		    elsif ( $pos eq '3b' ) {
 			if ( $starts[7] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
@@ -424,8 +446,8 @@ while (<>) {
 		    }
 		    elsif ( $pos eq 'ss' ) {
 			if ( $starts[8] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
@@ -434,8 +456,8 @@ while (<>) {
 		    }
 		    elsif ( $pos eq 'lf' ) {
 			if ( $starts[9] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
@@ -444,8 +466,8 @@ while (<>) {
 		    }
 		    elsif ( $pos eq 'cf' ) {
 			if ( $starts[10] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
@@ -454,8 +476,8 @@ while (<>) {
 		    }
 		    elsif ( $pos eq 'rf' ) {
 			if ( $starts[11] == 0 ) {
-			    printf("%-3s %s illegal start @ %s, line %s\n", $mlb, $name, $pos, $lines);
-			    $errors++;
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
 			}
 			else {
 			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
@@ -465,17 +487,17 @@ while (<>) {
 		}
 	    }
 
-	    if ( $updates && $week && $home && $away ) {
+	    if ( $updates && !$fatalerr ) {
 		$dbh->do( "insert into $startsdb values ( '$mlb', '$name', 0, 0, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, 0, 0, $week, '$home', '$away' );" );
-	    }
-	    elsif ( $updates ) {
-	    	$errors++;
 	    }
 	}
     }
 
     elsif ( $keyword eq 'INJURIES' ) {
 	#print "INJURIES\n";
+	if ( $updates && !($week && $home && $away) ) {
+	    $fatalerr++;
+	}
 	while (<>) {
 	    $lines++;
 	    @line = split;
@@ -483,8 +505,8 @@ while (<>) {
 		last;
 	    }
 	    elsif ( $#line < $ICOLS ) {
-		print "INJURIES format error, line $lines\n";
-		$errors++;
+		print "line $lines INJURIES format error\n";
+		$fatalerr++;
 	    }
 	    else {
 		( $slot, $pos, $ibl, $mlb, $name, $inj ) = @line;
@@ -495,11 +517,8 @@ while (<>) {
 		}
 	    }
 
-	    if ( $updates && $week && $home && $away ) {
+	    if ( $updates && !$fatalerr ) {
 		$dbh->do( "insert into $startsdb values ( '$mlb', '$name', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $inj, 0, 0, $week, '$home', '$away' );" );
-	    }
-	    elsif ( $updates ) {
-	    	$errors++;
 	    }
 	}
     }
@@ -517,15 +536,27 @@ if ( $updates && !($week && $home && $away) ) {
     print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
 }
 
-if ( $errors ) {
-    $dbh->rollback;
-    print "stats database not updated due to errors\n";
-    exit 1;
-}
-elsif ( $updates) {
-    $dbh->commit;
-    print "stats database updated successfully!\n";
-    exit 0;
+if ( $updates ) {
+    if ( $fatalerr ) {
+	$dbh->rollback;
+	print "stats database not updated, boxscore needs correction\n";
+	exit 2;
+    }
+    elsif ( $softerr && $updates != 2 ) {
+	$dbh->rollback;
+	print "stats database not updated, illegal usage\n";
+	exit 1;
+    }
+    elsif ( $softerr && $updates == 2 ) {
+	$dbh->commit;
+	print "stats database updated successfully!\n";
+	exit 0;
+    }
+    else {
+	$dbh->commit;
+	print "stats database updated successfully!\n";
+	exit 0;
+    }
 }
 
 $dbh->disconnect;
