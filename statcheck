@@ -3,7 +3,7 @@
 
 PATH=/usr/local/bin:/usr/bin:/bin
 TMPDIR=/tmp/statcheck.$$
-HEADER=/home/ibl/stats/autoreply
+HEADER=/home/ibl/stats.old/autoreply
 SENDMAIL=/usr/sbin/sendmail
 STRIPBOX=/home/ibl/bin/sqlstat.pl
 
@@ -18,7 +18,7 @@ echo "To: $REPLTO" >> reply
 echo "cc: $COPYTO" >> reply
 echo "Subject: GRS Autoreply" >> reply
 cat $HEADER >> reply
-nice $STRIPBOX < stats >> reply
+nice $STRIPBOX stats >> reply
 
 #if [ -f stripbox.core ]; then
 #    echo "stripbox core dump, you probably have a formatting error" >> reply
