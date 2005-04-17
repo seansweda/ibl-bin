@@ -2,16 +2,16 @@
 #
 # $Id$
 
-$host = 'localhost';
+$host = 'phantasm.ibl.org';
 $dbname = ibl_stats;
 $username = 'stats';
 $password = 'st@ts=Fun';
 
-$startsdb = starts2004;
-$batdb = bat2004;
-$pitdb = pit2004;
-$teamdb = teams2004;
-$scheddb = sched2004;
+$startsdb = starts2005;
+$batdb = bat2005;
+$pitdb = pit2005;
+$teamdb = teams2005;
+$scheddb = sched2005;
 
 # constants
 $BCOLS = 17;
@@ -574,6 +574,11 @@ printf ("Total WINS: %s\n", $wins);
 printf ("Total LOSSES: %s\n", $losses);
 print "\n";
 
+if ( $batters == 0 && $pitchers == 0 ) {
+    $dbh->rollback;
+    $dbh->disconnect;
+    exit -1;
+}
 if ( $wins != $losses ) {
     print "WINS & LOSSES not equal\n";
     $fatalerr++;
@@ -623,11 +628,13 @@ if ( $updates ) {
     if ( $fatalerr ) {
 	$dbh->rollback;
 	print "stats database not updated, boxscore needs correction\n";
+	$dbh->disconnect;
 	exit 2;
     }
     elsif ( $softerr && $updates != 2 ) {
 	$dbh->rollback;
 	print "stats database not updated, illegal usage\n";
+	$dbh->disconnect;
 	exit 1;
     }
     elsif ( $softerr && $updates == 2 ) {
@@ -635,6 +642,7 @@ if ( $updates ) {
 		week = $week and home = '$hcode[0]' and away = '$acode[0]';");
 	$dbh->commit;
 	print "stats database updated successfully!\n";
+	$dbh->disconnect;
 	exit 0;
     }
     else {
@@ -642,6 +650,7 @@ if ( $updates ) {
 		week = $week and home = '$hcode[0]' and away = '$acode[0]';");
 	$dbh->commit;
 	print "stats database updated successfully!\n";
+	$dbh->disconnect;
 	exit 0;
     }
 }
