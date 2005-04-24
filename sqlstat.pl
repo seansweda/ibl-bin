@@ -1,6 +1,10 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 #
 # $Id$
+
+# flags
+#   -u: update
+#   -U: update ignoring soft errors
 
 $host = 'phantasm.ibl.org';
 $dbname = ibl_stats;
@@ -30,7 +34,9 @@ $lines = 0;
 $week = 0;
 $home = '';
 $away = '';
+$redo = 0;
 $updates = 0;
+$input = '';
 
 # err flags
 $softerr = 0;
@@ -38,17 +44,25 @@ $fatalerr = 0;
 
 use DBI;
 
-if ( $#ARGV > 0 ) {
+while (@ARGV) {
     if ( $ARGV[0] eq '-u' ) {
-	shift @ARGV;
 	# update if no errors (for auto update)
 	$updates = 1;
     }
-    if ( $ARGV[0] eq '-U' ) {
-	shift @ARGV;
+    elsif ( $ARGV[0] eq '-U' ) {
 	# update, ignore soft errors (for statistician)
 	$updates = 2;
     }
+    elsif ( $ARGV[0] eq '-r' ) {
+	# re-do if stats have already been run
+	$redo = 1;
+    }
+    else {
+    	if ( -r $ARGV[0] ) {
+	    $input = $ARGV[0];
+	}
+    }
+    shift @ARGV;
 }
 
 $dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$host", "$username", "$password", {AutoCommit => 0});
@@ -71,15 +85,17 @@ sub find {
 	while ( @f = $loop->fetchrow_array ) {
 	    printf("%-3s %s\n", $f[0], $f[1]);
 	}
+	return NULL;
     }
-    if ( $s[15] == $s[16] && !defined($s[13]) ) {
-	$s[13] = 0;
+    else {
+	if ( $s[15] == $s[16] && !defined($s[13]) ) {
+	    $s[13] = 0;
+	}
+	if ( $s[15] == $s[17] && !defined($s[14]) ) {
+	    $s[14] = 0;
+	}
+	return @s;
     }
-    if ( $s[15] == $s[17] && !defined($s[14]) ) {
-	$s[14] = 0;
-    }
-
-    return @s;
 }
 
 sub outs {
@@ -100,7 +116,14 @@ sub iblck {
     }
 }
 
-while (<>) {
+if ( $input) {
+    open (DATA, "$input") || die ("can't open: $datafile\n$!");
+}
+else {
+    open (DATA, "-");
+}
+
+while (<DATA>) {
 
     $lines++;
     $keyword = (split)[0];
@@ -159,7 +182,7 @@ while (<>) {
 	    print "line $lines invalid IBL team designation: $team\n";
 	    $fatalerr++;
 	}
-	while (<>) {
+	while (<DATA>) {
 	    $g = $psc = $ps1b = $ps2b = $ps3b = $psss = $pslf = $pscf = $psrf = 0;
 	    $lines++;
 	    @line = split;
@@ -304,8 +327,8 @@ while (<>) {
 		    $pr = 0;
 		}
 
-		$dbh->do( "insert into $batdb values ( $week, '$home', '$away', '$ibl', '$mlb', '$name', 1, $ab, $r, $h, $bi, $d, $t, $hr, $sb, $cs, $bb, $k );" );
-		$dbh->do( "insert into $startsdb values ( '$mlb', '$name', $g, 0, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, $pl, $pr, $week, '$home', '$away' );" );
+		$dbh->do( "insert into $batdb values ( $week, '$home', '$away', '$ibl', '$starts[0]', '$starts[1]', 1, $ab, $r, $h, $bi, $d, $t, $hr, $sb, $cs, $bb, $k );" );
+		$dbh->do( "insert into $startsdb values ( '$starts[0]', '$starts[1]', $g, 0, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, $pl, $pr, $week, '$home', '$away' );" );
 	    }
 
 	}
@@ -351,7 +374,7 @@ while (<>) {
 	    print "line $lines invalid IBL team designation: $team\n";
 	    $fatalerr++;
 	}
-	while (<>) {
+	while (<DATA>) {
 	    $pgs = $pw = $pl = $ps = 0;
 	    $lines++;
 	    @line = split;
@@ -398,8 +421,8 @@ while (<>) {
 
 	    if ( $updates && !$fatalerr ) {
 		$ip = outs($ip);
-		$dbh->do( "insert into $pitdb values ( $week, '$home', '$away', '$ibl', '$mlb', '$name', $pw, $pl, $ps, 1, $pgs, $ip, $h, $r, $er, $bb, $k, $hr );" );
-		$dbh->do( "insert into $startsdb values ( '$mlb', '$name', 1, $pgs, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $week, '$home', '$away' );" );
+		$dbh->do( "insert into $pitdb values ( $week, '$home', '$away', '$ibl', '$starts[0]', '$starts[1]', $pw, $pl, $ps, 1, $pgs, $ip, $h, $r, $er, $bb, $k, $hr );" );
+		$dbh->do( "insert into $startsdb values ( '$starts[0]', '$starts[1]', 1, $pgs, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $week, '$home', '$away' );" );
 	    }
 	}
     }
@@ -409,7 +432,7 @@ while (<>) {
 	if ( $updates && !($week && $home && $away) ) {
 	    $fatalerr++;
 	}
-	while (<>) {
+	while (<DATA>) {
 	    $psc = $ps1b = $ps2b = $ps3b = $psss = $pslf = $pscf = $psrf = 0;
 	    $lines++;
 	    @line = split;
@@ -525,7 +548,7 @@ while (<>) {
 		$fatalerr++;
 	    }
 	    if ( $updates && !$fatalerr ) {
-		$dbh->do( "insert into $startsdb values ( '$mlb', '$name', 0, 0, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, 0, 0, $week, '$home', '$away' );" );
+		$dbh->do( "insert into $startsdb values ( '$starts[0]', '$starts[1]', 0, 0, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, 0, 0, $week, '$home', '$away' );" );
 	    }
 	}
     }
@@ -535,7 +558,7 @@ while (<>) {
 	if ( $updates && !($week && $home && $away) ) {
 	    $fatalerr++;
 	}
-	while (<>) {
+	while (<DATA>) {
 	    $lines++;
 	    @line = split;
 	    if ( $#line == -1 ) {
@@ -560,7 +583,7 @@ while (<>) {
 		$fatalerr++;
 	    }
 	    if ( $updates && !$fatalerr ) {
-		$dbh->do( "insert into $startsdb values ( '$mlb', '$name', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $inj, 0, 0, $week, '$home', '$away' );" );
+		$dbh->do( "insert into $startsdb values ( '$starts[0]', '$starts[1]', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $inj, 0, 0, $week, '$home', '$away' );" );
 	    }
 	}
     }
@@ -609,7 +632,7 @@ if ( $updates ) {
 	    @status = $dbh->selectrow_array("select status from $scheddb where 
 	    		week = $week and home = '$hcode[0]' and away = '$acode[0]';");
 	    if ( @status ) {
-		if ( shift @status ) {
+		if ( shift @status && !$redo ) {
 		    print "week $week, $away @ $home already submitted\n";
 		    $fatalerr++;
 		}
