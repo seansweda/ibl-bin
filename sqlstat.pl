@@ -215,6 +215,18 @@ while (<DATA>) {
 
     $keyword =~ tr/a-z/A-Z/;
 
+    if ( $keyword eq 'BATTERS' && !$team ) {
+	print "line $lines BATTERS missing IBL team designation\n";
+	$fatalerr++;
+	$batters++;
+    }
+
+    if ( $keyword eq 'PITCHERS' && !$team ) {
+	print "line $lines PITCHERS missing IBL team designation\n";
+	$fatalerr++;
+	$pitchers++;
+    }
+
     if ( $keyword eq 'BATTERS' && $team ) {
 	$batters++;
 	$order = 1;
