@@ -107,7 +107,7 @@ sub schedck {
     my $fatalerr = 0;
 
     if ( !($week && $home && $away) ) {
-	print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
+	print "line $lines missing or invalid WEEK/HOME/AWAY info, cannot update\n";
 	$fatalerr++;
     }
     else {
@@ -233,6 +233,7 @@ while (<DATA>) {
 	$start = 0;
 	$sc = $s1b = $s2b = $s3b = $sss = $slf = $scf = $srf = 0;
 	if ( $updates && !($week && $home && $away) ) {
+	    print "line $lines missing or invalid WEEK/HOME/AWAY info, cannot update\n";
 	    $fatalerr++;
 	}
 	if ( iblck($team) ) {
@@ -277,6 +278,7 @@ while (<DATA>) {
 		    }
 		}
 		else {
+		    #print "line $lines find error\n";
 		    $fatalerr++;
 		}
 
@@ -428,6 +430,7 @@ while (<DATA>) {
 	$pitchers++;
 	$start = 1;
 	if ( $updates && !($week && $home && $away) ) {
+	    print "line $lines missing or invalid WEEK/HOME/AWAY info, cannot update\n";
 	    $fatalerr++;
 	}
 	if ( iblck($team) ) {
@@ -480,6 +483,7 @@ while (<DATA>) {
 		    }
 		}
 		else {
+		    #print "line $lines find error\n";
 		    $fatalerr++;
 		}
 
@@ -493,8 +497,9 @@ while (<DATA>) {
     }
     
     elsif ( $keyword eq 'STARTS' ) {
-	#print "STARTS\n";
+	print "STARTS\n";
 	if ( $updates && !($week && $home && $away) ) {
+	    print "line $lines missing or invalid WEEK/HOME/AWAY info, cannot update\n";
 	    $fatalerr++;
 	}
 	while (<DATA>) {
@@ -607,6 +612,7 @@ while (<DATA>) {
 		    }
 		}
 		else {
+		    #print "line $lines find error\n";
 		    $fatalerr++;
 		}
 	    }
@@ -622,8 +628,9 @@ while (<DATA>) {
     }
 
     elsif ( $keyword eq 'INJURIES' ) {
-	#print "INJURIES\n";
+	print "INJURIES\n";
 	if ( $updates && !($week && $home && $away) ) {
+	    print "line $lines missing or invalid WEEK/HOME/AWAY info, cannot update\n";
 	    $fatalerr++;
 	}
 	while (<DATA>) {
@@ -645,6 +652,7 @@ while (<DATA>) {
 		    printf("%-3s %s injured for %s day(s)\n", $mlb, $name, $inj);
 		}
 		else {
+		    #print "line $lines find error\n";
 		    $fatalerr++;
 		}
 	    }
@@ -710,7 +718,7 @@ if ( $updates ) {
     $fatalerr += (schedck( $week, $home, $away, $redo ));
     if ( $fatalerr ) {
 	$dbh->rollback;
-	print "stats database not updated, boxscore needs correction\n";
+	print "stats database not updated, boxscore needs correction ($fatalerr errors)\n";
 	$dbh->disconnect;
 	exit 2;
     }
