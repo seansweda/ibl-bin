@@ -57,7 +57,7 @@ sub find {
     if ($#s == -1 ) {
 	printf("line %s %-3s %s not found, perhaps:\n", $where, $mlb, $name);
 	$loop = $dbh->prepare("select mlb, name from $startsdb
-		where name ~* ? order by mlb, name desc;");
+		where name ~* ? and week is null order by mlb, name desc;");
 	$loop->execute($name);
 	while ( @f = $loop->fetchrow_array ) {
 	    printf("%-3s %s\n", $f[0], $f[1]);
