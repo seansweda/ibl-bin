@@ -3,8 +3,7 @@
 # $Id$
 
 # flags
-#   -u: update
-#   -U: update ignoring soft errors
+#   -i: print start of season starts/limits
 
 $host = 'phantasm.ibl.org';
 $dbname = ibl_stats;
