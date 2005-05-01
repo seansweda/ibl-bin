@@ -38,6 +38,14 @@ sub pconv {
     }
 }
 
+sub ipconv {
+    my $outs = shift;
+    my $inn = int ( $outs / 3 );
+    my $frac = $outs - ( $inn * 3);
+    my $retval = sprintf "%s.%s", $inn, $frac;
+    return $retval;
+}
+
 while (@ARGV) {
     if ( $ARGV[0] eq '-t' ) {
 	$totals = 1;
@@ -68,8 +76,6 @@ if (!@teams) {
 }
 
 @bat = @teams;
-@pit = @teams;
-
 print "BATTING STATISTICS\n";
 while (@bat) {
     $team = shift @bat;
@@ -88,6 +94,29 @@ while (@bat) {
 	    ( $ab > 0 ) ? pconv( $h / $ab ) : pconv(0), 
 	    ( $ab + $bb > 0 ) ? pconv (( $h + $bb ) / ( $ab + $bb )) : pconv(0),
 	    ( $ab > 0 ) ? pconv (( $h + $d + $t * 2 + $hr * 3 ) / $ab ) : pconv(0);
+    }
+    print "\n";
+}
+
+@pit = @teams;
+print "PITCHING STATISTICS\n";
+while (@pit) {
+    $team = shift @pit;
+    print "$team\t";
+    $sth = $dbh->selectcol_arrayref("select name from $teamdb where ibl = '$team';");
+    printf "%s\n", shift @$sth;
+    print "RTM NAME            W   L  PCT  SV   G  GS    IP   H   R  ER  HR  BB  SO    ERA\n";
+    $loop = $dbh->prepare("select mlb, trim(name), sum(w), sum(l), sum(sv), sum(g),
+	    sum(gs), sum(ip), sum(h), sum(r), sum(er), sum(hr), sum(bb), sum(so)
+	    from $pitdb group by ibl, mlb, name having ibl = ? order by mlb, name;");
+    $loop->execute($team);
+    while ( @line = $loop->fetchrow_array ) {
+	( $mlb, $name, $w, $l, $sv, $g, $gs, $ip, $h, $r, $er, $hr, $bb, $so ) = @line;
+	printf "%-3s %-13s %3i %3i %s %3i %3i %3i %5s %3i %3i %3i %3i %3i %3i %6.2f\n",
+	    $mlb, $name, $w, $l, 
+	    ( $w + $l > 0 ) ? pconv( $w / ( $w + $l )) : pconv(0),
+	    $sv, $g, $gs, ipconv($ip), $h, $r, $er, $hr, $bb, $so,
+	    ( $ip > 0 ) ? $er * 9 / $ip * 3 : 999.99;
     }
     print "\n";
 }
