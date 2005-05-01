@@ -2,10 +2,6 @@
 #
 # $Id$
 
-# flags
-#   -u: update
-#   -U: update ignoring soft errors
-
 $host = 'phantasm.ibl.org';
 $dbname = ibl_stats;
 $username = 'stats';
