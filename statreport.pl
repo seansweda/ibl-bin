@@ -134,6 +134,7 @@ else {
     print "BATTING STATISTICS\n";
     while (@bat) {
 	$team = shift @bat;
+	$team =~ tr/a-z/A-Z/;
 	print "$team\t";
 	$sth = $dbh->selectcol_arrayref("select name from $teamdb where ibl = '$team';");
 	printf "%s\n", shift @$sth;
@@ -157,6 +158,7 @@ else {
     print "PITCHING STATISTICS\n";
     while (@pit) {
 	$team = shift @pit;
+	$team =~ tr/a-z/A-Z/;
 	print "$team\t";
 	$sth = $dbh->selectcol_arrayref("select name from $teamdb where ibl = '$team';");
 	printf "%s\n", shift @$sth;
