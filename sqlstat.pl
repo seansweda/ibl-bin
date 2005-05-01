@@ -489,7 +489,7 @@ while (<DATA>) {
 
 		if ( $updates && !$fatalerr ) {
 		    $ip = outs($ip);
-		    $dbh->do( "insert into $pitdb values ( $week, '$home', '$away', '$ibl', '$starts[0]', '$starts[1]', $pw, $pl, $ps, 1, $pgs, $ip, $h, $r, $er, $bb, $k, $hr );" );
+		    $dbh->do( "insert into $pitdb values ( $week, '$home', '$away', '$ibl', '$starts[0]', '$starts[1]', $pw, $pl, $ps, 1, $pgs, $ip, $h, $r, $er, $hr, $bb, $k );" );
 		    $dbh->do( "insert into $startsdb values ( '$starts[0]', '$starts[1]', 1, $pgs, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $week, '$home', '$away' );" );
 		}
 	    }
