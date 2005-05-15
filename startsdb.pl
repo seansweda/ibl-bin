@@ -57,6 +57,12 @@ while ( @s = $sth->fetchrow_array ) {
     if ( $s[15] == $s[17] && !defined($s[14]) ) {
 	$s[14] = 0;
     }
+    if ( $s[13] < 0 ) {
+	$s[13] = 0;
+    }
+    if ( $s[14] < 0 ) {
+	$s[14] = 0;
+    }
 
     printf "%-3s ", shift @s;
     printf "%-15s ", shift @s;
