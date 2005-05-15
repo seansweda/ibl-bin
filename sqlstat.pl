@@ -299,8 +299,9 @@ while (<DATA>) {
 			    $softerr++;
 			}
 			else {
-			    $psc = $sc = -1;
+			    $psc = -1;
 			}
+			$sc = 1;
 		    }
 		    elsif ( $pos eq '1b' ) {
 			if ( $starts[5] == 0 ) {
@@ -308,8 +309,9 @@ while (<DATA>) {
 			    $softerr++;
 			}
 			else {
-			    $ps1b = $s1b = -1;
+			    $ps1b = -1;
 			}
+			$s1b = 1;
 		    }
 		    elsif ( $pos eq '2b' ) {
 			if ( $starts[6] == 0 ) {
@@ -317,8 +319,9 @@ while (<DATA>) {
 			    $softerr++;
 			}
 			else {
-			    $ps2b = $s2b = -1;
+			    $ps2b = -1;
 			}
+			$s2b = 1;
 		    }
 		    elsif ( $pos eq '3b' ) {
 			if ( $starts[7] == 0 ) {
@@ -326,8 +329,9 @@ while (<DATA>) {
 			    $softerr++;
 			}
 			else {
-			    $ps3b = $s3b = -1;
+			    $ps3b = -1;
 			}
+			$s3b = 1;
 		    }
 		    elsif ( $pos eq 'ss' ) {
 			if ( $starts[8] == 0 ) {
@@ -335,8 +339,9 @@ while (<DATA>) {
 			    $softerr++;
 			}
 			else {
-			    $psss = $sss = -1;
+			    $psss = -1;
 			}
+			$sss = 1;
 		    }
 		    elsif ( $pos eq 'lf' ) {
 			if ( $starts[9] == 0 ) {
@@ -344,8 +349,9 @@ while (<DATA>) {
 			    $softerr++;
 			}
 			else {
-			    $pslf = $slf = -1;
+			    $pslf = -1;
 			}
+			$slf = 1;
 		    }
 		    elsif ( $pos eq 'cf' ) {
 			if ( $starts[10] == 0 ) {
@@ -353,8 +359,9 @@ while (<DATA>) {
 			    $softerr++;
 			}
 			else {
-			    $pscf = $scf = -1;
+			    $pscf = -1;
 			}
+			$scf = 1;
 		    }
 		    elsif ( $pos eq 'rf' ) {
 			if ( $starts[11] == 0 ) {
@@ -362,8 +369,9 @@ while (<DATA>) {
 			    $softerr++;
 			}
 			else {
-			    $psrf = $srf = -1;
+			    $psrf = -1;
 			}
+			$srf = 1;
 		    }
 		}
 	    }
@@ -741,4 +749,14 @@ if ( $updates ) {
 }
 
 $dbh->disconnect;
+
+if ( $fatalerr ) {
+    exit 2;
+}
+elsif ( $softerr ) {
+    exit 1;
+}
+else {
+    exit 0;
+}
 
