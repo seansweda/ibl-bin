@@ -6,6 +6,7 @@
 # -t: team totals
 # -h: home stats
 # -a: away stats
+# -w: through week #
 
 $host = 'phantasm.ibl.org';
 $dbname = ibl_stats;
@@ -21,6 +22,7 @@ $scheddb = sched2005;
 $totals = 0;
 $home = 0;
 $away = 0;
+$week = 27;
 
 use DBI;
 
@@ -59,6 +61,10 @@ while (@ARGV) {
 	$away = 1;
 	shift @ARGV;
     }
+    elsif ( $ARGV[0] eq '-w' ) {
+	shift @ARGV;
+	$week = shift @ARGV;
+    }
     elsif ( length($ARGV[0]) == 3 ) {
     	push @teams, shift @ARGV;
     }
@@ -80,7 +86,7 @@ if ( $totals ) {
 	print "IBL     AB    R    H   BI  2B  3B  HR   BB   SO  SB  CS   AVG  OBP  SLG\n";
 	$loop = $dbh->prepare("select ibl, sum(ab), sum(r), sum(h), sum(bi),
 		sum(d), sum(t), sum(hr), sum(bb), sum(k), sum(sb), sum(cs)
-		from $batdb group by ibl order by sum(r) desc;");
+		from $batdb where week <= $week group by ibl order by sum(r) desc;");
 	$loop->execute;
 	while ( @line = $loop->fetchrow_array ) {
 	    ( $ibl, $ab, $r, $h, $bi, $d, $t, $hr, $bb, $k, $sb, $cs ) = @line;
@@ -92,7 +98,7 @@ if ( $totals ) {
 	}
 	@line = $dbh->selectrow_array("select sum(ab), sum(r), sum(h), sum(bi),
 		sum(d), sum(t), sum(hr), sum(bb), sum(k), sum(sb), sum(cs)
-		from $batdb;");
+		from $batdb where week <= $week;");
 	( $ab, $r, $h, $bi, $d, $t, $hr, $bb, $k, $sb, $cs ) = @line;
 	printf "%-56s %s %s %s\n",
 	    "AVG",
@@ -105,7 +111,7 @@ if ( $totals ) {
 	print "IBL      G   W   L   PCT  SV     IP    H    R   ER  HR   BB   SO    ERA\n";
 	$loop = $dbh->prepare("select ibl, sum(w), sum(l), sum(sv), sum(gs),
 		sum(ip), sum(h), sum(r), sum(er), sum(hr), sum(bb), sum(so)
-		from $pitdb group by ibl order by sum(r) asc;");
+		from $pitdb where week <= $week group by ibl order by sum(r) asc;");
 	$loop->execute;
 	while ( @line = $loop->fetchrow_array ) {
 	    ( $ibl, $w, $l, $sv, $gs, $ip, $h, $r, $er, $hr, $bb, $so ) = @line;
@@ -117,7 +123,7 @@ if ( $totals ) {
 	}
 	@line = $dbh->selectrow_array("select sum(w), sum(l), sum(sv), sum(gs),
 		sum(ip), sum(h), sum(r), sum(er), sum(hr), sum(bb), sum(so)
-		from $pitdb;");
+		from $pitdb where week <= $week;");
 	( $w, $l, $sv, $gs, $ip, $h, $r, $er, $hr, $bb, $so ) = @line;
 	printf "%-64s %6.2f\n",
 	    "AVG", ( $ip > 0 ) ? $er * 9 / $ip * 3 : 999.99;
@@ -141,7 +147,8 @@ else {
 	print "MLB NAME            G  AB   R   H  BI  2B  3B  HR  BB  SO  SB CS  AVG  OBP  SLG\n";
 	$loop = $dbh->prepare("select mlb, trim(name), sum(g), sum(ab), sum(r), sum(h),
 		sum(bi), sum(d), sum(t), sum(hr), sum(bb), sum(k), sum(sb), sum(cs)
-		from $batdb group by ibl, mlb, name having ibl = ? order by mlb, name;");
+		from $batdb where week <= $week group by ibl, mlb, name
+		having ibl = ? order by mlb, name;");
 	$loop->execute($team);
 	while ( @line = $loop->fetchrow_array ) {
 	    ( $mlb, $name, $gp, $ab, $r, $h, $bi, $d, $t, $hr, $bb, $k, $sb, $cs ) = @line;
@@ -165,7 +172,8 @@ else {
 	print "MLB NAME            W   L  PCT  SV   G  GS    IP   H   R  ER  HR  BB  SO    ERA\n";
 	$loop = $dbh->prepare("select mlb, trim(name), sum(w), sum(l), sum(sv), sum(g),
 		sum(gs), sum(ip), sum(h), sum(r), sum(er), sum(hr), sum(bb), sum(so)
-		from $pitdb group by ibl, mlb, name having ibl = ? order by mlb, name;");
+		from $pitdb where week <= $week group by ibl, mlb, name 
+		having ibl = ? order by mlb, name;");
 	$loop->execute($team);
 	while ( @line = $loop->fetchrow_array ) {
 	    ( $mlb, $name, $w, $l, $sv, $g, $gs, $ip, $h, $r, $er, $hr, $bb, $so ) = @line;
