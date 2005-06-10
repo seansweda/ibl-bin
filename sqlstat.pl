@@ -301,7 +301,7 @@ while (<DATA>) {
 			else {
 			    $psc = -1;
 			}
-			$sc = 1;
+			$sc++;
 		    }
 		    elsif ( $pos eq '1b' ) {
 			if ( $starts[5] == 0 ) {
@@ -311,7 +311,7 @@ while (<DATA>) {
 			else {
 			    $ps1b = -1;
 			}
-			$s1b = 1;
+			$s1b++;
 		    }
 		    elsif ( $pos eq '2b' ) {
 			if ( $starts[6] == 0 ) {
@@ -321,7 +321,7 @@ while (<DATA>) {
 			else {
 			    $ps2b = -1;
 			}
-			$s2b = 1;
+			$s2b++;
 		    }
 		    elsif ( $pos eq '3b' ) {
 			if ( $starts[7] == 0 ) {
@@ -331,7 +331,7 @@ while (<DATA>) {
 			else {
 			    $ps3b = -1;
 			}
-			$s3b = 1;
+			$s3b++;
 		    }
 		    elsif ( $pos eq 'ss' ) {
 			if ( $starts[8] == 0 ) {
@@ -341,7 +341,7 @@ while (<DATA>) {
 			else {
 			    $psss = -1;
 			}
-			$sss = 1;
+			$sss++;
 		    }
 		    elsif ( $pos eq 'lf' ) {
 			if ( $starts[9] == 0 ) {
@@ -351,7 +351,7 @@ while (<DATA>) {
 			else {
 			    $pslf = -1;
 			}
-			$slf = 1;
+			$slf++;
 		    }
 		    elsif ( $pos eq 'cf' ) {
 			if ( $starts[10] == 0 ) {
@@ -361,7 +361,7 @@ while (<DATA>) {
 			else {
 			    $pscf = -1;
 			}
-			$scf = 1;
+			$scf++;
 		    }
 		    elsif ( $pos eq 'rf' ) {
 			if ( $starts[11] == 0 ) {
@@ -371,7 +371,7 @@ while (<DATA>) {
 			else {
 			    $psrf = -1;
 			}
-			$srf = 1;
+			$srf++;
 		    }
 		}
 	    }
@@ -432,6 +432,37 @@ while (<DATA>) {
 	    }
 	    print "\n";
 	}
+
+	if ( $sc > 1 || $s1b > 1 || $s2b > 1 || $s3b > 1 || $sss > 1 || $slf > 1 || $scf > 1 || $srf > 1 ) {
+	    print "line $lines $team multiple starters: ";
+	    $fatalerr++;
+	    if ( $sc > 1 ) {
+		print "c ";
+	    }
+	    if ( $s1b > 1 ) {
+		print "1b ";
+	    }
+	    if ( $s2b > 1 ) {
+		print "2b ";
+	    }
+	    if ( $s3b > 1 ) {
+		print "3b ";
+	    }
+	    if ( $sss > 1 ) {
+		print "ss ";
+	    }
+	    if ( $slf > 1 ) {
+		print "lf ";
+	    }
+	    if ( $scf > 1 ) {
+		print "cf ";
+	    }
+	    if ( $srf > 1 ) {
+		print "rf ";
+	    }
+	    print "\n";
+	}
+
     }
 
     elsif ( $keyword eq 'PITCHERS' && $team ) {
