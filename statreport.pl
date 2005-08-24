@@ -24,7 +24,9 @@ $home = 0;
 $away = 0;
 $week = 27;
 $groupby = "ibl";
+$split = "";
 $having = "";
+$where = "";
 
 use DBI;
 
@@ -62,7 +64,7 @@ while (@ARGV) {
 	}
 	$home = 1;
 	$groupby = "ibl, home";
-	$having = "ibl = home";
+	$split = "ibl = home";
 	shift @ARGV;
     }
     elsif ( $ARGV[0] eq '-a' ) {
@@ -72,7 +74,7 @@ while (@ARGV) {
 	}
 	$away = 1;
 	$groupby = "ibl, away";
-	$having = "ibl = away";
+	$split = "ibl = away";
 	shift @ARGV;
     }
     elsif ( $ARGV[0] eq '-w' ) {
@@ -96,8 +98,9 @@ if ( $totals ) {
 	exit(1);
     }
     else {
-	if ( $having ) {
-	    $having = "having " . $having;
+	if ( $split ) {
+	    $having = "having " . $split;
+	    $where = $split . " and ";
 	}
 	print "BATTING STATISTICS\n";
 	print "IBL     AB    R    H   BI  2B  3B  HR   BB   SO  SB  CS   AVG  OBP  SLG\n";
@@ -116,7 +119,7 @@ if ( $totals ) {
 	}
 	@line = $dbh->selectrow_array("select sum(ab), sum(r), sum(h), sum(bi),
 		sum(d), sum(t), sum(hr), sum(bb), sum(k), sum(sb), sum(cs)
-		from $batdb where week <= $week;");
+		from $batdb where $where week <= $week;");
 	( $ab, $r, $h, $bi, $d, $t, $hr, $bb, $k, $sb, $cs ) = @line;
 	printf "%-56s %s %s %s\n",
 	    "AVG",
@@ -142,7 +145,7 @@ if ( $totals ) {
 	}
 	@line = $dbh->selectrow_array("select sum(w), sum(l), sum(sv), sum(gs),
 		sum(ip), sum(h), sum(r), sum(er), sum(hr), sum(bb), sum(so)
-		from $pitdb where week <= $week;");
+		from $pitdb where $where week <= $week;");
 	( $w, $l, $sv, $gs, $ip, $h, $r, $er, $hr, $bb, $so ) = @line;
 	printf "%-64s %6.2f\n",
 	    "AVG", ( $ip > 0 ) ? $er * 9 / $ip * 3 : 999.99;
@@ -155,8 +158,8 @@ else {
 	@teams = @$sth;
     }
 
-    if ( $having ) {
-	$having = " and " . $having;
+    if ( $split ) {
+	$having = " and " . $split;
     }
     @bat = @teams;
     print "BATTING STATISTICS\n";
