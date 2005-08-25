@@ -542,7 +542,7 @@ while (<DATA>) {
 	    $fatalerr++;
 	}
 	while (<DATA>) {
-	    $psc = $ps1b = $ps2b = $ps3b = $psss = $pslf = $pscf = $psrf = 0;
+	    $psp = $psc = $ps1b = $ps2b = $ps3b = $psss = $pslf = $pscf = $psrf = 0;
 	    $lines++;
 	    @line = split;
 	    if ( $#line == -1 ) {
@@ -566,7 +566,7 @@ while (<DATA>) {
 			}
 			else {
 			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
-			    $psc = -1;
+			    $psp = -1;
 			}
 		    }
 		    if ( $pos eq 'c' ) {
@@ -661,7 +661,7 @@ while (<DATA>) {
 		$fatalerr++;
 	    }
 	    if ( $updates && !$fatalerr ) {
-		$dbh->do( "insert into $startsdb values ( '$starts[0]', '$starts[1]', 0, 0, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, 0, 0, $week, '$home', '$away' );" );
+		$dbh->do( "insert into $startsdb values ( '$starts[0]', '$starts[1]', 0, $psp, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, 0, 0, $week, '$home', '$away' );" );
 	    }
 	}
     }
