@@ -3,7 +3,8 @@
 # $Id$
 
 # flags
-#   -i: print start of season starts/limits
+# -i: print start of season starts/limits
+# -w: through week #
 
 $host = 'phantasm.ibl.org';
 $dbname = ibl_stats;
@@ -17,6 +18,7 @@ $teamdb = teams2005;
 $scheddb = sched2005;
 
 $init = 0;
+$week = 27;
 
 use DBI;
 
@@ -24,8 +26,16 @@ while (@ARGV) {
     if ( $ARGV[0] eq '-i' ) {
 	# initial starts/limits
 	$init = 1;
+	shift @ARGV;
     }
-    shift @ARGV;
+    elsif ( $ARGV[0] eq '-w' ) {
+	shift @ARGV;
+	$week = shift @ARGV;
+    }
+    else {
+	print "usage: startsdb [-i | -w week ]\n";
+	exit(1);
+    }
 }
 
 $dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$host", "$username", "$password");
@@ -42,7 +52,8 @@ else {
     $sth = $dbh->prepare("select mlb, trim(name), sum(g), sum(p), sum(c), 
 	    sum(\"1b\"), sum(\"2b\"), sum(\"3b\"), sum(ss), sum(lf), sum(cf),
 	    sum(rf), sum(inj), nullif(sum(vl), 0), nullif(sum(vr), 0),
-	    count(*), count(vl), count(vr) from $startsdb 
+	    count(*), count(vl), count(vr) from $startsdb
+	    where week is null or week <= $week
 	    group by mlb, name order by mlb asc, name asc;");
 }
 
