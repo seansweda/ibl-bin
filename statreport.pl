@@ -102,6 +102,12 @@ if ( $totals ) {
 	    $having = "having " . $split;
 	    $where = $split . " and ";
 	}
+	if ( $home ) {
+	    print "HOME\n";
+	}
+	if ( $away ) {
+	    print "AWAY\n";
+	}
 	print "BATTING STATISTICS\n";
 	print "IBL     AB    R    H   BI  2B  3B  HR   BB   SO  SB  CS   AVG  OBP  SLG\n";
 	$loop = $dbh->prepare("select ibl, sum(ab), sum(r), sum(h), sum(bi),
@@ -128,6 +134,12 @@ if ( $totals ) {
 	    ( $ab > 0 ) ? pconv (( $h + $d + $t * 2 + $hr * 3 ) / $ab ) : pconv(0);
 	print "\n";
 
+	if ( $home ) {
+	    print "HOME\n";
+	}
+	if ( $away ) {
+	    print "AWAY\n";
+	}
 	print "PITCHING STATISTICS\n";
 	print "IBL      G   W   L   PCT  SV     IP    H    R   ER  HR   BB   SO    ERA\n";
 	$loop = $dbh->prepare("select ibl, sum(w), sum(l), sum(sv), sum(gs),
@@ -162,6 +174,12 @@ else {
 	$having = " and " . $split;
     }
     @bat = @teams;
+    if ( $home ) {
+	print "HOME\n";
+    }
+    if ( $away ) {
+	print "AWAY\n";
+    }
     print "BATTING STATISTICS\n";
     while (@bat) {
 	$team = shift @bat;
@@ -187,6 +205,12 @@ else {
     }
 
     @pit = @teams;
+    if ( $home ) {
+	print "HOME\n";
+    }
+    if ( $away ) {
+	print "AWAY\n";
+    }
     print "PITCHING STATISTICS\n";
     while (@pit) {
 	$team = shift @pit;
