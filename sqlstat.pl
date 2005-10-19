@@ -687,7 +687,11 @@ while (<DATA>) {
 		( $slot, $pos, $ibl, $mlb, $name, $inj ) = @line;
 		@starts = find( $mlb, $name, $lines);
 
-		if ( @starts ) {
+		if ( $inj !~ /^\d+$/ ) {
+		    print "line $lines \"$inj\" not valid injury days\n";
+		    $fatalerr++;
+		}
+		elsif ( @starts ) {
 		    printf("%-3s %s injured for %s day(s)\n", $mlb, $name, $inj);
 		}
 		else {
