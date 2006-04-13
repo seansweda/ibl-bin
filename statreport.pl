@@ -8,16 +8,8 @@
 # -a: away stats
 # -w: through week #
 
-$host = 'phantasm.ibl.org';
-$dbname = ibl_stats;
-$username = 'stats';
-$password = 'st@ts=Fun';
-
-$startsdb = starts2005;
-$batdb = bat2005;
-$pitdb = pit2005;
-$teamdb = teams2005;
-$scheddb = sched2005;
+use FindBin;
+do "$FindBin::Bin/DBconfig.pl";
 
 $totals = 0;
 $home = 0;
