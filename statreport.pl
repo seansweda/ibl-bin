@@ -73,6 +73,16 @@ while (@ARGV) {
 	shift @ARGV;
 	$week = shift @ARGV;
     }
+    elsif ( $ARGV[0] eq '-y' ) {
+	# override db
+	shift @ARGV;
+	$year = shift @ARGV;
+	$startsdb = 'starts' . $year;
+	$batdb = 'bat' . $year;
+	$pitdb = 'pit' . $year;
+	$teamdb = 'teams' . $year;
+	$scheddb = 'sched' . $year;
+    }
     elsif ( length($ARGV[0]) == 3 ) {
     	push @teams, shift @ARGV;
     }

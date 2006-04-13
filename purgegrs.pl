@@ -19,17 +19,33 @@ sub iblcode {
 }
 
 while (@ARGV) {
-    $flag = shift @ARGV;
-    if ( $flag eq '-w' ) {
+    if ( $ARGV[0] eq '-w' ) {
+	shift @ARGV;
 	$week = shift @ARGV;
     }
-    if ( $flag eq '-h' ) {
+    elsif ( $ARGV[0] eq '-h' ) {
+	shift @ARGV;
 	$home = shift @ARGV;
 	$home =~ tr/a-z/A-Z/;
     }
-    if ( $flag eq '-a' ) {
+    elsif ( $ARGV[0] eq '-a' ) {
+	shift @ARGV;
 	$away = shift @ARGV;
 	$away =~ tr/a-z/A-Z/;
+    }
+    elsif ( $ARGV[0] eq '-y' ) {
+	# override db
+	shift @ARGV;
+	$year = shift @ARGV;
+	$startsdb = 'starts' . $year;
+	$batdb = 'bat' . $year;
+	$pitdb = 'pit' . $year;
+	$teamdb = 'teams' . $year;
+	$scheddb = 'sched' . $year;
+    }
+    else {
+	print "usage: purgegrs [-h home | -a away | -w week ]\n";
+	exit(1);
     }
 }
 
