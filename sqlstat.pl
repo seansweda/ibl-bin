@@ -246,11 +246,11 @@ while (<DATA>) {
 	    }
 	    else {
 		( $slot, $pos, $ibl, $mlb, $name, $ab, $r, $h, $bi, $d, $t, $hr, $sb, $cs, $bb, $k, $pl, $pr ) = @line;
-		if ( $team ne $ibl ) {
+		if ( $updates && $team ne $ibl ) {
 		    print "line $lines team mismatch: $team != $ibl\n";
 		    $fatalerr++;
 		}
-		if ( $ibl ne $home && $ibl ne $away ) {
+		if ( $updates && $ibl ne $home && $ibl ne $away ) {
 		    print "line $lines team mismatch: $team != ($home/$away)\n";
 		    $fatalerr++;
 		}
@@ -486,11 +486,11 @@ while (<DATA>) {
 	    }
 	    else {
 		( $dec, $ibl, $mlb, $name, $ip, $h, $r, $er, $bb, $k, $hr ) = @line;
-		if ( $team ne $ibl ) {
+		if ( $updates && $team ne $ibl ) {
 		    print "line $lines team mismatch: $team != $ibl\n";
 		    $fatalerr++;
 		}
-		if ( $ibl ne $home && $ibl ne $away ) {
+		if ( $updates && $ibl ne $home && $ibl ne $away ) {
 		    print "line $lines team mismatch: $team != ($home/$away)\n";
 		    $fatalerr++;
 		}
