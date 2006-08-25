@@ -55,6 +55,10 @@ while (@ARGV) {
 	$pitchers = 1;
 	shift @ARGV;
     }
+    elsif ( $ARGV[0] eq '-w' ) {
+	shift @ARGV;
+	$week = shift @ARGV;
+    }
     else {
 	print "usage: usagereport [-b | -p ] [ -w ]\n";
 	exit(1);
