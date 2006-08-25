@@ -92,7 +92,7 @@ elsif ( $pitchers ) {
 	printf "%-3s %-13s %3i %3i %s %3i %3i %3i %5s %3i %3i %3i %3i %3i %3i %6.2f\n",
 	    $mlb, $name, $w, $l, 
 	    ( $w + $l > 0 ) ? pconv( $w / ( $w + $l )) : pconv(0),
-	    $sv, $g, $gs, ipconv($ip), $h, $r, $er, $hr, $bb, $so,
+	    $sv, $g, $gs, $ip, $h, $r, $er, $hr, $bb, $so,
 	    ( $ip > 0 ) ? $er * 9 / $ip * 3 : 999.99;
     }
     print "\n";
