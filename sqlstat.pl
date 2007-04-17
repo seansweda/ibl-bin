@@ -29,6 +29,7 @@ $away = '';
 $redo = 0;
 $updates = 0;
 $input = '';
+$xteam = '';
 
 # err flags
 $softerr = 0;
@@ -713,6 +714,55 @@ while (<DATA>) {
 	}
     }
 
+    elsif ( $keyword eq 'TOTALS' ) {
+	@line = split;
+	if ( iblck($ibl) == 0 ) {
+	    $xteam = $line[2];
+	}
+    }
+    elsif ( $keyword eq 'E:' && $xteam ) {
+	@line = split;
+	if ( $line[1] > 0 ) {
+	    $xe{$xteam} += $line[1];
+	}
+    }
+    elsif ( $keyword eq 'PB:' && $xteam ) {
+	@line = split;
+	if ( $line[1] > 0 ) {
+	    $xpb{$xteam} += $line[1];
+	}
+    }
+    elsif ( $keyword eq 'GIDP:' && $xteam ) {
+	@line = split;
+	if ( $line[1] > 0 ) {
+	    $xdp{$xteam} += $line[1];
+	}
+    }
+    elsif ( $keyword eq 'SF:' && $xteam ) {
+	@line = split;
+	if ( $line[1] > 0 ) {
+	    $xsf{$xteam} += $line[1];
+	}
+    }
+    elsif ( $keyword eq 'HBP:' && $xteam ) {
+	@line = split;
+	if ( $line[1] > 0 ) {
+	    $xhb{$xteam} += $line[1];
+	}
+    }
+    elsif ( $keyword eq 'WP:' && $xteam ) {
+	@line = split;
+	if ( $line[1] > 0 ) {
+	    $xwp{$xteam} += $line[1];
+	}
+    }
+    elsif ( $keyword eq 'BALK:' && $xteam ) {
+	@line = split;
+	if ( $line[1] > 0 ) {
+	    $xbk{$xteam} += $line[1];
+	}
+    }
+
     if ( $week && $home && $away && $redo ) {
 	print "removing week $week, $away @ $home\n";
 	@hcode = iblcode($home);
@@ -725,6 +775,8 @@ while (<DATA>) {
 		week = $week and home = '$home' and away = '$away';");
 	$dbh->do( "delete from $pitdb where
 		week = $week and home = '$home' and away = '$away';");
+	$dbh->do( "delete from $extradb where
+		week = $week and home = '$home' and away = '$away';");
 	$redo = 0;
     }
 }
@@ -736,6 +788,20 @@ printf ("Total PITCHERS: %s\n", $pitchers);
 printf ("Total WINS: %s\n", $wins);
 printf ("Total LOSSES: %s\n", $losses);
 print "\n";
+
+# printf "%s E: %d\n", $index, $xe{$index};
+# printf "%s PB: %d\n", $index, $xpb{$index};
+# printf "%s GIDP: %d\n", $index, $xdp{$index};
+# printf "%s SF: %d\n", $index, $xsf{$index};
+# printf "%s HBP: %d\n", $index, $xhb{$index};
+# printf "%s WP: %d\n", $index, $xwp{$index};
+# printf "%s BALK: %d\n", $index, $xbk{$index};
+if ( $updates && !$fatalerr ) {
+    foreach $index ( $away, $home ) {
+	$sth = $dbh->prepare( "insert into $extradb values ( $week, '$home', '$away', '$index', ?, ?, ?, ?, ?, ?, ? );" );
+	$sth->execute( int($xe{$index}), int($xpb{$index}), int($xdp{$index}), int($xsf{$index}), int($xhb{$index}), int($xwp{$index}), int($xbk{$index}) );
+    }
+}
 
 if ( $batters == 0 && $pitchers == 0 ) {
     $dbh->rollback;
