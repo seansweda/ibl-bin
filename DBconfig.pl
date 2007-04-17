@@ -5,9 +5,10 @@ $dbname = ibl_stats;
 $username = 'stats';
 $password = 'st@ts=Fun';
 
-$startsdb = starts2006;
-$batdb = bat2006;
-$pitdb = pit2006;
-$teamdb = teams2006;
-$scheddb = sched2006;
+$startsdb = starts2007;
+$batdb = bat2007;
+$pitdb = pit2007;
+$teamdb = teams2007;
+$scheddb = sched2007;
+$extradb = extra2007;
 
