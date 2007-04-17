@@ -39,6 +39,7 @@ use DBI;
 sub find {
     my $mlb = shift;
     my $name = shift;
+    $name =~ s/'/''/g;
     my $where = shift;
     @s = $dbh->selectrow_array("select mlb, name, sum(g), sum(p), sum(c), 
     		sum(\"1b\"), sum(\"2b\"), sum(\"3b\"), sum(ss), sum(lf), sum(cf),
@@ -63,6 +64,8 @@ sub find {
 	    $s[14] = 0;
 	}
     }
+
+    $s[1] =~ s/'/''/g;
     return @s;
 }
 
