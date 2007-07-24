@@ -56,6 +56,7 @@ sub find {
 	while ( @f = $loop->fetchrow_array ) {
 	    printf("%-3s %s\n", $f[0], $f[1]);
 	}
+	return;
     }
     else {
 	if ( $s[15] == $s[16] && !defined($s[13]) ) {
