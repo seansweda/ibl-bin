@@ -2,9 +2,8 @@
 
 $host = 'phantasm.ibl.org';
 $dbname = ibl_stats;
-$username = 'stats';
-$password = 'st@ts=Fun';
 
+# tables for current season
 $startsdb = starts2007;
 $batdb = bat2007;
 $pitdb = pit2007;

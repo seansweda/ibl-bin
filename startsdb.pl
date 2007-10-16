@@ -8,6 +8,7 @@
 
 use FindBin;
 do "$FindBin::Bin/DBconfig.pl";
+$username = 'ibl';
 
 $init = 0;
 $week = 27;
@@ -40,7 +41,7 @@ while (@ARGV) {
     }
 }
 
-$dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$host", "$username", "$password");
+$dbh = DBI->connect("dbi:Pg:dbname=$dbname", "$username");
 
 if ( $init ) {
     $sth = $dbh->prepare("select mlb, trim(name), sum(g), sum(p), sum(c), 

@@ -4,6 +4,7 @@
 
 use FindBin;
 do "$FindBin::Bin/DBconfig.pl";
+do "$FindBin::Bin/DBpasswd.pl";
 
 # initialize variables
 $week = 0;

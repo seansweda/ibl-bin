@@ -9,6 +9,7 @@
 
 use FindBin;
 do "$FindBin::Bin/DBconfig.pl";
+$username = 'ibl';
 
 $batters = 0;
 $pitchers = 0;
@@ -65,7 +66,7 @@ while (@ARGV) {
     }
 }
 
-$dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$host", "$username", "$password");
+$dbh = DBI->connect("dbi:Pg:dbname=$dbname", "$username");
 
 if ( $batters ) {
     $loop = $dbh->prepare("select mlb, trim(name), sum(g), sum(ab), sum(r), sum(h),

@@ -10,6 +10,7 @@
 
 use FindBin;
 do "$FindBin::Bin/DBconfig.pl";
+$username = 'ibl';
 
 $totals = 0;
 $home = 0;
@@ -103,7 +104,7 @@ while (@ARGV) {
     }
 }
 
-$dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$host", "$username", "$password");
+$dbh = DBI->connect("dbi:Pg:dbname=$dbname", "$username");
 
 if ( $totals ) {
     if ( @teams ) {

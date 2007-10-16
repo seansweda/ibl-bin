@@ -8,6 +8,7 @@
 
 use FindBin;
 do "$FindBin::Bin/DBconfig.pl";
+do "$FindBin::Bin/DBpasswd.pl";
 
 # constants
 $BCOLS = 17;
