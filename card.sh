@@ -1,26 +1,30 @@
 #!/bin/sh
-# $Id: usage,v 1.1 2007/07/19 03:40:15 sweda Exp $
+# $Id: card,v 1.1 2007/07/26 22:11:06 sweda Exp sweda $
 
 # -b: batters
 # -p: pitchers
+# -d: data directory
 
-year=2007
-ibl=/home/ibl/iblgame
+year="2008"
+dir="/home/ibl/iblgame/${year}/build"
 
-while getopts bp opt; do
+while getopts bpd: opt; do
     case $opt in
     p)	if [ $awkf ]; then
 	    usage
 	else
-	    awkf=${ibl}/${year}/build/d0.genpit
+	    awkf=${dir}/d0.genpit
 	fi
 	;;
 
     b)	if [ $awkf ]; then
 	    usage
 	else
-	    awkf=${ibl}/${year}/build/d0.genbat
+	    awkf=${dir}/d0.genbat
 	fi
+	;;
+
+    d)  dir=$OPTARG
 	;;
 
     *)	usage
