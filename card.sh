@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: card,v 1.1 2007/07/26 22:11:06 sweda Exp sweda $
+# $Id: card,v 1.2 2008/01/28 05:41:48 sweda Exp sweda $
 
 # -b: batters
 # -p: pitchers
@@ -7,6 +7,11 @@
 
 year="2008"
 dir="/home/ibl/iblgame/${year}/build"
+
+usage() {
+    echo "usage: $0 { -b | -p  } player"
+    exit 1
+}
 
 while getopts bpd: opt; do
     case $opt in
