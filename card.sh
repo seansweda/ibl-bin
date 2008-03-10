@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: card,v 1.2 2008/01/28 05:41:48 sweda Exp sweda $
+# $Id: card,v 1.3 2008/02/02 06:29:07 sweda Exp sweda $
 
 # -b: batters
 # -p: pitchers
@@ -49,17 +49,17 @@ if [ $? -eq 0 ]; then
     echo "Player                1B  2B  DF  HB  BB IFR OFR       H  OB  XB"
     for player in $*; do
 	egrep -i "$player" $awkf | awk '{ printf "%-3s %-12s vL %4d%4d%4d%4d%4d%4d%4d  - %4d%4d%4d\n",
-	    $1, $2, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23 }'
+	    $1, $2, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24 }'
 	egrep -i "$player" $awkf | awk '{ printf "%-3s %-12s vR %4d%4d%4d%4d%4d%4d%4d  - %4d%4d%4d\n",
-	    $1, $2, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34 }'
+	    $1, $2, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35 }'
     done
 else
     echo "Player                1B  2B  3B  HR  HB  BB       H  OB  XB  Pw"
     for player in $*; do
 	egrep -i "$player" $awkf | awk '{ printf "%-3s %-12s vL %4d%4d%4d%4d%4d%4d  - %4d%4d%4d %3s\n",
-	    $1, $2, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23 }'
+	    $1, $2, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24 }'
 	egrep -i "$player" $awkf | awk '{ printf "%-3s %-12s vR %4d%4d%4d%4d%4d%4d  - %4d%4d%4d %3s\n",
-	    $1, $2, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34 }'
+	    $1, $2, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35 }'
     done
 fi
 
