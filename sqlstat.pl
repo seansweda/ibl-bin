@@ -171,6 +171,12 @@ while (<DATA>) {
     if ( $keyword eq 'REDO' ) {
 	$redo = 1;
     }
+    elsif ( $keyword eq 'ADMIN' ) {
+	$passwd = (split)[1];
+	if ( crypt( $passwd, 'a0Wq6RWxRDBLw') eq 'a0Wq6RWxRDBLw' ) {
+	    $updates = 2; 
+	}
+    }
     elsif ( $keyword eq 'WEEK' ) {
 	$week = (split)[1];
 	if ( $week >= 1 && $week <= 27 ) {
