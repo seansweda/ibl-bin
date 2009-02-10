@@ -64,6 +64,10 @@ while (@ARGV) {
 	$last = 1;
 	next;
     }
+    elsif ( $team eq '-c' ) {
+	$cards = 1;
+	next;
+    }
 
     $team =~ tr/a-z/A-Z/;
     $loop->execute($team);
@@ -77,8 +81,24 @@ while (@ARGV) {
 	    elsif ( $type == 2 ) { print "\n$team BATTERS\n"; }
 	    $last = $type
 	}
-	printf "%s %-3s %-20s %-40s\n", 
-	    ($status == 1) ? '*' : ' ', $mlb, $name, $how;
+	if ( $cards ) {
+	    printf "%-3s %-15s ", $mlb, $name;
+	    if ( $type == 1 ) {
+		open( CARD, "card -p $mlb.$name | tail -2 | cut -c 54- |" );
+	    }
+	    elsif ( $type == 2 ) {
+		open( CARD, "card -b $mlb.$name | tail -2 | cut -c 50- |" );
+	    }
+	    while ( <CARD> ) {
+		( $h, $ob, $xb, $pwr ) = split;
+		printf "%4s%4s%4s%4s  .", $h, $ob, $xb, $pwr;
+	    }
+	    close( CARD );
+	    print "\n";
+	} else {
+	    printf "%s %-3s %-20s %-40s\n", 
+		($status == 1) ? '*' : ' ', $mlb, $name, $how;
+	}
     }
 }
 
