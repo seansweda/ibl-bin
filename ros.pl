@@ -83,11 +83,12 @@ while (@ARGV) {
 	}
 	if ( $cards ) {
 	    printf "%-3s %-15s ", $mlb, $name;
+	    ( $pname = $name ) =~ s/'/\./g;
 	    if ( $type == 1 ) {
-		open( CARD, "card -p $mlb.$name | grep -v ^Player | cut -c 54- |" );
+		open( CARD, "card -p $mlb.$pname | grep -v ^Player | cut -c 54- |" );
 	    }
 	    elsif ( $type == 2 ) {
-		open( CARD, "card -b $mlb.$name | grep -v ^Player | cut -c 50- |" );
+		open( CARD, "card -b $mlb.$pname | grep -v ^Player | cut -c 50- |" );
 	    }
 	    while ( <CARD> ) {
 		( $h, $ob, $xb, $pwr ) = split;
