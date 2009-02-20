@@ -90,9 +90,9 @@ while (@ARGV) {
 	$name =~ s/ *$//;
 	$how =~ s/ *$//;
 	if ( $type > $last ) {
-	    if ( $type == 1 && $dopit ) { print "$team PITCHERS\n"; }
-	    elsif ( $type == 2 && $dobat ) { print "\n$team BATTERS\n"; }
-	    $last = $type
+	    if ( $type == 1 && $dobat && $dopit ) { print "$team PITCHERS\n"; }
+	    elsif ( $type == 2 && $dobat && $dopit ) { print "\n$team BATTERS\n"; }
+	    $last = $type;
 	}
 	if ( $cards ) {
 	    if ( $type == 1 && $dopit || $type == 2 && $dobat ) {
