@@ -5,11 +5,16 @@
 # -i: inactive roster
 # -p: picks
 # -f: find player
+# -B: batters only
+# -P: batters only
 
 $host = 'phantasm.ibl.org';
 $dbname = ibl_stats;
 $username = 'iblwww';
 $password = 'l1dstr0m';
+
+$dobat = 1;
+$dopit = 1;
 
 use DBI;
 
@@ -68,6 +73,14 @@ while (@ARGV) {
 	$cards = 1;
 	next;
     }
+    elsif ( $team eq '-B' ) {
+	$dopit = 0;
+	next;
+    }
+    elsif ( $team eq '-P' ) {
+	$dobat = 0;
+	next;
+    }
 
     $team =~ tr/a-z/A-Z/;
     $loop->execute($team);
@@ -77,28 +90,32 @@ while (@ARGV) {
 	$name =~ s/ *$//;
 	$how =~ s/ *$//;
 	if ( $type > $last ) {
-	    if ( $type == 1 ) { print "$team PITCHERS\n"; }
-	    elsif ( $type == 2 ) { print "\n$team BATTERS\n"; }
+	    if ( $type == 1 && $dopit ) { print "$team PITCHERS\n"; }
+	    elsif ( $type == 2 && $dobat ) { print "\n$team BATTERS\n"; }
 	    $last = $type
 	}
 	if ( $cards ) {
-	    printf "%-3s %-15s ", $mlb, $name;
-	    ( $pname = $name ) =~ s/'/\./g;
-	    if ( $type == 1 ) {
-		open( CARD, "card -p $mlb.$pname | grep -v ^Player | cut -c 54- |" );
+	    if ( $type == 1 && $dopit || $type == 2 && $dobat ) {
+		printf "%-3s %-15s ", $mlb, $name;
+		( $pname = $name ) =~ s/'/\./g;
+		if ( $type == 1 ) {
+		    open( CARD, "card -p $mlb.$pname | grep -v ^Player | cut -c 54- |" );
+		}
+		elsif ( $type == 2 ) {
+		    open( CARD, "card -b $mlb.$pname | grep -v ^Player | cut -c 50- |" );
+		}
+		while ( <CARD> ) {
+		    ( $h, $ob, $xb, $pwr ) = split;
+		    printf "%4s%4s%4s%4s  .", $h, $ob, $xb, $pwr;
+		}
+		close( CARD );
+		print "\n";
 	    }
-	    elsif ( $type == 2 ) {
-		open( CARD, "card -b $mlb.$pname | grep -v ^Player | cut -c 50- |" );
-	    }
-	    while ( <CARD> ) {
-		( $h, $ob, $xb, $pwr ) = split;
-		printf "%4s%4s%4s%4s  .", $h, $ob, $xb, $pwr;
-	    }
-	    close( CARD );
-	    print "\n";
 	} else {
-	    printf "%s %-3s %-20s %-40s\n", 
-		($status == 1) ? '*' : ' ', $mlb, $name, $how;
+	    if ( $type == 1 && $dopit || $type == 2 && $dobat ) {
+		printf "%s %-3s %-20s %-40s\n", 
+		    ($status == 1) ? '*' : ' ', $mlb, $name, $how;
+	    }
 	}
     }
 }
