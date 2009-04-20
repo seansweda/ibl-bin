@@ -25,7 +25,8 @@ $loop = $dbh->prepare("select tig_name, comments, status, item_type
 	    order by item_type, tig_name;");
 
 if ( $#ARGV == -1 ) {
-    @ARGV = ( "BOW", "BUF", "BUZ", "CAJ", "COL", "COU", "CSP", "DTR", "GAS", "HAG", "LAW", "MAD", "MCM", "MIN", "PAD", "PHI", "POR", "SCS", "SDQ", "SEA", "SPO", "STL", "TRI", "WMS" );
+    @teams = ( "BOW", "BUF", "BUZ", "CAJ", "COL", "COU", "CSP", "CAN", "GTY", "KAT", "LAW", "MAD", "MCM", "MIN", "PAD", "PHI", "POR", "SCS", "SDQ", "SEA", "SPO", "MOR", "TRI", "WMS" );
+    @ARGV = sort @teams;
 }
 
 while (@ARGV) {
