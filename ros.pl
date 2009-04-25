@@ -113,7 +113,7 @@ while (@ARGV) {
 		print "\n";
 	    }
 	} else {
-	    if ( $type == 1 && $dopit || $type == 2 && $dobat ) {
+	    if ( $type == 0 || $type == 1 && $dopit || $type == 2 && $dobat ) {
 		printf "%s %-3s %-20s %-40s\n", 
 		    ($status == 1) ? '*' : ' ', $mlb, $name, $how;
 	    }
