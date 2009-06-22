@@ -7,6 +7,7 @@
 # -f: find player
 # -B: batters only
 # -P: batters only
+# -A: all teams
 
 $host = 'phantasm.ibl.org';
 $dbname = ibl_stats;
@@ -23,11 +24,6 @@ $dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$host", "$username", "$password"
 $loop = $dbh->prepare("select tig_name, comments, status, item_type
 	    from teams where ibl_team = ? and item_type > 0 
 	    order by item_type, tig_name;");
-
-if ( $#ARGV == -1 ) {
-    @teams = ( "BOW", "BUF", "BUZ", "CAJ", "COL", "COU", "CSP", "CAN", "GTY", "KAT", "LAW", "MAD", "MCM", "MIN", "PAD", "PHI", "POR", "SCS", "SDQ", "SEA", "SPO", "MOR", "TRI", "WMS" );
-    @ARGV = sort @teams;
-}
 
 while (@ARGV) {
     if ( $last > 0 ) {
@@ -81,6 +77,10 @@ while (@ARGV) {
     elsif ( $team eq '-P' ) {
 	$dobat = 0;
 	next;
+    }
+    elsif ( $team eq '-A' ) {
+	$allteams = $dbh->selectcol_arrayref("select distinct(ibl_team) from teams where ibl_team != 'FA';");
+	push @ARGV, sort @$allteams;
     }
 
     $team =~ tr/a-z/A-Z/;
