@@ -83,7 +83,11 @@ while (@ARGV) {
 	shift @ARGV;
 	$versus = shift @ARGV;
 	$versus =~ tr/a-z/A-Z/;
-	$where = sprintf "(home = '%s' or away = '%s') and", $versus, $versus;
+	if ( $totals ) {
+	    $where = sprintf "(home = '%s' or away = '%s') and ibl != '%s' and", $versus, $versus, $versus;
+	} else {
+	    $where = sprintf "(home = '%s' or away = '%s') and", $versus, $versus;
+	}
     }
     elsif ( $ARGV[0] eq '-y' ) {
 	# override db
@@ -126,7 +130,7 @@ if ( $totals ) {
 	print "IBL     AB    R    H   BI  2B  3B  HR   BB   SO  SB  CS   AVG  OBP  SLG\n";
 	$loop = $dbh->prepare("select ibl, sum(ab), sum(r), sum(h), sum(bi),
 		sum(d), sum(t), sum(hr), sum(bb), sum(k), sum(sb), sum(cs)
-		from $batdb where week <= $week group by $groupby $having 
+		from $batdb where $where week <= $week group by $groupby $having 
 		order by sum(r) desc;");
 	$loop->execute;
 	while ( @line = $loop->fetchrow_array ) {
@@ -158,7 +162,7 @@ if ( $totals ) {
 	print "IBL      G   W   L   PCT  SV     IP    H    R   ER  HR   BB   SO    ERA\n";
 	$loop = $dbh->prepare("select ibl, sum(w), sum(l), sum(sv), sum(gs),
 		sum(ip), sum(h), sum(r), sum(er), sum(hr), sum(bb), sum(so)
-		from $pitdb where week <= $week group by $groupby $having 
+		from $pitdb where $where week <= $week group by $groupby $having 
 		order by sum(r) asc;");
 	$loop->execute;
 	while ( @line = $loop->fetchrow_array ) {
