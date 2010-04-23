@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: card,v 1.5 2010/01/20 20:27:44 sweda Exp sweda $
+# $Id: card,v 1.6 2010/03/25 05:11:09 sweda Exp sweda $
 
 # -b: batters
 # -p: pitchers
@@ -23,14 +23,14 @@ while getopts bpwd: opt; do
     p)	if [ $awkf ]; then
 	    usage
 	else
-	    awkf=${dir}/d0.genpit
+	    awkf=${dir}/d1.genpit
 	fi
 	;;
 
     b)	if [ $awkf ]; then
 	    usage
 	else
-	    awkf=${dir}/d0.genbat
+	    awkf=${dir}/d1.genbat
 	fi
 	;;
 
@@ -57,9 +57,9 @@ if [ $? -eq 0 ]; then
     echo "Player                1B  2B  DF  HB  BB IFR OFR       H  OB  XB"
     for player in $*; do
 	egrep $match -i "$player" $awkf | awk '{ printf "%-3s %-12s vL %4d%4d%4d%4d%4d%4d%4d  - %4d%4d%4d\n",
-	    $1, $2, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24 }'
+	    $1, $2, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26 }'
 	egrep $match -i "$player" $awkf | awk '{ printf "%-3s %-12s vR %4d%4d%4d%4d%4d%4d%4d  - %4d%4d%4d\n",
-	    $1, $2, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35 }'
+	    $1, $2, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37 }'
     done
 else
     echo "Player                1B  2B  3B  HR  HB  BB       H  OB  XB  Pw"
