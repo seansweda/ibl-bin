@@ -9,17 +9,15 @@
 # -P: batters only
 # -A: all teams
 
-$host = 'phantasm.ibl.org';
+$username = 'ibl';
 $dbname = ibl_stats;
-$username = 'iblwww';
-$password = 'l1dstr0m';
 
 $dobat = 1;
 $dopit = 1;
 
 use DBI;
 
-$dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$host", "$username", "$password");
+$dbh = DBI->connect("dbi:Pg:dbname=$dbname", "$username");
 
 $loop = $dbh->prepare("select tig_name, comments, status, item_type
 	    from teams where ibl_team = ? and item_type > 0 
