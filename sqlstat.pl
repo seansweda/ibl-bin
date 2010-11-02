@@ -179,7 +179,7 @@ while (<DATA>) {
     }
     elsif ( $keyword eq 'WEEK' ) {
 	$week = (split)[1];
-	if ( $week >= 1 && $week <= 27 ) {
+	if ( $week >= 1 && $week <= 28 ) {
 	    print "WEEK: $week\n";
 	}
 	else {
