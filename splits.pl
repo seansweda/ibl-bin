@@ -1,5 +1,5 @@
 #!/usr/bin/perl -wT
-# $Id: splits.pl,v 1.1 2011/02/09 03:47:27 sweda Exp sweda $
+# $Id: splits.pl,v 1.2 2011/02/09 04:36:33 sweda Exp sweda $
 # my first cgi, just prints out environment and parameters
 
 use strict;
@@ -51,12 +51,12 @@ $q->import_names('F');
 if ( $F::abL > 0 && $F::abR > 0 ) {
     print "<pre>";
     print "original data\n";
-    printf "     AB   H  2B  3B  HR  BB  HB       BA   OBP   SLG\n", $F::abL, $F::hL, $F::dL, $F::tL, $F::hrL, $F::bbL, $F::hbL;
-    printf "vLH %3d %3d %3d %3d %3d %3d %3d   ", $F::abL, $F::hL, $F::dL, $F::tL, $F::hrL, $F::bbL, $F::hbL;
+    printf "     AB   H  1B  2B  3B  HR  BB  HB       BA   OBP   SLG\n", $F::abL, $F::hL, $F::dL, $F::tL, $F::hrL, $F::bbL, $F::hbL;
+    printf "vLH %3d %3d %3d %3d %3d %3d %3d %3d   ", $F::abL, $F::hL, $F::hL - $F::dL - $F::tL - $F::hrL, $F::dL, $F::tL, $F::hrL, $F::bbL, $F::hbL;
     printf " %5.3f", $F::hL / $F::abL;
     printf " %5.3f", ( $F::hL + $F::bbL + $F::hbL ) / ( $F::abL + $F::bbL + $F::hbL );
     printf " %5.3f\n", ( $F::hL + $F::dL + 2 * $F::tL + 3 * $F::hrL ) / $F::abL;
-    printf "vRH %3d %3d %3d %3d %3d %3d %3d   ", $F::abR, $F::hR, $F::dR, $F::tR, $F::hrR, $F::bbR, $F::hbR;
+    printf "vRH %3d %3d %3d %3d %3d %3d %3d %3d   ", $F::abR, $F::hR, $F::hR - $F::dR - $F::tR - $F::hrR, $F::dR, $F::tR, $F::hrR, $F::bbR, $F::hbR;
     printf " %5.3f", $F::hR / $F::abR;
     printf " %5.3f", ( $F::hR + $F::bbR + $F::hbR ) / ( $F::abR + $F::bbR + $F::hbR );
     printf " %5.3f\n", ( $F::hR + $F::dR + 2 * $F::tR + 3 * $F::hrR ) / $F::abR;
