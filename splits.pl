@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
-# $Id: splits.pl,v 1.3 2011/02/09 06:21:26 sweda Exp sweda $
-# my first cgi, just prints out environment and parameters
+# $Id: splits.pl,v 1.4 2011/02/09 18:00:04 sweda Exp sweda $
+# split regression tool
 
 use strict;
 
@@ -38,16 +38,36 @@ my $q = new CGI;
 
 print $q->header, $q->start_html( 'splits.pl' );
 
+print $q->p, "input split data";
+print $q->start_form( 'POST', '/~sweda/cgi-bin/splits.pl' );
+print $q->p, "vs LH\t";
+print $q->textfield( 'abL','AB',3,3);
+print $q->textfield( 'hL','H',3,3);
+print $q->textfield( 'dL','2B',3,3);
+print $q->textfield( 'tL','3B',3,3);
+print $q->textfield( 'hrL','HR',3,3);
+print $q->textfield( 'bbL','BB',3,3);
+print $q->textfield( 'hbL','HB',3,3);
+print $q->p, "vs RH\t";
+print $q->textfield( 'abR','AB',3,3);
+print $q->textfield( 'hR','H',3,3);
+print $q->textfield( 'dR','2B',3,3);
+print $q->textfield( 'tR','3B',3,3);
+print $q->textfield( 'hrR','HR',3,3);
+print $q->textfield( 'bbR','BB',3,3);
+print $q->textfield( 'hbR','HB',3,3);
+print $q->p, $q->submit, $q->end_form;
+    
 # validate input
 my $var;
 foreach $var ( $q->param ) {
     if ( $q->param( $var ) !~ /^\d+$/ ) { 
-	goto FORM; 
+	goto EXIT; 
     }
 }
 
 if ( ! defined $q->param( 'abL' ) || ! defined $q->param( 'abR' )  ) {
-    goto FORM; 
+    goto EXIT; 
 }
 
 $q->import_names('F');
@@ -90,26 +110,6 @@ if ( $F::abL > 0 && $F::abR > 0 ) {
     print "</pre>";
 }
 
-FORM:
-print $q->p, "input split data";
-print $q->start_form( 'POST', '/~sweda/cgi-bin/splits.pl' );
-print $q->p, "vs LH\t";
-print $q->textfield( 'abL','AB',3,3);
-print $q->textfield( 'hL','H',3,3);
-print $q->textfield( 'dL','2B',3,3);
-print $q->textfield( 'tL','3B',3,3);
-print $q->textfield( 'hrL','HR',3,3);
-print $q->textfield( 'bbL','BB',3,3);
-print $q->textfield( 'hbL','HB',3,3);
-print $q->p, "vs RH\t";
-print $q->textfield( 'abR','AB',3,3);
-print $q->textfield( 'hR','H',3,3);
-print $q->textfield( 'dR','2B',3,3);
-print $q->textfield( 'tR','3B',3,3);
-print $q->textfield( 'hrR','HR',3,3);
-print $q->textfield( 'bbR','BB',3,3);
-print $q->textfield( 'hbR','HB',3,3);
-print $q->p, $q->submit, $q->end_form;
-    
+EXIT:
 print $q->end_html;
 
