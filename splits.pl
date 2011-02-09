@@ -1,5 +1,5 @@
 #!/usr/bin/perl -wT
-# $Id: splits.pl,v 1.2 2011/02/09 04:36:33 sweda Exp sweda $
+# $Id: splits.pl,v 1.3 2011/02/09 06:21:26 sweda Exp sweda $
 # my first cgi, just prints out environment and parameters
 
 use strict;
@@ -44,6 +44,10 @@ foreach $var ( $q->param ) {
     if ( $q->param( $var ) !~ /^\d+$/ ) { 
 	goto FORM; 
     }
+}
+
+if ( ! defined $q->param( 'abL' ) || ! defined $q->param( 'abR' )  ) {
+    goto FORM; 
 }
 
 $q->import_names('F');
