@@ -1,5 +1,5 @@
 #!/usr/bin/perl -wT
-# $Id: bunt.pl,v 1.3 2006/02/26 08:20:23 sweda Exp $
+# $Id: splits.pl,v 1.1 2011/02/09 03:47:27 sweda Exp sweda $
 # my first cgi, just prints out environment and parameters
 
 use strict;
@@ -18,7 +18,7 @@ sub simplereg {
     my $lh = $_[0] / $_[1];
     my $rh = $_[2] / $_[3];
     my $ltarget = ( $lh + $rh ) / 2;
-    my $rtarget = $lh;
+    my $rtarget = $ltarget;
 
     my $regpa;
     if ( $lh > $rh ) {
@@ -27,8 +27,8 @@ sub simplereg {
 	$regpa = $_[3];
     }
 
-    my $lrate = ( $lh - ( regrate( $regpa ) * ( $lh - $ltarget ) ) * $_[1] / ( $_[1] + $_[3] ) * 2 );
-    my $rrate = ( $rh - ( regrate( $regpa ) * ( $rh - $rtarget ) ) * $_[3] / ( $_[1] + $_[3] ) * 2 );
+    my $lrate = ( $lh - ( regrate( $regpa ) * ( $lh - $ltarget ) ) * $_[3] / ( $_[1] + $_[3] ) * 2 );
+    my $rrate = ( $rh - ( regrate( $regpa ) * ( $rh - $rtarget ) ) * $_[1] / ( $_[1] + $_[3] ) * 2 );
 
     $_[0] = $lrate * $_[1];
     $_[2] = $rrate * $_[3];
@@ -64,21 +64,21 @@ if ( $F::abL > 0 && $F::abR > 0 ) {
     print $q->p;
 
     my @lh = ( $F::abL + $F::bbL + $F::hbL, $F::hL - $F::dL - $F::tL - $F::hrL, $F::dL, $F::tL, $F::hrL, $F::bbL, $F::hbL );
-    my @rh = ( $F::abR + $F::bbR + $F::hbR, $F::hR - $F::dL - $F::tR - $F::hrR, $F::dL, $F::tR, $F::hrR, $F::bbR, $F::hbR );
+    my @rh = ( $F::abR + $F::bbR + $F::hbR, $F::hR - $F::dR - $F::tR - $F::hrR, $F::dR, $F::tR, $F::hrR, $F::bbR, $F::hbR );
 
     for ( my $i = 1; $i < 7; $i++ ) {
-	#print "$lh[$i] $rh[$i]\n";
+	#print "orig: $lh[$i] $rh[$i]\n";
 	simplereg( $lh[$i], $lh[0], $rh[$i], $rh[0] );
-	#print "$lh[$i] $rh[$i]\n";
+	#print "new: $lh[$i] $rh[$i]\n";
     }
 
     print "simple split regression\n";
-    printf "       AB     H    2B    3B    HR    BB    HB       BA   OBP   SLG\n", $F::abL, $F::hL, $F::dL, $F::tL, $F::hrL, $F::bbL, $F::hbL;
-    printf "vLH %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f   ", $F::abL, $lh[1] + $lh[2] + $lh[3] + $lh[4], $lh[2], $lh[3], $lh[4], $lh[5], $lh[6];
+    printf "       AB    1B    2B    3B    HR    BB    HB       BA   OBP   SLG\n", $F::abL, $F::hL, $F::dL, $F::tL, $F::hrL, $F::bbL, $F::hbL;
+    printf "vLH %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f   ", $F::abL, $lh[1], $lh[2], $lh[3], $lh[4], $lh[5], $lh[6];
     printf " %5.3f", ( $lh[1] + $lh[2] + $lh[3] + $lh[4] ) / $F::abL;
     printf " %5.3f", ( $lh[1] + $lh[2] + $lh[3] + $lh[4] + $lh[5] + $lh[6] ) / ( $F::abL + $lh[5] + $lh[6] );
     printf " %5.3f\n", ( $lh[1] + 2 * $lh[2] + 3 * $lh[3] + 4 * $lh[4] ) / $F::abL;
-    printf "vRH %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f   ", $F::abR, $rh[1] + $rh[2] + $rh[3] + $rh[4], $rh[2], $rh[3], $rh[4], $rh[5], $rh[6];
+    printf "vRH %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f %5.1f   ", $F::abR, $rh[1], $rh[2], $rh[3], $rh[4], $rh[5], $rh[6];
     printf " %5.3f", ( $rh[1] + $rh[2] + $rh[3] + $rh[4] ) / $F::abR;
     printf " %5.3f", ( $rh[1] + $rh[2] + $rh[3] + $rh[4] + $rh[5] + $rh[6] ) / ( $F::abR + $rh[5] + $rh[6] );
     printf " %5.3f\n", ( $rh[1] + 2 * $rh[2] + 3 * $rh[3] + 4 * $rh[4] ) / $F::abR;
@@ -87,6 +87,7 @@ if ( $F::abL > 0 && $F::abR > 0 ) {
 }
 
 FORM:
+print $q->p, "input split data";
 print $q->start_form( 'POST', '/~sweda/cgi-bin/splits.pl' );
 print $q->p, "vs LH\t";
 print $q->textfield( 'abL','AB',3,3);
