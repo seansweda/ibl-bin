@@ -79,10 +79,12 @@ while (@ARGV) {
     elsif ( $team eq '-A' ) {
 	$allteams = $dbh->selectcol_arrayref("select distinct(ibl_team) from teams where ibl_team != 'FA';");
 	push @ARGV, sort @$allteams;
+	next;
     }
 
     $team =~ tr/a-z/A-Z/;
-    $loop->execute($team);
+    $count = $loop->execute($team);
+    print "$team players: $count\n";
     while ( @line = $loop->fetchrow_array ) {
 	( $tigname, $how, $status, $type ) = @line;
 	( $mlb, $name ) = split /\s/, $tigname, 2;
