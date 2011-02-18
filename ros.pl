@@ -84,7 +84,7 @@ while (@ARGV) {
 
     $team =~ tr/a-z/A-Z/;
     $count = $loop->execute($team);
-    print "$team players: $count\n";
+    if ( $count > 0 ) { print "$team players: $count\n"; }
     while ( @line = $loop->fetchrow_array ) {
 	( $tigname, $how, $status, $type ) = @line;
 	( $mlb, $name ) = split /\s/, $tigname, 2;
