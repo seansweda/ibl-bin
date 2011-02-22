@@ -3,6 +3,7 @@
 # flags
 # -a: active roster
 # -i: inactive roster
+# -n: number of players
 # -p: picks
 # -f: find player
 # -B: batters only
@@ -68,6 +69,10 @@ while (@ARGV) {
 	$cards = 1;
 	next;
     }
+    elsif ( $team eq '-n' ) {
+	$num = 1;
+	next;
+    }
     elsif ( $team eq '-B' ) {
 	$dopit = 0;
 	next;
@@ -84,7 +89,9 @@ while (@ARGV) {
 
     $team =~ tr/a-z/A-Z/;
     $count = $loop->execute($team);
-    if ( $count > 0 ) { print "$team players: $count\n"; }
+    if ( $num == 1 && $count > 0 ) {
+	print "$team players: $count\n";
+    }
     while ( @line = $loop->fetchrow_array ) {
 	( $tigname, $how, $status, $type ) = @line;
 	( $mlb, $name ) = split /\s/, $tigname, 2;
