@@ -88,10 +88,8 @@ while (@ARGV) {
     }
 
     $team =~ tr/a-z/A-Z/;
+    $bnum = $pnum = 0;
     $count = $loop->execute($team);
-    if ( $num == 1 && $count > 0 ) {
-	print "$team players: $count\n";
-    }
     while ( @line = $loop->fetchrow_array ) {
 	( $tigname, $how, $status, $type ) = @line;
 	( $mlb, $name ) = split /\s/, $tigname, 2;
@@ -125,6 +123,11 @@ while (@ARGV) {
 		    ($status == 1) ? '*' : ' ', $mlb, $name, $how;
 	    }
 	}
+	if ( $type == 1 ) { $pnum++; }
+	elsif ( $type == 2 ) { $bnum++; }
+    }
+    if ( $num == 1 && $count > 0 ) {
+	print "$team players: $count ($pnum pitchers, $bnum batters)\n";
     }
 }
 
