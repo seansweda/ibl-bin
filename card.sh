@@ -1,12 +1,12 @@
 #!/bin/sh
-# $Id: card,v 1.6 2010/03/25 05:11:09 sweda Exp sweda $
+# $Id: card,v 1.7 2010/04/23 20:48:35 sweda Exp sweda $
 
 # -b: batters
 # -p: pitchers
 # -d: data directory
 # -w: use -w flag with egrep (exact match)
 
-year="2010"
+year="2011"
 dir="/home/ibl/iblgame/${year}/build"
 
 if [ -f $HOME/.card ]; then
