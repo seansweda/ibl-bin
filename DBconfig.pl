@@ -4,10 +4,10 @@ $host = 'phantasm.ibl.org';
 $dbname = ibl_stats;
 
 # tables for current season
-$startsdb = starts2010;
-$batdb = bat2010;
-$pitdb = pit2010;
-$teamdb = teams2010;
-$scheddb = sched2010;
-$extradb = extra2010;
+$startsdb = starts2011;
+$batdb = bat2011;
+$pitdb = pit2011;
+$teamdb = teams2011;
+$scheddb = sched2011;
+$extradb = extra2011;
 
