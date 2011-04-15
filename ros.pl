@@ -9,12 +9,14 @@
 # -B: batters only
 # -P: batters only
 # -A: all teams
+# -L: page breaks 
 
 $username = 'ibl';
 $dbname = ibl_stats;
 
 $dobat = 1;
 $dopit = 1;
+$eol = '';
 
 use DBI;
 
@@ -27,7 +29,7 @@ $loop = $dbh->prepare("select tig_name, comments, status, item_type
 while (@ARGV) {
     if ( $last > 0 ) {
 	$last = 0;
-	printf "\n";
+	printf "$eol\n";
     }
 
     $team = shift @ARGV;
@@ -79,6 +81,10 @@ while (@ARGV) {
     }
     elsif ( $team eq '-P' ) {
 	$dobat = 0;
+	next;
+    }
+    elsif ( $team eq '-L' ) {
+	$eol = '';
 	next;
     }
     elsif ( $team eq '-A' ) {
