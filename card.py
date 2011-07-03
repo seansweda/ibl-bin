@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: card.py,v 1.2 2011/07/03 07:20:49 sweda Exp sweda $
+# $Id: card.py,v 1.2 2011/07/03 07:46:11 sweda Exp sweda $
 
 import os
 import sys
@@ -22,7 +22,7 @@ def cardpath():
         cardpath = "/home/ibl/iblgame/2011/build"
     return cardpath
 
-def p_hash(datafile):
+def p_hash(datafile, lower=False):
     try:
         fp = open(datafile,'rU')
     except IOError, err:
@@ -32,7 +32,10 @@ def p_hash(datafile):
     myhash = {}
     for line in file.readlines(fp):
         player = line.split()
-        myhash[ ( player[0].lower(), player[1].lower() ) ] = player[:]
+        if lower:
+            myhash[ ( player[0].lower(), player[1].lower() ) ] = player[:]
+        else:
+            myhash[ ( player[0], player[1] ) ] = player[:]
 
     file.close(fp)
     return myhash
@@ -53,10 +56,13 @@ def p_grep(player, datafile, cmd):
     fp.stdout.close()
     return lines
 
-def p_split(p_str):
+def p_split(p_str, lower=False):
     p_list = re.split('\W+', p_str, maxsplit=1)
     if len(p_list) == 2:
-        return ( p_list[0].lower(), p_list[1].lower() )
+        if lower:
+            return ( p_list[0].lower(), p_list[1].lower() )
+        else:
+            return ( p_list[0], p_list[1] )
     else:
         return None
 
