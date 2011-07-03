@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.1 2011/07/03 09:14:59 sweda Exp sweda $
+# $Id: ros.py,v 1.2 2011/07/03 21:17:41 sweda Exp sweda $
 
 import os
 import sys
@@ -117,21 +117,21 @@ def main():
             if type == 1 and do_pit:
                 if status == 1 and do_active or status > 1 and do_inactive:
                     print "%s %-3s %-15s" % ( star(status), mlb, name ),
-                    if do_card:
+                    if do_card and (mlb, name) in p_cards:
                         for num in cardtop(p_cards[(mlb,name)], type):
                             print "%3s" % num,
-                        print
-                    else:
-                        print " %-40s" % ( trim(how) )
+                    elif not do_card:
+                        print " %-40s" % ( trim(how) ),
+                    print
             if type == 2 and do_bat:
                 if status == 1 and do_active or status > 1 and do_inactive:
                     print "%s %-3s %-15s" % ( star(status), mlb, name ),
-                    if do_card:
+                    if do_card and (mlb, name) in b_cards:
                         for num in cardtop(b_cards[(mlb,name)], type):
                             print "%3s" % num,
-                        print
-                    else:
-                        print " %-40s" % ( trim(how) )
+                    elif not do_card:
+                        print " %-40s" % ( trim(how) ),
+                    print
 
 if __name__ == "__main__":
     main()
