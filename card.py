@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: card.py,v 1.2 2011/07/03 07:46:11 sweda Exp sweda $
+# $Id: card.py,v 1.3 2011/07/03 21:16:44 sweda Exp sweda $
 
 import os
 import sys
@@ -31,7 +31,8 @@ def p_hash(datafile, lower=False):
 
     myhash = {}
     for line in file.readlines(fp):
-        player = line.split()
+        line = line.rstrip('\n')
+        player = re.split(r'[\s,]+', line)
         if lower:
             myhash[ ( player[0].lower(), player[1].lower() ) ] = player[:]
         else:
