@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: card.sh,v 1.8 2011/03/18 16:57:18 sweda Exp $
+# $Id: card.py,v 1.2 2011/07/03 07:20:49 sweda Exp sweda $
 
 import os
 import sys
@@ -7,7 +7,6 @@ import subprocess
 import re
 import getopt
 
-datadir = "/home/ibl/iblgame/2011/build"
 batters = "d1.genbat"
 pitchers = "d1.genpit"
 grepcmd = ['/bin/egrep', '-i']
@@ -15,6 +14,13 @@ grepcmd = ['/bin/egrep', '-i']
 def usage():
     print "usage: %s { -b | -p } ( -g | -h ) player(s)" % sys.argv[0]
     sys.exit(1)
+
+def cardpath():
+    if 'CARDPATH' in os.environ.keys():
+        cardpath = os.environ.get('CARDPATH')
+    else:
+        cardpath = "/home/ibl/iblgame/2011/build"
+    return cardpath
 
 def p_hash(datafile):
     try:
@@ -67,11 +73,12 @@ def pitprint(p):
         ( p[0], p[1], p[27], p[28], p[29], p[30], p[31], p[32], p[33], p[34], p[35], p[36] )
 
 def main():
-    global datadir, batters, pitchers, grepcmd
+    global batters, pitchers, grepcmd
     bat = 0
     pit = 0
     grepmode = 1    # default
     hashmode = 0
+    datadir = cardpath()
 
     try:
         (opts, args) = getopt.getopt(sys.argv[1:], 'pbghwd:')
@@ -85,6 +92,7 @@ def main():
         elif opt == '-p':
             pit = 1
         elif opt == '-d':
+            # overrides cardpath()
             datadir = arg
         elif opt == '-g':
             grepmode = 1
@@ -97,9 +105,6 @@ def main():
         else:
             print "bad option:", opt
             usage()
-
-    if 'CARDPATH' in os.environ.keys():
-        datadir = os.environ.get('CARDPATH')
 
     if ( bat and pit ) or ( not bat and not pit ):
         print "must choose between -b (batters) & -p (pitchers)"
