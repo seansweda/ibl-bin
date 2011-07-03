@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.2 2011/07/03 21:17:41 sweda Exp sweda $
+# $Id: ros.py,v 1.3 2011/07/03 21:22:18 sweda Exp sweda $
 
 import os
 import sys
@@ -40,6 +40,7 @@ def main():
     do_card = False
     b_cards = {}
     p_cards = {}
+    count = False
     eol = ''
 
     try:
@@ -50,7 +51,7 @@ def main():
     cursor = db.cursor()
 
     try:
-        (opts, args) = getopt.getopt(sys.argv[1:], 'BPaipAcL')
+        (opts, args) = getopt.getopt(sys.argv[1:], 'BPaipAcLn')
     except getopt.GetoptError, err:
         print str(err)
         usage()
@@ -78,6 +79,8 @@ def main():
             p_cards = p_hash( cardpath() + '/' + pitchers )
         elif opt == '-L':
             eol = ''
+        elif opt == '-n':
+            count = True
         else:
             print "bad option:", opt
             usage()
@@ -100,6 +103,8 @@ def main():
         if last > 0:
             last = -1
             print eol
+        bnum = 0
+        pnum = 0
         team = arg.upper()
         cursor.execute(sqlbase, (team,))
         for tigname, how, status, type in cursor.fetchall():
@@ -115,6 +120,7 @@ def main():
             if type == 0 and do_picks:
                 print "%-3s %-15s %-40s" % ( mlb, name, trim(how) )
             if type == 1 and do_pit:
+                pnum += 1
                 if status == 1 and do_active or status > 1 and do_inactive:
                     print "%s %-3s %-15s" % ( star(status), mlb, name ),
                     if do_card and (mlb, name) in p_cards:
@@ -124,6 +130,7 @@ def main():
                         print " %-40s" % ( trim(how) ),
                     print
             if type == 2 and do_bat:
+                bnum += 1
                 if status == 1 and do_active or status > 1 and do_inactive:
                     print "%s %-3s %-15s" % ( star(status), mlb, name ),
                     if do_card and (mlb, name) in b_cards:
@@ -132,6 +139,10 @@ def main():
                     elif not do_card:
                         print " %-40s" % ( trim(how) ),
                     print
+        if count and bnum and pnum:
+            print "%s players: %s (%s pitchers, %s batters" % \
+                    (team, bnum + pnum, pnum, bnum)
+    db.close()
 
 if __name__ == "__main__":
     main()
