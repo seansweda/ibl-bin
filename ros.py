@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.3 2011/07/03 21:22:18 sweda Exp sweda $
+# $Id: ros.py,v 1.4 2011/07/03 21:37:49 sweda Exp sweda $
 
 import os
 import sys
@@ -26,10 +26,23 @@ def star(val):
 def cardtop(p, type):
     # pitcher
     if type == 1:
-        return ( p[23], p[24], p[25], '', '.', p[34], p[35], p[36], '' )
+        return ( p[23], p[24], p[25], '  ', '.', p[34], p[35], p[36], '  ' )
     # batter
     else:
         return ( p[20], p[21], p[22], p[23], '.', p[31], p[32], p[33], p[34] )
+
+def poslist(p, max):
+    defense = ''
+    index = 0
+    while index + 1 < len(p):
+        pos = p[index] + " " + p[index + 1]
+        if len(defense) + len(pos) < max: 
+            defense += pos
+            defense += "  "
+            index += 2
+        else:
+            break
+    return defense.rstrip()
 
 def main():
     do_bat = True
@@ -38,8 +51,10 @@ def main():
     do_active = True
     do_inactive = True
     do_card = False
+    do_def = False
     b_cards = {}
     p_cards = {}
+    b_def = {}
     count = False
     eol = ''
 
@@ -51,7 +66,7 @@ def main():
     cursor = db.cursor()
 
     try:
-        (opts, args) = getopt.getopt(sys.argv[1:], 'BPaipAcLn')
+        (opts, args) = getopt.getopt(sys.argv[1:], 'BPaipAcdLn')
     except getopt.GetoptError, err:
         print str(err)
         usage()
@@ -77,6 +92,9 @@ def main():
             do_card = True
             b_cards = p_hash( cardpath() + '/' + batters )
             p_cards = p_hash( cardpath() + '/' + pitchers )
+        elif opt == '-d':
+            do_def = True
+            b_def = p_hash( cardpath() + '/defense.txt' )
         elif opt == '-L':
             eol = ''
         elif opt == '-n':
@@ -125,7 +143,10 @@ def main():
                     print "%s %-3s %-15s" % ( star(status), mlb, name ),
                     if do_card and (mlb, name) in p_cards:
                         for num in cardtop(p_cards[(mlb,name)], type):
-                            print "%3s" % num,
+                            if num.isdigit():
+                                print "%3s" % num,
+                            else:
+                                print "%s" % num,
                     elif not do_card:
                         print " %-40s" % ( trim(how) ),
                     print
@@ -135,9 +156,16 @@ def main():
                     print "%s %-3s %-15s" % ( star(status), mlb, name ),
                     if do_card and (mlb, name) in b_cards:
                         for num in cardtop(b_cards[(mlb,name)], type):
-                            print "%3s" % num,
-                    elif not do_card:
+                            if num.isdigit():
+                                print "%3s" % num,
+                            else:
+                                print "%s" % num,
+                        if do_def and (mlb, name) in b_def:
+                            print ".", poslist( b_def[(mlb,name)][2:], 22 ),
+                    elif not (do_card or do_def):
                         print " %-40s" % ( trim(how) ),
+                    elif do_def and (mlb, name) in b_def:
+                        print poslist( b_def[(mlb,name)][2:], 55 ),
                     print
         if count and bnum and pnum:
             print "%s players: %s (%s pitchers, %s batters" % \
