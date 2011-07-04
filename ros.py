@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.6 2011/07/03 23:54:39 sweda Exp sweda $
+# $Id: ros.py,v 1.7 2011/07/04 01:27:58 sweda Exp sweda $
 
 import os
 import sys
@@ -59,11 +59,18 @@ do_active = True
 do_inactive = True
 do_card = False
 do_def = False
+do_find = False
 b_cards = {}
 p_cards = {}
 b_def = {}
 count = False
 eol = ''
+
+# teams table
+# status: 1 = active, 2 = inactive, 3 = uncarded
+# item_type: 0 = pick, 1 = pitcher, 2 = batter
+sqlbase = "select tig_name, comments, status, item_type from teams \
+        where ibl_team = (%s) order by item_type, tig_name;"
 
 try:
     db = psycopg2.connect("dbname=ibl_stats user=ibl")
@@ -73,7 +80,7 @@ except psycopg2.DatabaseError, err:
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'BPaipAcdLn')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'BPaipAcdLnf')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -107,6 +114,10 @@ for (opt, arg) in opts:
         eol = ''
     elif opt == '-n':
         count = True
+    elif opt == '-f':
+        do_find = True
+        sqlbase = "select tig_name, ibl_team, status, item_type from teams \
+        where tig_name ~* (%s) order by item_type, tig_name;"
     else:
         print "bad option:", opt
         usage()
@@ -118,12 +129,6 @@ if not do_active and not do_inactive:
     print "may only choose one of -a | -i"
     usage()
 
-# teams table
-# status: 1 = active, 2 = inactive, 3 = uncarded
-# item_type: 0 = pick, 1 = pitcher, 2 = batter
-sqlbase = "select tig_name, comments, status, item_type from teams \
-        where ibl_team = (%s) order by item_type, tig_name;"
-
 last = -1
 for arg in args:
     if last > 0:
@@ -131,17 +136,24 @@ for arg in args:
         print eol
     bnum = 0
     pnum = 0
+
     team = arg.upper()
     cursor.execute(sqlbase, (team,))
     for tigname, how, status, type in cursor.fetchall():
         mlb, name = p_split( trim(tigname) )
         if type > last:
+            if do_find:
+                header = ''
+            else:
+                header = team + " "
             if type == 0 and do_picks:
-                print team, "PICKS"
+                print header + 'PICKS'
             elif type == 1 and do_bat and do_pit:
-                print team, "PITCHERS"
+                print header + 'PITCHERS'
             elif type == 2 and do_bat and do_pit:
-                print "\n", team, "BATTERS"
+                if pnum > 0:
+                    print
+                print header + 'BATTERS'
             last = type
         if type == 0 and do_picks:
             print "%-3s %-15s %-40s" % ( mlb, name, trim(how) )
@@ -180,7 +192,8 @@ for arg in args:
                     print poslist( b_def[(mlb,name)][2:], 59 ),
                 print
     if count and bnum and pnum:
-        print "%s players: %s (%s pitchers, %s batters" % \
+        print "%s players: %s (%s pitchers, %s batters)" % \
                 (team, bnum + pnum, pnum, bnum)
+
 db.close()
 
