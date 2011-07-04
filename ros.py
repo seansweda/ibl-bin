@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.5 2011/07/03 23:40:39 sweda Exp sweda $
+# $Id: ros.py,v 1.6 2011/07/03 23:54:39 sweda Exp sweda $
 
 import os
 import sys
@@ -46,6 +46,11 @@ def poslist(p, max):
         else:
             break
     return defense.rstrip()
+
+def pitrat(p):
+    defense = "%s/%s  %s/%s  %s" % \
+            ( p[2].replace('/0', '/ 0'), p[3], p[6], p[7], p[8] )
+    return defense
 
 do_bat = True
 do_pit = True
@@ -97,6 +102,7 @@ for (opt, arg) in opts:
     elif opt == '-d':
         do_def = True
         b_def = p_hash( cardpath() + '/defense.txt' )
+        p_def = p_hash( cardpath() + '/pitrat.txt' )
     elif opt == '-L':
         eol = ''
     elif opt == '-n':
@@ -149,8 +155,12 @@ for arg in args:
                             print "%3s" % num,
                         else:
                             print "%s" % num,
-                elif not do_card:
+                    if do_def and (mlb, name) in p_def:
+                        print ".", pitrat(p_def[(mlb,name)]),
+                elif not (do_card or do_def):
                     print " %-40s" % ( trim(how) ),
+                elif do_def and (mlb, name) in p_def:
+                    print pitrat(p_def[(mlb,name)]),
                 print
         if type == 2 and do_bat:
             bnum += 1
