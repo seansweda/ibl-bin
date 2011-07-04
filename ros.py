@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.8 2011/07/04 02:25:26 sweda Exp sweda $
+# $Id: ros.py,v 1.9 2011/07/04 03:09:35 sweda Exp sweda $
 
 import os
 import sys
@@ -20,11 +20,12 @@ def trim(string):
         return ''
 
 def star(val, str):
-    global do_active, do_inactive, do_card, do_def
-    if do_active and do_inactive and not do_card and not do_def:
+    global do_card, do_def
+    if do_card or do_def:
+        return str.rstrip()
+    else:
         if val == 1: return '*'
         else : return ' '
-    else: return str.rstrip()
 
 def cardtop(p, type):
     # pitcher
@@ -52,6 +53,7 @@ def pitrat(p):
             ( p[2].replace('/0', '/ 0'), p[3], p[6], p[7], p[8] )
     return defense
 
+# globals
 do_bat = True
 do_pit = True
 do_picks = False
@@ -60,9 +62,6 @@ do_inactive = True
 do_card = False
 do_def = False
 do_find = False
-b_cards = {}
-p_cards = {}
-b_def = {}
 count = False
 eol = ''
 
