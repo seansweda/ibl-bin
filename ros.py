@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.7 2011/07/04 01:27:58 sweda Exp sweda $
+# $Id: ros.py,v 1.8 2011/07/04 02:25:26 sweda Exp sweda $
 
 import os
 import sys
@@ -19,12 +19,12 @@ def trim(string):
     else:
         return ''
 
-def star(val):
+def star(val, str):
     global do_active, do_inactive, do_card, do_def
     if do_active and do_inactive and not do_card and not do_def:
-        if val == 1: return "* "
-        else : return "  "
-    else: return ''
+        if val == 1: return '*'
+        else : return ' '
+    else: return str.rstrip()
 
 def cardtop(p, type):
     # pitcher
@@ -69,8 +69,9 @@ eol = ''
 # teams table
 # status: 1 = active, 2 = inactive, 3 = uncarded
 # item_type: 0 = pick, 1 = pitcher, 2 = batter
-sqlbase = "select tig_name, comments, status, item_type from teams \
-        where ibl_team = (%s) order by item_type, tig_name;"
+sqlbase = "select t.tig_name, comments, status, item_type, bats, throws\
+        from teams t, players p where t.tig_name = p.tig_name and \
+        ibl_team = (%s) order by item_type, tig_name;"
 
 try:
     db = psycopg2.connect("dbname=ibl_stats user=ibl")
@@ -116,8 +117,9 @@ for (opt, arg) in opts:
         count = True
     elif opt == '-f':
         do_find = True
-        sqlbase = "select tig_name, ibl_team, status, item_type from teams \
-        where tig_name ~* (%s) order by item_type, tig_name;"
+        sqlbase = "select t.tig_name, comments, status, item_type, bats, throws\
+        from teams t, players p where t.tig_name = p.tig_name and \
+        t.tig_name ~* (%s) order by item_type, tig_name;"
     else:
         print "bad option:", opt
         usage()
@@ -139,7 +141,7 @@ for arg in args:
 
     team = arg.upper()
     cursor.execute(sqlbase, (team,))
-    for tigname, how, status, type in cursor.fetchall():
+    for tigname, how, status, type, bats, throws in cursor.fetchall():
         mlb, name = p_split( trim(tigname) )
         if type > last:
             if do_find:
@@ -160,7 +162,7 @@ for arg in args:
         if type == 1 and do_pit:
             pnum += 1
             if status == 1 and do_active or status > 1 and do_inactive:
-                print "%s%-3s %-15s" % ( star(status), mlb, name ),
+                print "%s %-3s %-15s" % ( star(status, throws), mlb, name ),
                 if do_card and (mlb, name) in p_cards:
                     for num in cardtop(p_cards[(mlb,name)], type):
                         if num.isdigit():
@@ -177,7 +179,7 @@ for arg in args:
         if type == 2 and do_bat:
             bnum += 1
             if status == 1 and do_active or status > 1 and do_inactive:
-                print "%s%-3s %-15s" % ( star(status), mlb, name ),
+                print "%s %-3s %-15s" % ( star(status, bats), mlb, name ),
                 if do_card and (mlb, name) in b_cards:
                     for num in cardtop(b_cards[(mlb,name)], type):
                         if num.isdigit():
@@ -185,11 +187,11 @@ for arg in args:
                         else:
                             print "%s" % num,
                     if do_def and (mlb, name) in b_def:
-                        print ".", poslist( b_def[(mlb,name)][2:], 25 ),
+                        print ".", poslist( b_def[(mlb,name)][2:], 24 ),
                 elif not (do_card or do_def):
                     print " %-40s" % ( trim(how) ),
                 elif do_def and (mlb, name) in b_def:
-                    print poslist( b_def[(mlb,name)][2:], 59 ),
+                    print poslist( b_def[(mlb,name)][2:], 56 ),
                 print
     if count and bnum and pnum:
         print "%s players: %s (%s pitchers, %s batters)" % \
