@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.9 2011/07/04 03:09:35 sweda Exp sweda $
+# $Id: ros.py,v 1.10 2011/07/04 03:17:04 sweda Exp sweda $
 
 import os
 import sys
@@ -116,9 +116,10 @@ for (opt, arg) in opts:
         count = True
     elif opt == '-f':
         do_find = True
-        sqlbase = "select t.tig_name, comments, status, item_type, bats, throws\
-        from teams t, players p where t.tig_name = p.tig_name and \
-        t.tig_name ~* (%s) order by item_type, tig_name;"
+        sqlbase = "select t.tig_name, ibl_team || ' - ' || comments, \
+                status, item_type, bats, throws from teams t, players p \
+                where t.tig_name = p.tig_name and t.tig_name ~* (%s) \
+                order by item_type, tig_name;"
     else:
         print "bad option:", opt
         usage()
