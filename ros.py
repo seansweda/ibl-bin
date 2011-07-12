@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.12 2011/07/12 06:45:41 sweda Exp sweda $
+# $Id: ros.py,v 1.13 2011/07/12 07:07:46 sweda Exp sweda $
 #
 # flags
 # -a: active roster
@@ -28,12 +28,12 @@ def trim(string):
     if string and len(string) > 0:
         return string.rstrip()
     else:
-        return ''
+        return ' '
 
-def star(val, str):
+def star(val, string):
     global do_card, do_def
     if do_card or do_def:
-        return str.rstrip()
+        return trim(string)
     else:
         if val == 1: return '*'
         else : return ' '
