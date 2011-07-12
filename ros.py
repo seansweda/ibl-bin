@@ -1,5 +1,16 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.10 2011/07/04 03:17:04 sweda Exp sweda $
+# $Id: ros.py,v 1.11 2011/07/05 03:26:07 sweda Exp sweda $
+#
+# flags
+# -a: active roster
+# -i: inactive roster
+# -n: number of players
+# -p: picks
+# -f: find player
+# -B: batters only
+# -P: batters only
+# -A: all teams
+# -L: page breaks 
 
 import os
 import sys
@@ -104,12 +115,9 @@ for (opt, arg) in opts:
         args += [ row[0] for row in sorted(cursor.fetchall()) ]
     elif opt == '-c':
         do_card = True
-        b_cards = p_hash( cardpath() + '/' + batters )
-        p_cards = p_hash( cardpath() + '/' + pitchers )
+        do_def = True
     elif opt == '-d':
         do_def = True
-        b_def = p_hash( cardpath() + '/defense.txt' )
-        p_def = p_hash( cardpath() + '/pitrat.txt' )
     elif opt == '-L':
         eol = ''
     elif opt == '-n':
@@ -130,6 +138,13 @@ if not do_bat and not do_pit and not do_picks:
 if not do_active and not do_inactive:
     print "may only choose one of -a | -i"
     usage()
+
+if do_card:
+    b_cards = p_hash( cardpath() + '/' + batters )
+    p_cards = p_hash( cardpath() + '/' + pitchers )
+if do_def:
+    b_def = p_hash( cardpath() + '/defense.txt' )
+    p_def = p_hash( cardpath() + '/pitrat.txt' )
 
 last = -1
 for arg in args:
