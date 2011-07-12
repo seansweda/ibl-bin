@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.11 2011/07/05 03:26:07 sweda Exp sweda $
+# $Id: ros.py,v 1.12 2011/07/12 06:45:41 sweda Exp sweda $
 #
 # flags
 # -a: active roster
@@ -80,8 +80,8 @@ eol = ''
 # status: 1 = active, 2 = inactive, 3 = uncarded
 # item_type: 0 = pick, 1 = pitcher, 2 = batter
 sqlbase = "select t.tig_name, comments, status, item_type, bats, throws\
-        from teams t, players p where t.tig_name = p.tig_name and \
-        ibl_team = (%s) order by item_type, tig_name;"
+        from teams t left outer join players p on (t.tig_name = p.tig_name)\
+        where ibl_team = (%s) order by item_type, tig_name;"
 
 try:
     db = psycopg2.connect("dbname=ibl_stats user=ibl")
@@ -125,9 +125,9 @@ for (opt, arg) in opts:
     elif opt == '-f':
         do_find = True
         sqlbase = "select t.tig_name, ibl_team || ' - ' || comments, \
-                status, item_type, bats, throws from teams t, players p \
-                where t.tig_name = p.tig_name and t.tig_name ~* (%s) \
-                order by item_type, tig_name;"
+                status, item_type, bats, throws from teams t\
+                left outer join players p on (t.tig_name = p.tig_name)\
+                where t.tig_name ~* (%s) order by item_type, tig_name;"
     else:
         print "bad option:", opt
         usage()
