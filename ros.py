@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.13 2011/07/12 07:07:46 sweda Exp sweda $
+# $Id: ros.py,v 1.14 2011/07/12 07:34:04 sweda Exp sweda $
 #
 # flags
 # -a: active roster
@@ -173,7 +173,7 @@ for arg in args:
                 print header + 'BATTERS'
             last = type
         if type == 0 and do_picks:
-            print "%-3s %-15s %-40s" % ( mlb, name, trim(how) )
+            print "%-15s %-40s" % ( trim(tigname), trim(how) )
         if type == 1 and do_pit:
             pnum += 1
             if status == 1 and do_active or status > 1 and do_inactive:
