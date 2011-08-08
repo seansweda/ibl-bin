@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: card.py,v 1.3 2011/07/03 21:16:44 sweda Exp sweda $
+# $Id: card.py,v 1.4 2011/07/03 23:37:37 sweda Exp sweda $
 
 import os
 import sys
@@ -9,7 +9,6 @@ import getopt
 
 batters = "d1.genbat"
 pitchers = "d1.genpit"
-grepcmd = ['/bin/egrep', '-i']
 
 def usage():
     print "usage: %s { -b | -p } ( -g | -h ) player(s)" % sys.argv[0]
@@ -41,7 +40,8 @@ def p_hash(datafile, lower=False):
     file.close(fp)
     return myhash
 
-def p_grep(player, datafile, cmd):
+def p_grep(player, datafile):
+    cmd = ['/bin/egrep', '-i']
     cmd.append(player)
     cmd.append(datafile)
     try: 
@@ -137,7 +137,7 @@ def main():
                 else:
                     pitprint( cards[ p_split(arg) ] )
         else:
-            for line in p_grep(arg, datafile, grepcmd):
+            for line in p_grep(arg, datafile):
                 if bat:
                     batprint( line.split() )
                 else:
