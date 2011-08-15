@@ -15,14 +15,19 @@ if ( $entity->is_multipart ) {
     @parts = $entity->parts;
     while ( @parts ) {
 	if ( $parts[0]->effective_type eq "text/plain" ) {
-	    $parts[0]->bodyhandle->print;
+	    $msg = $parts[0]->bodyhandle->as_string;
 	    break;
 	}
 	shift @parts;
     }
 } else {
-    $entity->bodyhandle->print;
+    $msg = $entity->bodyhandle->as_string;
 }
+
+# strip out additional crap here
+$msg =~ s/\xA0/ /g;	# hex A0 -> space
+
+print $msg;
 
 exit;
 
