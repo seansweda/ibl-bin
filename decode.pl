@@ -8,7 +8,11 @@ use MIME::Parser;
 my $parser = new MIME::Parser;
 $parser->output_to_core(1);
 
-$entity = $parser->parse(\*STDIN) or die "parse failed\n";
+if (@ARGV) {
+    $entity = $parser->parse_open("$ARGV[0]") or die "parse failed\n";
+} else {
+    $entity = $parser->parse(\*STDIN) or die "parse failed\n";
+}
 # $entity->dump_skeleton;
 
 if ( $entity->is_multipart ) {
