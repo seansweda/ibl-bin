@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: card.py,v 1.4 2011/07/03 23:37:37 sweda Exp sweda $
+# $Id: card.py,v 1.5 2011/08/08 06:06:52 sweda Exp sweda $
 
 import os
 import sys
@@ -18,7 +18,7 @@ def cardpath():
     if 'CARDPATH' in os.environ.keys():
         cardpath = os.environ.get('CARDPATH')
     else:
-        cardpath = "/home/ibl/iblgame/2011/build"
+        cardpath = "/home/ibl/iblgame/2012/build"
     return cardpath
 
 def p_hash(datafile, lower=False):
@@ -68,16 +68,16 @@ def p_split(p_str, lower=False):
         return None
 
 def batprint(p):
-    print "%-3s %-12s vL %4s%4s%4s%4s%4s%4s  - %4s%4s%4s %3s" % \
-        ( p[0], p[1], p[14], p[15], p[16], p[17], p[18], p[19], p[20], p[21], p[22], p[23] )
-    print "%-3s %-12s vR %4s%4s%4s%4s%4s%4s  - %4s%4s%4s %3s" % \
-        ( p[0], p[1], p[25], p[26], p[27], p[28], p[29], p[30], p[31], p[32], p[33], p[34] )
+    print "%-3s %-12s vL %4s%4s%4s%4s%4s%4s%4s  - %4s%4s%4s %3s" % \
+        ( p[0], p[1], p[14], p[15], p[16], p[17], p[18], p[19], p[20], p[21], p[22], p[23], p[24] )
+    print "%-3s %-12s vR %4s%4s%4s%4s%4s%4s%4s  - %4s%4s%4s %3s" % \
+        ( p[0], p[1], p[26], p[27], p[28], p[29], p[30], p[31], p[32], p[33], p[34], p[35], p[36] )
 
 def pitprint(p):
-    print "%-3s %-12s vL %4s%4s%4s%4s%4s%4s%4s  - %4s%4s%4s" % \
-        ( p[0], p[1], p[16], p[17], p[18], p[19], p[20], p[21], p[22], p[23], p[24], p[25] )
-    print "%-3s %-12s vR %4s%4s%4s%4s%4s%4s%4s  - %4s%4s%4s" % \
-        ( p[0], p[1], p[27], p[28], p[29], p[30], p[31], p[32], p[33], p[34], p[35], p[36] )
+    print "%-3s %-12s vL %4s%4s%4s%4s%4s%4s%4s%4s  - %4s%4s%4s" % \
+        ( p[0], p[1], p[16], p[17], p[18], p[19], p[20], p[21], p[22], p[23], p[24], p[25], p[26] )
+    print "%-3s %-12s vR %4s%4s%4s%4s%4s%4s%4s%4s  - %4s%4s%4s" % \
+        ( p[0], p[1],  p[28], p[29], p[30], p[31], p[32], p[33], p[34], p[35], p[36], p[37], p[38] )
 
 def main():
     global batters, pitchers, grepcmd
@@ -122,9 +122,9 @@ def main():
         datafile = datadir + '/' + pitchers
 
     if bat:
-        print "Player                1B  2B  3B  HR  HB  BB       H  OB  XB  Pw"
+        print "Player                1B  2B  3B  HR  HB  BB  HG       H  OB  XB  Pw"
     else:
-        print "Player                1B  2B  DF  HB  BB IFR OFR       H  OB  XB"
+        print "Player                1B  2B  DF  HB  BB IFR OFR  HG       H  OB  XB"
 
     if hashmode:
         cards = p_hash(datafile)
