@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.14 2011/07/12 07:34:04 sweda Exp sweda $
+# $Id: ros.py,v 1.15 2011/07/13 06:24:52 sweda Exp sweda $
 #
 # flags
 # -a: active roster
@@ -41,10 +41,10 @@ def star(val, string):
 def cardtop(p, type):
     # pitcher
     if type == 1:
-        return ( p[23], p[24], p[25], '  ', '.', p[34], p[35], p[36], '  ' )
+        return ( p[24], p[25], p[26], '  ', '.', p[36], p[37], p[38], '  ' )
     # batter
     else:
-        return ( p[20], p[21], p[22], p[23], '.', p[31], p[32], p[33], p[34] )
+        return ( p[21], p[22], p[23], p[24], '.', p[33], p[34], p[35], p[36] )
 
 def poslist(p, max):
     defense = ''
