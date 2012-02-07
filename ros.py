@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.16 2012/02/05 23:53:59 sweda Exp sweda $
+# $Id: ros.py,v 1.17 2012/02/06 00:09:31 sweda Exp sweda $
 #
 # flags
 # -a: active roster
@@ -124,7 +124,8 @@ for (opt, arg) in opts:
         count = True
     elif opt == '-f':
         do_find = True
-        sqlbase = "select t.tig_name, ibl_team || ' - ' || comments, \
+        sqlbase = "select t.tig_name, rpad(ibl_team, 3, ' ') || ' - ' ||\
+                case when comments is not null then comments else '' end,\
                 status, item_type, bats, throws from teams t\
                 left outer join players p on (t.tig_name = p.tig_name)\
                 where t.tig_name ~* (%s) order by item_type, tig_name;"
