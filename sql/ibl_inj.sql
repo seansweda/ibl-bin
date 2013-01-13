@@ -1,0 +1,1 @@
+select (case when b > 0 then 'bat' else 'pit' end) as pos, sum(inj) from (select sum(c + "1b" + "2b" + "3b" + ss + lf + cf + rf) as b, sum(inj) as inj from starts2012 group by mlb, name) s group by pos;
