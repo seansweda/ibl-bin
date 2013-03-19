@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: card.py,v 1.6 2012/02/05 23:53:43 sweda Exp sweda $
+# $Id: card.py,v 1.7 2012/02/06 00:09:17 sweda Exp sweda $
 
 import os
 import sys
@@ -18,7 +18,7 @@ def cardpath():
     if 'CARDPATH' in os.environ.keys():
         cardpath = os.environ.get('CARDPATH')
     else:
-        cardpath = "/home/ibl/iblgame/2012/build"
+        cardpath = "/home/iblgame/2013/build"
     return cardpath
 
 def p_hash(datafile, lower=False):
