@@ -21,6 +21,7 @@ sub code {
 
 while ( <> ) {
     chomp;
+    if ( $_ =~ /^#/ ) { next; }
     @row = split;
     $week = shift @row;
     print "week $week\n";
