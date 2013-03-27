@@ -120,7 +120,6 @@ sub schedck {
     my $returncode = 0;
 
     if ( !($week && $home && $away) ) {
-	#print "line $lines missing or invalid WEEK/HOME/AWAY info, cannot update\n";
 	$returncode = -1;
     }
     else {
@@ -131,17 +130,14 @@ sub schedck {
 	    		week = $week and home = '$hcode[0]' and away = '$acode[0]';");
 	    if ( @status ) {
 		if ( shift @status ) {
-		    #print "week $week, $away @ $home already submitted (use REDO)\n";
 		    $returncode = 1;
 		}
 	    }
 	    else {
-		#print "$away @ $home not valid matchup for week $week\n";
 		$returncode = 2;
 	    }
 	}
 	else {
-	    #print "$away @ $home not valid matchup for week $week\n";
 	    $returncode = 2;
 	}
     }
@@ -262,7 +258,7 @@ while (<DATA>) {
 			    shift @scores2;
 			    $scores = 1;
 			    if ( $sched == 1 && $redo ) {
-				print "removing week $week, $away @ $home\n";
+				print "removing scores week $week, $away @ $home\n";
 				@hgame = gamescode($home);
 				@agame = gamescode($away);
 				$dbh->do( "update $scheddb set scores = 0 where
@@ -850,7 +846,7 @@ while (<DATA>) {
     }
 
     if ( $week && $home && $away && $redo && !$redone) {
-	print "removing week $week, $away @ $home\n";
+	print "removing stats week $week, $away @ $home\n";
 	@hcode = iblcode($home);
 	@acode = iblcode($away);
 	$dbh->do( "update $scheddb set status = 0 where
@@ -915,19 +911,21 @@ if ( (($pitchers / 2) - int($pitchers / 2)) != 0 ) {
 if ( $updates ) {
     print "\n";
 
-    $sched = schedck( $week, $home, $away, 'status' );
-    if ( $sched == -1 ) {
-	print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
-	$fatalerr++;
-    } elsif ( $sched == 2 ) {
-	print "$away @ $home not valid matchup for week $week\n";
-	$fatalerr++;
-    } elsif ( $sched == 1 ) {
-	print "week $week, $away @ $home stats already submitted (use REDO)\n";
-	$fatalerr++;
+    if ( $batters && $pitchers ) {
+	$sched = schedck( $week, $home, $away, 'status' );
+	if ( $sched == -1 ) {
+	    print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
+	    $fatalerr++;
+	} elsif ( $sched == 2 ) {
+	    print "$away @ $home not valid matchup for week $week\n";
+	    $fatalerr++;
+	} elsif ( $sched == 1 ) {
+	    print "week $week, $away @ $home stats already submitted (use REDO)\n";
+	    $fatalerr++;
+	}
     }
 
-    if ( $fatalerr || $scores == -1 ) {
+    if ( $fatalerr ) {
 	$dbh->rollback;
 	print "stats database not updated, boxscore needs correction ($fatalerr errors)\n";
 	$dbh->disconnect;
@@ -962,9 +960,16 @@ if ( $updates ) {
 	    }
 	    print "scores database updated successfully!\n";
 	}
-	$dbh->commit;
-	$dbh->disconnect;
-	exit 0;
+	if ( ($batters && $pitchers) || $scores == 1 ) {
+	    $dbh->commit;
+	    $dbh->disconnect;
+	    exit 0;
+	} elsif ( $scores == -1 ) {
+	    $dbh->rollback;
+	    print "scores database not updated, boxscore needs correction\n";
+	    $dbh->disconnect;
+	    exit 2;
+	}
     }
 }
 
