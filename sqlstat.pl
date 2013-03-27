@@ -28,7 +28,9 @@ $week = 0;
 $home = '';
 $away = '';
 $redo = 0;
+$redone = 0;
 $updates = 0;
+$scores = 0;
 $input = '';
 $xteam = '';
 
@@ -96,41 +98,54 @@ sub iblcode {
     return @s;
 }
 
+sub gamescode {
+    my $team = shift;
+    @s = $dbh->selectrow_array("select id from franchises where nickname = '$team';");
+    return @s;
+}
+
 sub schedck {
+# return codes
+# -1  : missing WEEK/HOME/AWAY
+#  0  : matchup ok
+#  1  : matchup already submitted
+#  2+ : invalid matchup
+
     my $week = shift;
     my $home = shift;
     my $away = shift;
-    my $redo = shift;
+    my $type = shift;
 
-    my $fatalerr = 0;
+    #print "week=$week home=$home away=$away type=$type\n";
+    my $returncode = 0;
 
     if ( !($week && $home && $away) ) {
-	print "line $lines missing or invalid WEEK/HOME/AWAY info, cannot update\n";
-	$fatalerr++;
+	#print "line $lines missing or invalid WEEK/HOME/AWAY info, cannot update\n";
+	$returncode = -1;
     }
     else {
 	@hcode = iblcode($home);
 	@acode = iblcode($away);
 	if ( @hcode && @acode ) {
-	    @status = $dbh->selectrow_array("select status from $scheddb where 
+	    @status = $dbh->selectrow_array("select $type from $scheddb where 
 	    		week = $week and home = '$hcode[0]' and away = '$acode[0]';");
 	    if ( @status ) {
-		if ( shift @status && !$redo ) {
-		    print "week $week, $away @ $home already submitted (use REDO)\n";
-		    $fatalerr++;
+		if ( shift @status ) {
+		    #print "week $week, $away @ $home already submitted (use REDO)\n";
+		    $returncode = 1;
 		}
 	    }
 	    else {
-		print "$away @ $home not valid matchup for week $week\n";
-		$fatalerr++;
+		#print "$away @ $home not valid matchup for week $week\n";
+		$returncode = 2;
 	    }
 	}
 	else {
-	    print "$away @ $home not valid matchup for week $week\n";
-	    $fatalerr++;
+	    #print "$away @ $home not valid matchup for week $week\n";
+	    $returncode = 2;
 	}
     }
-    return $fatalerr;
+    return $returncode;
 }
 
 while (@ARGV) {
@@ -169,6 +184,7 @@ while (<DATA>) {
     $keyword = (split)[0];
 
     if ( $keyword eq 'REDO' ) {
+	print "REDO\n";
 	$redo = 1;
     }
     elsif ( $keyword eq 'ADMIN' ) {
@@ -210,6 +226,64 @@ while (<DATA>) {
 	}
 	else {
 	    print "AWAY: $away\n";
+	}
+    }
+    elsif ( $keyword eq 'SCORES' ) {
+	$line1 = <DATA>;
+	chomp $line1; 
+	$lines++;
+	@scores1 = split(/\s+/, $line1);
+	if ( iblck( $scores1[0] ) == 0 ) {
+	    $line2 = <DATA>;
+	    chomp $line2;
+	    $lines++;
+	    @scores2 = split(/\s+/, $line2);
+	}
+	if ( iblck( $scores2[0] ) == 0 ) {
+	    $scores = -1;
+	    printf "\nSCORES\n";
+	    $sched = schedck( $week, $home, $away, 'scores' );
+	    if ( $sched == -1 ) {
+		print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
+	    } elsif ( $sched == 2 ) {
+		print "$away @ $home not valid matchup for week $week\n";
+	    } 
+	    # valid matchup
+	    else {
+		print "$line1\n";
+		print "$line2\n";
+	    	$scores1[0] =~ tr/a-z/A-Z/;
+	    	$scores2[0] =~ tr/a-z/A-Z/;
+	    	if ( $home eq $scores2[0] && $away eq $scores1[0] ) {
+		    if ( $#scores1 == $#scores2 ) {
+			if ( $line1 =~ /^[A-Z]{3}[\s,0-9]+$/ && 
+				$line2 =~ /^[A-Z]{3}[\s,0-9]+$/ ) {
+			    shift @scores1;
+			    shift @scores2;
+			    $scores = 1;
+			    if ( $sched == 1 && $redo ) {
+				print "removing week $week, $away @ $home\n";
+				@hgame = gamescode($home);
+				@agame = gamescode($away);
+				$dbh->do( "update $scheddb set scores = 0 where
+    week = $week and home = '$hcode[0]' and away = '$acode[0]';" );
+				$dbh->do( "delete from games where 
+    week = $week and home_team_id = $hgame[0] and away_team_id = $agame[0];");
+			    } elsif ( $sched == 1 ) {
+				print "week $week, $away @ $home scores already submitted (use REDO)\n";
+				$scores = -1;
+			    }
+			} else {
+			    print "expecting scores, got non-numeric character(s)\n";
+			}
+		    } else {
+			print "mis-matched number of scores\n";
+		    }
+		} else {
+		    print "mis-matched SCORES and HOME/AWAY teams (home team must be last\n";
+		}
+	    }
+	    print "\n";
 	}
     }
     else {
@@ -771,7 +845,7 @@ while (<DATA>) {
 	}
     }
 
-    if ( $week && $home && $away && $redo ) {
+    if ( $week && $home && $away && $redo && !$redone) {
 	print "removing week $week, $away @ $home\n";
 	@hcode = iblcode($home);
 	@acode = iblcode($away);
@@ -785,7 +859,7 @@ while (<DATA>) {
 		week = $week and home = '$home' and away = '$away';");
 	$dbh->do( "delete from $extradb where
 		week = $week and home = '$home' and away = '$away';");
-	$redo = 0;
+	$redone = 1;
     }
 }
 
@@ -811,9 +885,10 @@ if ( $updates && !$fatalerr ) {
     }
 }
 
-if ( $batters == 0 && $pitchers == 0 ) {
+if ( $batters == 0 && $pitchers == 0 && $scores == 0 ) {
     $dbh->rollback;
     $dbh->disconnect;
+    # not stats/scores
     exit 3;
 }
 if ( $wins != $losses ) {
@@ -835,8 +910,20 @@ if ( (($pitchers / 2) - int($pitchers / 2)) != 0 ) {
 
 if ( $updates ) {
     print "\n";
-    $fatalerr += (schedck( $week, $home, $away, $redo ));
-    if ( $fatalerr ) {
+
+    $sched = schedck( $week, $home, $away, 'status' );
+    if ( $sched == -1 ) {
+	print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
+	$fatalerr++;
+    } elsif ( $sched == 2 ) {
+	print "$away @ $home not valid matchup for week $week\n";
+	$fatalerr++;
+    } elsif ( $sched == 1 ) {
+	print "week $week, $away @ $home stats already submitted (use REDO)\n";
+	$fatalerr++;
+    }
+
+    if ( $fatalerr || $scores == -1 ) {
 	$dbh->rollback;
 	print "stats database not updated, boxscore needs correction ($fatalerr errors)\n";
 	$dbh->disconnect;
@@ -849,12 +936,29 @@ if ( $updates ) {
 	exit 1;
     }
     else {
-	@hcode = iblcode($home);
-	@acode = iblcode($away);
-	$dbh->do( "update $scheddb set status = 1 where
+	if ( $batters && $pitchers ) {
+	    @hcode = iblcode($home);
+	    @acode = iblcode($away);
+	    $dbh->do( "update $scheddb set status = 1 where
 		week = $week and home = '$hcode[0]' and away = '$acode[0]';");
+	    print "stats database updated successfully!\n";
+	}
+	if ( $scores == 1 && @scores1 && @scores2 ) {
+	    @hgame = gamescode($home);
+	    @agame = gamescode($away);
+	    $dbh->do( "update $scheddb set scores = 1 where
+		week = $week and home = '$hcode[0]' and away = '$acode[0]';" );
+	    while ( @scores1 && @scores2 ) {
+		#printf "=%s ", shift @scores1;
+		#printf "=%s ", shift @scores2;
+		$loop = $dbh->prepare( "insert into games
+	    ( week, home_score, away_score, home_team_id, away_team_id ) values
+	    ( $week, ?, ?, $hgame[0], $agame[0] );" );
+		$loop->execute(int(shift @scores2), int(shift @scores1));
+	    }
+	    print "scores database updated successfully!\n";
+	}
 	$dbh->commit;
-	print "stats database updated successfully!\n";
 	$dbh->disconnect;
 	exit 0;
     }

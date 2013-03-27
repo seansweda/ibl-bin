@@ -56,7 +56,7 @@ if ( $week && $home && $away ) {
     print "removing week $week, $away @ $home\n";
     @hcode = iblcode($home);
     @acode = iblcode($away);
-    $dbh->do( "update $scheddb set status = 0 where
+    $dbh->do( "update $scheddb set status = 0, scores = 0 where
 	    week = $week and home = '$hcode[0]' and away = '$acode[0]';");
     $dbh->do( "delete from $startsdb where
 	    week = $week and home = '$home' and away = '$away';");
