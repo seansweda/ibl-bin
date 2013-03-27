@@ -229,6 +229,7 @@ while (<DATA>) {
 	}
     }
     elsif ( $keyword eq 'SCORES' ) {
+	printf "\nSCORES\n";
 	$line1 = <DATA>;
 	chomp $line1; 
 	$lines++;
@@ -241,7 +242,6 @@ while (<DATA>) {
 	}
 	if ( iblck( $scores2[0] ) == 0 ) {
 	    $scores = -1;
-	    printf "\nSCORES\n";
 	    $sched = schedck( $week, $home, $away, 'scores' );
 	    if ( $sched == -1 ) {
 		print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
@@ -280,10 +280,14 @@ while (<DATA>) {
 			print "mis-matched number of scores\n";
 		    }
 		} else {
-		    print "mis-matched SCORES and HOME/AWAY teams (home team must be last\n";
+		    print "mis-matched SCORES and HOME/AWAY teams (home team must be last)\n";
 		}
 	    }
 	    print "\n";
+	}
+	if ( $#scores1 == -1 ) {
+	    print "line $lines bad formatting, blank line immediately after SCORES\n";
+	    $scores = -1;
 	}
     }
     else {
