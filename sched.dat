@@ -42,29 +42,27 @@
 # 	OFF
 # 8 may		x-div 2
 # 9 may		div
-# 	WEEK OFF
 # 10 jun	x-div 2
+# 	WEEK OFF
 # 11 jun	x-div 2
-# 	OFF
 # 12 jun	div
 # 13 jun	ic
-# 	WEEK OFF (ASB)
+# 	OFF (ASB)
 # 14 jul	ic
 # 15 jul	x-div 3
 # 16 jul	x-div 3
-# 	OFF
+# 	WEEK OFF
 # 17 jul	div
 # 18 jul	x-div 3
-# 	WEEK OFF
 # 19 aug	x-div 3
+# 	OFF
 # 20 aug	x-div 4
 # 21 aug	div
-# 	OFF
 # 22 aug	x-div 4
+# 	WEEK OFF
 # 23 aug	x-div 4
-# 	WEEK OFF (trade deadline)
 # 24 sep	x-div 4
-# 25 sep	div
 # 	OFF
+# 25 sep	div
 # 26 sep	div
 # 27 sep	div
