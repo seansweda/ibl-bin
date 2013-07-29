@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-$host = 'marauders.ibl.org';
+$host = 'marauders.fw.ibl.org';
 $dbname = ibl_stats;
 
 # tables for current season
