@@ -1,11 +1,12 @@
 #!/usr/bin/python
-# $Id: card.py,v 1.7 2012/02/06 00:09:17 sweda Exp sweda $
+# $Id: card.py,v 1.8 2013/03/19 16:24:35 sweda Exp sweda $
 
 import os
 import sys
 import subprocess
 import re
 import getopt
+import time
 
 batters = "d1.genbat"
 pitchers = "d1.genpit"
@@ -18,7 +19,7 @@ def cardpath():
     if 'CARDPATH' in os.environ.keys():
         cardpath = os.environ.get('CARDPATH')
     else:
-        cardpath = "/home/iblgame/2013/build"
+        cardpath = "/home/iblgame/" + time.strftime("%Y") + "/build"
     return cardpath
 
 def p_hash(datafile, lower=False):
