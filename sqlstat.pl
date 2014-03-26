@@ -22,6 +22,8 @@ $pitchers = 0;
 $starts = 0;
 $injuries = 0;
 $wins = 0;
+$hwins = 0;
+$awins = 0;
 $losses = 0;
 $lines = 0;
 $week = 0;
@@ -45,16 +47,20 @@ sub find {
     my $name = shift;
     $name =~ s/'/''/g;
     my $where = shift;
-    @s = $dbh->selectrow_array("select mlb, name, sum(g), sum(p), sum(c), 
-    		sum(\"1b\"), sum(\"2b\"), sum(\"3b\"), sum(ss), sum(lf), sum(cf),
-		sum(rf), sum(inj), nullif(sum(vl), 0), nullif(sum(vr), 0),
-		count(*), count(vl), count(vr) from $startsdb 
-    		where mlb = '$mlb' and trim(name) ~* '\^$name\$'
-		group by mlb, name;");
+    @s = $dbh->selectrow_array("
+	    select mlb, name, sum(g), sum(p), sum(c),
+	    sum(\"1b\"), sum(\"2b\"), sum(\"3b\"), sum(ss), sum(lf), sum(cf),
+	    sum(rf), sum(inj), nullif(sum(vl), 0), nullif(sum(vr), 0),
+	    count(*), count(vl), count(vr) from $startsdb
+	    where mlb = '$mlb' and trim(name) ~* '\^$name\$'
+	    group by mlb, name;
+	    ");
     if ($#s == -1 ) {
 	printf("line %s %-3s %s not found, perhaps:\n", $where, $mlb, $name);
-	$loop = $dbh->prepare("select mlb, name from $startsdb
-		where name ~* ? and week is null order by mlb, name desc;");
+	$loop = $dbh->prepare("
+		select mlb, name from $startsdb
+		where name ~* ? and week is null order by mlb, name desc;
+		");
 	$loop->execute($name);
 	while ( @f = $loop->fetchrow_array ) {
 	    printf("%-3s %s\n", $f[0], $f[1]);
@@ -83,7 +89,9 @@ sub outs {
 
 sub iblck {
     my $team = shift;
-    @s = $dbh->selectrow_array("select code from $teamdb where ibl = '$team';");
+    @s = $dbh->selectrow_array("
+	    select code from $teamdb where ibl = '$team';
+	    ");
     if ( @s ) {
 	return 0;
     }
@@ -94,13 +102,17 @@ sub iblck {
 
 sub iblcode {
     my $team = shift;
-    @s = $dbh->selectrow_array("select code from $teamdb where ibl = '$team';");
+    @s = $dbh->selectrow_array("
+	    select code from $teamdb where ibl = '$team';
+	    ");
     return @s;
 }
 
 sub gamescode {
     my $team = shift;
-    @s = $dbh->selectrow_array("select id from franchises where nickname = '$team';");
+    @s = $dbh->selectrow_array("
+	    select id from franchises where nickname = '$team';
+	    ");
     return @s;
 }
 
@@ -126,8 +138,10 @@ sub schedck {
 	@hcode = iblcode($home);
 	@acode = iblcode($away);
 	if ( @hcode && @acode ) {
-	    @status = $dbh->selectrow_array("select $type from $scheddb where 
-	    		week = $week and home = '$hcode[0]' and away = '$acode[0]';");
+	    @status = $dbh->selectrow_array("
+		    select $type from $scheddb where
+		    week = $week and home = '$hcode[0]' and away = '$acode[0]';
+		    ");
 	    if ( @status ) {
 		if ( shift @status ) {
 		    $returncode = 1;
@@ -261,10 +275,17 @@ while (<DATA>) {
 				print "removing scores week $week, $away @ $home\n";
 				@hgame = gamescode($home);
 				@agame = gamescode($away);
-				$dbh->do( "update $scheddb set scores = 0 where
-    week = $week and home = '$hcode[0]' and away = '$acode[0]';" );
-				$dbh->do( "delete from games where 
-    week = $week and home_team_id = $hgame[0] and away_team_id = $agame[0];");
+				$dbh->do("
+				    update $scheddb set scores = 0 where
+				    week = $week and
+				    home = '$hcode[0]' and away = '$acode[0]';
+				    ");
+				$dbh->do("
+				    delete from games where
+				    week = $week and
+				    home_team_id = $hgame[0] and
+				    away_team_id = $agame[0];
+				    ");
 			    } elsif ( $sched == 1 ) {
 				print "week $week, $away @ $home scores already submitted (use REDO)\n";
 				$scores = -1;
@@ -479,8 +500,14 @@ while (<DATA>) {
 		    $pr = 0;
 		}
 
-		$dbh->do( "insert into $batdb values ( $week, '$home', '$away', '$ibl', '$starts[0]', '$starts[1]', 1, $ab, $r, $h, $bi, $d, $t, $hr, $sb, $cs, $bb, $k );" );
-		$dbh->do( "insert into $startsdb values ( '$starts[0]', '$starts[1]', $g, 0, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, $pl, $pr, $week, '$home', '$away' );" );
+		$dbh->do("
+		    insert into $batdb
+		    values ( $week, '$home', '$away', '$ibl', '$starts[0]', '$starts[1]', 1, $ab, $r, $h, $bi, $d, $t, $hr, $sb, $cs, $bb, $k );
+		    ");
+		$dbh->do("
+		    insert into $startsdb
+		    values ( '$starts[0]', '$starts[1]', $g, 0, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, $pl, $pr, $week, '$home', '$away' );
+		    ");
 	    }
 
 	}
@@ -614,8 +641,14 @@ while (<DATA>) {
 
 		if ( $updates && !$fatalerr ) {
 		    $ip = outs($ip);
-		    $dbh->do( "insert into $pitdb values ( $week, '$home', '$away', '$ibl', '$starts[0]', '$starts[1]', $pw, $pl, $ps, 1, $pgs, $ip, $h, $r, $er, $hr, $bb, $k );" );
-		    $dbh->do( "insert into $startsdb values ( '$starts[0]', '$starts[1]', -1, $pgs * -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $week, '$home', '$away' );" );
+		    $dbh->do("
+			insert into $pitdb
+			values ( $week, '$home', '$away', '$ibl', '$starts[0]', '$starts[1]', $pw, $pl, $ps, 1, $pgs, $ip, $h, $r, $er, $hr, $bb, $k );
+			");
+		    $dbh->do("
+			insert into $startsdb
+			values ( '$starts[0]', '$starts[1]', -1, $pgs * -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $week, '$home', '$away' );
+			");
 		}
 	    }
 	}
@@ -747,7 +780,10 @@ while (<DATA>) {
 		$fatalerr++;
 	    }
 	    if ( $updates && !$fatalerr ) {
-		$dbh->do( "insert into $startsdb values ( '$starts[0]', '$starts[1]', 0, $psp, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, 0, 0, $week, '$home', '$away' );" );
+		$dbh->do("
+		    insert into $startsdb
+		    values ( '$starts[0]', '$starts[1]', 0, $psp, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, 0, 0, $week, '$home', '$away' );
+		    ");
 	    }
 	}
     }
@@ -791,7 +827,10 @@ while (<DATA>) {
 		$fatalerr++;
 	    }
 	    if ( $updates && !$fatalerr ) {
-		$dbh->do( "insert into $startsdb values ( '$starts[0]', '$starts[1]', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $inj, 0, 0, $week, '$home', '$away' );" );
+		$dbh->do("
+		    insert into $startsdb
+		    values ( '$starts[0]', '$starts[1]', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $inj, 0, 0, $week, '$home', '$away' );
+		    ");
 	    }
 	}
     }
@@ -849,16 +888,26 @@ while (<DATA>) {
 	print "removing stats week $week, $away @ $home\n";
 	@hcode = iblcode($home);
 	@acode = iblcode($away);
-	$dbh->do( "update $scheddb set status = 0 where
-		week = $week and home = '$hcode[0]' and away = '$acode[0]';");
-	$dbh->do( "delete from $startsdb where
-		week = $week and home = '$home' and away = '$away';");
-	$dbh->do( "delete from $batdb where
-		week = $week and home = '$home' and away = '$away';");
-	$dbh->do( "delete from $pitdb where
-		week = $week and home = '$home' and away = '$away';");
-	$dbh->do( "delete from $extradb where
-		week = $week and home = '$home' and away = '$away';");
+	$dbh->do("
+		update $scheddb set status = 0 where
+		week = $week and home = '$hcode[0]' and away = '$acode[0]';
+		");
+	$dbh->do("
+		delete from $startsdb where
+		week = $week and home = '$home' and away = '$away';
+		");
+	$dbh->do("
+		delete from $batdb where
+		week = $week and home = '$home' and away = '$away';
+		");
+	$dbh->do("
+		delete from $pitdb where
+		week = $week and home = '$home' and away = '$away';
+		");
+	$dbh->do("
+		delete from $extradb where
+		week = $week and home = '$home' and away = '$away';
+		");
 	$redone = 1;
     }
 }
@@ -880,7 +929,10 @@ print "\n";
 # printf "%s BALK: %d\n", $index, $xbk{$index};
 if ( $updates && !$fatalerr ) {
     foreach $index ( $away, $home ) {
-	$sth = $dbh->prepare( "insert into $extradb values ( $week, '$home', '$away', '$index', ?, ?, ?, ?, ?, ?, ? );" );
+	$sth = $dbh->prepare( "
+		insert into $extradb
+		values ( $week, '$home', '$away', '$index', ?, ?, ?, ?, ?, ?, ? );
+		");
 	$sth->execute( int($xe{$index}), int($xpb{$index}), int($xdp{$index}), int($xsf{$index}), int($xhb{$index}), int($xwp{$index}), int($xbk{$index}) );
     }
 }
@@ -941,23 +993,37 @@ if ( $updates ) {
 	if ( $batters && $pitchers ) {
 	    @hcode = iblcode($home);
 	    @acode = iblcode($away);
-	    $dbh->do( "update $scheddb set status = 1 where
-		week = $week and home = '$hcode[0]' and away = '$acode[0]';");
+	    $dbh->do("
+		update $scheddb
+		set status = 1 where
+		week = $week and home = '$hcode[0]' and away = '$acode[0]';
+		");
 	    print "stats database updated successfully!\n";
 	}
 	if ( $scores == 1 && @scores1 && @scores2 ) {
 	    @hgame = gamescode($home);
 	    @agame = gamescode($away);
-	    $dbh->do( "update $scheddb set scores = 1 where
-		week = $week and home = '$hcode[0]' and away = '$acode[0]';" );
 	    while ( @scores1 && @scores2 ) {
 		#printf "=%s ", shift @scores1;
 		#printf "=%s ", shift @scores2;
-		$loop = $dbh->prepare( "insert into games
-	    ( week, home_score, away_score, home_team_id, away_team_id ) values
-	    ( $week, ?, ?, $hgame[0], $agame[0] );" );
+		if ( int($scores1[0]) > int($scores2[0]) ) {
+		    $awins++;
+		}
+		if ( int($scores2[0]) > int($scores1[0]) ) {
+		    $hwins++;
+		}
+		$loop = $dbh->prepare("
+		    insert into games
+		    (week, home_score, away_score, home_team_id, away_team_id)
+		    values ( $week, ?, ?, $hgame[0], $agame[0] );
+		    ");
 		$loop->execute(int(shift @scores2), int(shift @scores1));
 	    }
+	    $dbh->do("
+		update $scheddb
+		set scores = 1, hwins = $hwins, awins = $awins where
+		week = $week and home = '$hcode[0]' and away = '$acode[0]';
+		");
 	    print "scores database updated successfully!\n";
 	}
 	if ( ($batters && $pitchers) || $scores == 1 ) {
