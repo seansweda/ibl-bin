@@ -592,7 +592,7 @@ while (<DATA>) {
 	    if ( $#line == -1 ) {
 		last;
 	    }
-	    elsif ( $#line != $PCOLS ) {
+	    elsif ( $#line != $PCOLS && $#line != $PCOLS + 1 ) {
 		print "line $lines PITCHERS format error\n";
 		$fatalerr++;
 		last;
