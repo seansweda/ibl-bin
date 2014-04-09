@@ -1,7 +1,9 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.17 2012/02/06 00:09:31 sweda Exp sweda $
+# $Id: ros.py,v 1.18 2012/02/07 04:33:31 sweda Exp sweda $
 #
 # flags
+# -c: card info
+# -d: defensive ratings
 # -a: active roster
 # -i: inactive roster
 # -n: number of players
