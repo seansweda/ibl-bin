@@ -45,22 +45,29 @@ def main():
         # catch odd case where boxes are current but scores broken
         if status[team][0] == week:
             return 0
-        # otherwise results must be current
+        # results must be current
         if status[team][1] != week:
             return 1
-        # otherwise boxes can be 1 week behind
+        # boxes must be no more than 1 week behind
         if status[team][0] < week - 1:
             return 1
-        # otherwise return 0, team has nothing outstanding
+        #  return 0, team has nothing outstanding
         return 0
 
     if len(sys.argv) > 1:
-        week = int(sys.argv[1])
+        # user inputs FA signing week (not results week), so subtract 1
+        week = int(sys.argv[1]) - 1
     elif is_cgi and form.has_key('week'):
-        week = int(form.getfirst('week'))
+        # user inputs FA signing week (not results week), so subtract 1
+        week = int(form.getfirst('week')) - 1
     else:
-        cursor.execute( "select max(week) from games;" )
-        week = int(cursor.fetchall()[0][0])
+        # no user input so we'll find latest week with reported results
+        cursor.execute("select week, count(*) from games\
+                group by week order by week desc;");
+        # need to have more than 1 series reported to set week
+        for week, num in cursor.fetchall():
+            if num > 5:
+                break
 
     # start with last year
     # lastyear.csv should be ordered to break ties
