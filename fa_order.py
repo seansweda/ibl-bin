@@ -41,10 +41,14 @@ def main():
     cursor = db.cursor()
 
     def late(team):
-        # results must be current
+        # tuple is (boxes, results)
+        # catch odd case where boxes are current but scores broken
+        if status[team][0] == week:
+            return 0
+        # otherwise results must be current
         if status[team][1] != week:
             return 1
-        # boxes can be 1 week behind
+        # otherwise boxes can be 1 week behind
         if status[team][0] < week - 1:
             return 1
         # otherwise return 0, team has nothing outstanding
