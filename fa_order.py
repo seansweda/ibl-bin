@@ -1,17 +1,44 @@
 #!/usr/bin/python
 
+import os
 import csv
 import sys
 import psycopg2
 
-try:
-    db = psycopg2.connect("dbname=ibl_stats user=ibl")
-except psycopg2.DatabaseError, err:
-    print str(err)
-    sys.exit(1)
-cursor = db.cursor()
+# dump environment and parameters for testing
+# not really necessary, mostly for learning purposes
+def dumpenv(form):
+    for (env, val) in os.environ.items():
+        print "<br>", env + " : ", val
+    print "<p>parameters"
+    for param in form.keys():
+        print "<br>", param + " : ",
+        for val in form.getlist(param):
+            print val,
+        print
+    print "<p>"
+    return
 
 def main():
+    if 'GATEWAY_INTERFACE' in os.environ:
+        import cgi
+        import cgitb; cgitb.enable()
+        form = cgi.FieldStorage()
+        print "Content-Type: text/html"     # HTML is following
+        print                               # blank line, end of headers
+        print "<html><head><title>Free Agent signing order</title></head><body>"
+        #dumpenv(form)
+        is_cgi = True
+
+    else:
+        is_cgi = False
+
+    try:
+        db = psycopg2.connect("dbname=ibl_stats user=ibl")
+    except psycopg2.DatabaseError, err:
+        print str(err)
+        sys.exit(1)
+    cursor = db.cursor()
 
     def late(team):
         # results must be current
@@ -25,6 +52,8 @@ def main():
 
     if len(sys.argv) > 1:
         week = int(sys.argv[1])
+    elif is_cgi and form.has_key('week'):
+        week = int(form.getfirst('week'))
     else:
         cursor.execute( "select max(week) from games;" )
         week = int(cursor.fetchall()[0][0])
@@ -79,10 +108,20 @@ def main():
     fa.sort( key=late )
     #print fa
 
+    if is_cgi:
+        print "<br>",
     print "FA signing priority for week %d" % (week + 1)
+    if is_cgi:
+        print "<br>",
     print "(highest to lowest)"
     for team in fa:
+        if is_cgi:
+            print "<br>",
         print team
+
+    if is_cgi:
+        print "</body></html>"
+
 
 if __name__ == "__main__":
     main()
