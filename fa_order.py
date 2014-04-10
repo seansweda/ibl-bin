@@ -20,18 +20,24 @@ def dumpenv(form):
     return
 
 def main():
+    do_json = False
+    is_cgi = False
     if 'GATEWAY_INTERFACE' in os.environ:
         import cgi
-        import cgitb; cgitb.enable()
+        #import cgitb; cgitb.enable()
         form = cgi.FieldStorage()
-        print "Content-Type: text/html"     # HTML is following
-        print                               # blank line, end of headers
-        print "<html><head><title>Free Agent signing order</title></head><body>"
-        #dumpenv(form)
         is_cgi = True
-
-    else:
-        is_cgi = False
+        if form.has_key('json'):
+            import json
+            do_json = True
+            print "Content-Type: application/json"
+            print
+        else:
+            do_json = False
+            print "Content-Type: text/html"
+            print
+            print "<html><head><title>Free Agent signing order</title></head><body>"
+            #dumpenv(form)
 
     try:
         db = psycopg2.connect("dbname=ibl_stats user=ibl")
@@ -119,19 +125,22 @@ def main():
     fa.sort( key=late )
     #print fa
 
-    if is_cgi:
-        print "<br>",
-    print "FA signing priority for week %d" % (week + 1)
-    if is_cgi:
-        print "<br>",
-    print "(highest to lowest)"
-    for team in fa:
+    if do_json:
+        print json.dumps({ "week": (week + 1), "teams": fa })
+    else:
         if is_cgi:
             print "<br>",
-        print team
+        print "FA signing priority for week %d" % (week + 1)
+        if is_cgi:
+            print "<br>",
+        print "(highest to lowest)"
+        for team in fa:
+            if is_cgi:
+                print "<br>",
+            print team
 
-    if is_cgi:
-        print "</body></html>"
+        if is_cgi:
+            print "</body></html>"
 
 
 if __name__ == "__main__":
