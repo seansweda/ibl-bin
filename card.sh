@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: card,v 1.7 2010/04/23 20:48:35 sweda Exp sweda $
 
 # -b: batters
 # -p: pitchers
