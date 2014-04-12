@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# $Id: card.py,v 1.8 2013/03/19 16:24:35 sweda Exp sweda $
 
 import os
 import sys
