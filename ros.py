@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# $Id: ros.py,v 1.18 2012/02/07 04:33:31 sweda Exp sweda $
 #
 # flags
 # -c: card info
