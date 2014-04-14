@@ -4,7 +4,7 @@ import os
 import sys
 import getopt
 import time
-
+import yaml
 import psycopg2
 
 def usage():
@@ -24,6 +24,14 @@ except getopt.GetoptError, err:
     print str(err)
     usage()
 
+try:
+    f = open('/home/sweda/bin/tiers.yml', 'rU')
+except IOError, err:
+    print str(err)
+    sys.exit(1)
+
+y = yaml.safe_load(f)
+
 # default is year + 1
 year = int(time.strftime("%Y"))
 year = "%s" % ( int(year) + 1 )
@@ -34,17 +42,12 @@ for (opt, arg) in opts:
 
 sqlbase = "select ibl_team from teams where item_type=0 and tig_name = (%s);"
 
-tier0 = [ 'TRI', 'NJR', 'CSG', 'BAL', 'WMS' ]
-tier1 = [ 'GTY', 'CAN', 'ODM', 'HAV', 'KAT', 'MOR', 'MNM', 'MAD', 'SFP', 'PAD', 'POR' ]
-tier2 = [ 'NYK', 'SKY', 'SDQ', 'MCM', 'SEA' ]
-tier3 = [ 'BOW', 'PHI', 'COU' ]
-
-order1 = tier0 + tier1 + tier2 + tier3
-tier0.reverse()
-tier1.reverse()
-tier2.reverse()
-tier3.reverse()
-order2 = tier0 + tier1 + tier2 + tier3
+order1 = y['tier0'] + y['tier1'] + y['tier2'] + y['tier3']
+y['tier0'].reverse()
+y['tier1'].reverse()
+y['tier2'].reverse()
+y['tier3'].reverse()
+order2 = y['tier0'] + y['tier1'] + y['tier2'] + y['tier3']
 
 for rnd in xrange(1,16):
     for pick in xrange(1,25):
