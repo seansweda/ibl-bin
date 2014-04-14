@@ -255,8 +255,10 @@ while (<DATA>) {
 	    $sched = schedck( $week, $home, $away, 'scores' );
 	    if ( $sched == -1 ) {
 		print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
+		$fatalerr++;
 	    } elsif ( $sched == 2 ) {
 		print "$away @ $home not valid matchup for week $week\n";
+		$fatalerr++;
 	    } 
 	    # valid matchup
 	    else {
@@ -305,6 +307,7 @@ while (<DATA>) {
 	if ( $#scores1 == -1 ) {
 	    print "line $lines bad formatting, blank line immediately after SCORES\n";
 	    $scores = -1;
+	    $fatalerr++;
 	}
     }
     else {
@@ -780,6 +783,7 @@ while (<DATA>) {
 		$fatalerr++;
 	    }
 	    if ( $updates && !$fatalerr ) {
+		$injuries++;
 		$dbh->do("
 		    insert into $startsdb
 		    values ( '$starts[0]', '$starts[1]', 0, $psp, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, 0, 0, $week, '$home', '$away' );
@@ -827,6 +831,7 @@ while (<DATA>) {
 		$fatalerr++;
 	    }
 	    if ( $updates && !$fatalerr ) {
+		$injuries++;
 		$dbh->do("
 		    insert into $startsdb
 		    values ( '$starts[0]', '$starts[1]', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $inj, 0, 0, $week, '$home', '$away' );
@@ -988,6 +993,12 @@ if ( $updates ) {
 	print "stats database not updated, illegal usage\n";
 	$dbh->disconnect;
 	exit 1;
+    }
+    elsif ( $injuries && !( $batters && $pitchers ) ) {
+	$dbh->rollback;
+	print "database not updated, starts/injuries submitted without full GRS\n";
+	$dbh->disconnect;
+	exit 2;
     }
     else {
 	if ( $batters && $pitchers ) {
