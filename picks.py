@@ -3,6 +3,7 @@
 import os
 import sys
 import getopt
+import time
 
 import psycopg2
 
@@ -18,10 +19,18 @@ except psycopg2.DatabaseError, err:
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'BPaipAcdLnf')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'y:')
 except getopt.GetoptError, err:
     print str(err)
     usage()
+
+# default is year + 1
+year = int(time.strftime("%Y"))
+year = "%s" % ( int(year) + 1 )
+
+for (opt, arg) in opts:
+    if opt == '-y':
+        year = arg
 
 sqlbase = "select ibl_team from teams where item_type=0 and tig_name = (%s);"
 
@@ -41,7 +50,7 @@ for rnd in xrange(1,16):
     for pick in xrange(1,25):
         original = order1[ pick - 1 ] if rnd % 2 == 1 else order2[ pick - 1 ] 
         pickstr = original + '#' + str(rnd)
-        cursor.execute(sqlbase, (pickstr + ' (14)',))
+        cursor.execute(sqlbase, (pickstr + ' (%s)' % year[-2:],))
         owner = cursor.fetchone()
         if owner:
             print "%-5s  %3s  (%s)" % ( str(rnd) + '-' + str(pick), 
