@@ -70,9 +70,9 @@ def main():
         # no user input so we'll find latest week with reported results
         cursor.execute("select week, count(*) from games\
                 group by week order by week desc;");
-        # need to have more than 1 series reported to set week
+        # need to have more than 2 series reported to set week
         for week, num in cursor.fetchall():
-            if num > 5:
+            if num > 8:
                 break
 
     # start with last year
