@@ -155,6 +155,7 @@ for arg in args:
         print eol
     bnum = 0
     pnum = 0
+    active = 0
 
     team = arg.upper()
     cursor.execute(sqlbase, (team,))
@@ -178,6 +179,8 @@ for arg in args:
             print "%-15s %-40s" % ( trim(tigname), trim(how) )
         if type == 1 and do_pit:
             pnum += 1
+            if status == 1:
+                active += 1
             if status == 1 and do_active or status > 1 and do_inactive:
                 print "%s %-3s %-15s" % ( star(status, throws), mlb, name ),
                 if do_card and (mlb, name) in p_cards:
@@ -195,6 +198,8 @@ for arg in args:
                 print
         if type == 2 and do_bat:
             bnum += 1
+            if status == 1:
+                active += 1
             if status == 1 and do_active or status > 1 and do_inactive:
                 print "%s %-3s %-15s" % ( star(status, bats), mlb, name ),
                 if do_card and (mlb, name) in b_cards:
@@ -211,8 +216,8 @@ for arg in args:
                     print poslist( b_def[(mlb,name)][2:], 56 ),
                 print
     if count and bnum and pnum:
-        print "%s players: %s (%s pitchers, %s batters)" % \
-                (team, bnum + pnum, pnum, bnum)
+        print "%s players: %s (%s active, %s pitchers, %s batters)" % \
+                (team, bnum + pnum, active, pnum, bnum)
 
 db.close()
 
