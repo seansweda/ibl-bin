@@ -153,9 +153,12 @@ for arg in args:
     if last > 0:
         last = -1
         print eol
-    bnum = 0
-    pnum = 0
+    b_num = 0
+    p_num = 0
     active = 0
+    b_act = 0
+    p_act = 0
+    uncarded = 0
 
     team = arg.upper()
     cursor.execute(sqlbase, (team,))
@@ -171,16 +174,19 @@ for arg in args:
             elif type == 1 and do_bat and do_pit:
                 print header + 'PITCHERS'
             elif type == 2 and do_bat and do_pit:
-                if pnum > 0:
+                if p_num > 0:
                     print
                 print header + 'BATTERS'
             last = type
         if type == 0 and do_picks:
             print "%-15s %-40s" % ( trim(tigname), trim(how) )
         if type == 1 and do_pit:
-            pnum += 1
+            p_num += 1
             if status == 1:
                 active += 1
+                p_act += 1
+            elif status == 3:
+                uncarded += 1
             if status == 1 and do_active or status > 1 and do_inactive:
                 print "%s %-3s %-15s" % ( star(status, throws), mlb, name ),
                 if do_card and (mlb, name) in p_cards:
@@ -197,9 +203,12 @@ for arg in args:
                     print pitrat(p_def[(mlb,name)]),
                 print
         if type == 2 and do_bat:
-            bnum += 1
+            b_num += 1
             if status == 1:
                 active += 1
+                b_act += 1
+            elif status == 3:
+                uncarded += 1
             if status == 1 and do_active or status > 1 and do_inactive:
                 print "%s %-3s %-15s" % ( star(status, bats), mlb, name ),
                 if do_card and (mlb, name) in b_cards:
@@ -215,9 +224,11 @@ for arg in args:
                 elif do_def and (mlb, name) in b_def:
                     print poslist( b_def[(mlb,name)][2:], 56 ),
                 print
-    if count and bnum and pnum:
-        print "%s players: %s (%s active, %s pitchers, %s batters)" % \
-                (team, bnum + pnum, active, pnum, bnum)
+    if count and b_num and p_num:
+        print "%s: %2s players (%2s pitchers, %2s batters, %s uncarded)" % \
+                (team, b_num + p_num, p_num, b_num, uncarded) + \
+                " %2s active (%2s/%2s)" % \
+                (active, p_act, b_act)
 
 db.close()
 
