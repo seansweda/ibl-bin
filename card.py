@@ -41,7 +41,7 @@ def p_hash(datafile, lower=False):
     return myhash
 
 def p_grep(player, datafile):
-    cmd = ['/bin/egrep', '-i']
+    cmd = ['egrep', '-i']
     cmd.append(player)
     cmd.append(datafile)
     try: 
