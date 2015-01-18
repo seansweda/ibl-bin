@@ -1,10 +1,13 @@
 #!/bin/bash
 
+data=/tmp/picks.txt
+year=${PICKSYEAR:-`date +%Y`}
+
 if [ $# -eq 0 ]; then
-    exec picks.py
+    exec picks.py -y $year
 else
-    if ! [ -s /tmp/picks.txt ]; then
-	picks.py >| /tmp/picks.txt
+    if [ x`find $data -mtime -1 2>/dev/null` != x${data} ]; then
+	picks.py -y $year >| /tmp/picks.txt
     fi
 
     for x in $*; do
