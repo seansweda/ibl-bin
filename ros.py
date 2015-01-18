@@ -65,6 +65,19 @@ def pitrat(p):
             ( p[2].replace('/0', '/ 0'), p[3], p[6], p[7], p[8] )
     return defense
 
+def pitfat(p):
+    fatigue = "%2s/%2s  " % ( p[2], p[3] )
+    if len(p) == 5:
+        fatigue += "%11s" % ( p[4] )
+    else:
+        index = 4
+        while index < len(p):
+            #print "%s %s %s\n" % (index, len(p), p[index])
+            fatigue += " "
+            fatigue += p[index]
+            index += 1
+    return fatigue
+
 # globals
 do_bat = True
 do_pit = True
@@ -116,7 +129,6 @@ for (opt, arg) in opts:
         args += [ row[0] for row in sorted(cursor.fetchall()) ]
     elif opt == '-c':
         do_card = True
-        do_def = True
     elif opt == '-d':
         do_def = True
     elif opt == '-L':
@@ -141,12 +153,12 @@ if not do_active and not do_inactive:
     print "may only choose one of -a | -i"
     usage()
 
-if do_card:
+if do_card or do_def:
     b_cards = p_hash( cardpath() + '/' + batters )
     p_cards = p_hash( cardpath() + '/' + pitchers )
-if do_def:
     b_def = p_hash( cardpath() + '/defense.txt' )
     p_def = p_hash( cardpath() + '/pitrat.txt' )
+    p_fat = p_hash( cardpath() + '/bfp.txt' )
 
 last = -1
 for arg in args:
@@ -195,12 +207,13 @@ for arg in args:
                             print "%3s" % num,
                         else:
                             print "%s" % num,
-                    if do_def and (mlb, name) in p_def:
-                        print ".", pitrat(p_def[(mlb,name)]),
+                    if (mlb, name) in p_def:
+                        print ".", pitfat(p_fat[(mlb,name)]),
                 elif not (do_card or do_def):
                     print " %-40s" % ( trim(how) ),
                 elif do_def and (mlb, name) in p_def:
-                    print pitrat(p_def[(mlb,name)]),
+                    print "%-24s" % ( pitrat(p_def[(mlb,name)]) ),
+                    print ". ",pitfat(p_fat[(mlb,name)]),
                 print
         if type == 2 and do_bat:
             b_num += 1
@@ -217,7 +230,7 @@ for arg in args:
                             print "%3s" % num,
                         else:
                             print "%s" % num,
-                    if do_def and (mlb, name) in b_def:
+                    if (mlb, name) in b_def:
                         print ".", poslist( b_def[(mlb,name)][2:], 24 ),
                 elif not (do_card or do_def):
                     print " %-40s" % ( trim(how) ),
