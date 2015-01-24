@@ -62,8 +62,11 @@ for rnd in xrange(1,16):
         cursor.execute(sqlbase, (pickstr + ' (%s)' % year[-2:],))
         owner = cursor.fetchone()
         if owner:
-            print "%-5s  %3s%s (%s)" % ( str(rnd) + '-' + str(pick),
-                    owner[0], ' ' if roster[owner[0]] < 35 else '*', pickstr )
+            print "%s%-5s  %3s  (%s)" % (
+                    ' ' if roster[owner[0]] < 35 else '*',
+                    str(rnd) + '-' + str(pick),
+                    owner[0], pickstr
+                    )
             roster[owner[0]] += 1
     print
 
