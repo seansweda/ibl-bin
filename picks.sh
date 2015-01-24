@@ -11,7 +11,7 @@ else
     fi
 
     for x in $*; do
-	awk -v team=`echo $x | tr a-z A-Z` '$2 == team' /tmp/picks.txt
+	awk -v team=`echo $x | tr a-z A-Z` '$2 ~ team' /tmp/picks.txt
     done
 fi
 
