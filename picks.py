@@ -49,6 +49,12 @@ y['tier2'].reverse()
 y['tier3'].reverse()
 order2 = y['tier0'] + y['tier1'] + y['tier2'] + y['tier3']
 
+roster = {}
+
+cursor.execute( "select ibl_team, count(*) from teams where item_type > 0 group by ibl_team;" )
+for ibl, count in cursor.fetchall():
+    roster[ibl] = count
+
 for rnd in xrange(1,16):
     for pick in xrange(1,25):
         original = order1[ pick - 1 ] if rnd % 2 == 1 else order2[ pick - 1 ] 
@@ -56,8 +62,9 @@ for rnd in xrange(1,16):
         cursor.execute(sqlbase, (pickstr + ' (%s)' % year[-2:],))
         owner = cursor.fetchone()
         if owner:
-            print "%-5s  %3s  (%s)" % ( str(rnd) + '-' + str(pick), 
-                    owner[0], pickstr )
+            print "%-5s  %3s%s (%s)" % ( str(rnd) + '-' + str(pick),
+                    owner[0], ' ' if roster[owner[0]] < 35 else '*', pickstr )
+            roster[owner[0]] += 1
     print
 
 exit
