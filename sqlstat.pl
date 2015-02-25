@@ -22,8 +22,6 @@ $pitchers = 0;
 $starts = 0;
 $injuries = 0;
 $wins = 0;
-$hwins = 0;
-$awins = 0;
 $losses = 0;
 $lines = 0;
 $week = 0;
@@ -1017,12 +1015,6 @@ if ( $updates ) {
 	    while ( @scores1 && @scores2 ) {
 		#printf "=%s ", shift @scores1;
 		#printf "=%s ", shift @scores2;
-		if ( int($scores1[0]) > int($scores2[0]) ) {
-		    $awins++;
-		}
-		if ( int($scores2[0]) > int($scores1[0]) ) {
-		    $hwins++;
-		}
 		$loop = $dbh->prepare("
 		    insert into games
 		    (week, home_score, away_score, home_team_id, away_team_id)
@@ -1031,8 +1023,7 @@ if ( $updates ) {
 		$loop->execute(int(shift @scores2), int(shift @scores1));
 	    }
 	    $dbh->do("
-		update $scheddb
-		set scores = 1, hwins = $hwins, awins = $awins where
+		update $scheddb set scores = 1 where
 		week = $week and home = '$hcode[0]' and away = '$acode[0]';
 		");
 	    print "scores database updated successfully!\n";
