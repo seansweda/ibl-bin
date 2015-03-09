@@ -60,6 +60,7 @@ def main():
         #  return 0, team has nothing outstanding
         return 0
 
+    week = 0
     if len(sys.argv) > 1:
         # user inputs FA signing week (not results week), so subtract 1
         week = int(sys.argv[1]) - 1
@@ -122,7 +123,8 @@ def main():
 
     #print status
     # sort teams who are up to date ahead of those who are not
-    fa.sort( key=late )
+    if week > 0:
+        fa.sort( key=late )
     #print fa
 
     if do_json:
