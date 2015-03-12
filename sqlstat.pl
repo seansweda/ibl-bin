@@ -12,7 +12,7 @@ do "$FindBin::Bin/DBpasswd.pl";
 
 # constants
 $BCOLS = 17;
-$PCOLS = 10;
+$PCOLS = 11;
 $SCOLS = 4;
 $ICOLS = 5;
 
@@ -833,7 +833,7 @@ while (<DATA>) {
 	    if ( $#line == -1 ) {
 		last;
 	    }
-	    elsif ( $#line != $PCOLS && $#line != $PCOLS + 1 ) {
+	    elsif ( $#line != $PCOLS ) {
 		print "line $lines PITCHERS format error\n";
 		$fatalerr++;
 		last;
