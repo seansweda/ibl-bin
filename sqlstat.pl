@@ -249,6 +249,8 @@ while (<DATA>) {
     $lines++;
     $keyword = (split)[0];
     $keyword =~ tr/a-z/A-Z/;
+    $team = (split)[1];
+    $team =~ tr/a-z/A-Z/;
 
     if ( $keyword eq 'REDO' ) {
 	print "REDO\n";
@@ -356,25 +358,207 @@ while (<DATA>) {
 	    $fatalerr++;
 	}
     }
-    else {
-	$team = (split)[1];
-	$team =~ tr/a-z/A-Z/;
+    # END SCORES
+    elsif ( $keyword eq 'INJURIES' ) {
+	print "INJURIES\n";
+	$sched = schedck( $week, $home, $away, 'inj' );
+	if ( $sched == -1 ) {
+	    print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
+	    $fatalerr++;
+	} elsif ( $sched == 2 ) {
+	    print "$away @ $home not valid matchup for week $week\n";
+	    $fatalerr++;
+	} elsif ( $sched == 1 && !$redo) {
+	    print "week $week, $away @ $home injuries already submitted (use REDO)\n";
+	}
+	# valid matchup
+	else {
+	    $injuries = 1;
+	    if ( $sched == 1 && $redo ) {
+		undoinj();
+	    }
+	    while (<DATA>) {
+		$lines++;
+		@line = split;
+		if ( $#line == -1 ) {
+		    last;
+		}
+		elsif ( $#line < $ICOLS ) {
+		    print "line $lines INJURIES format error\n";
+		    $fatalerr++;
+		    last;
+		}
+		else {
+		    ( $slot, $pos, $ibl, $mlb, $name, $inj ) = @line;
+		    @starts = find( $mlb, $name, $lines);
+
+		    if ( $inj !~ /^\d+$/ ) {
+			print "line $lines \"$inj\" not valid injury days\n";
+			$fatalerr++;
+		    }
+		    elsif ( @starts ) {
+			printf("%-3s %s injured for %s day(s)\n", $mlb, $name, $inj);
+		    }
+		    else {
+			#print "line $lines find error\n";
+			$fatalerr++;
+		    }
+		}
+
+		if ( iblck($ibl) ) {
+		    print "line $lines invalid IBL team designation: $ibl\n";
+		    $fatalerr++;
+		}
+		if ( $updates && !$fatalerr ) {
+		    $dbh->do("
+			insert into $startsdb
+			values ( '$starts[0]', '$starts[1]', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $inj, 0, 0, $week, '$home', '$away' );
+			");
+		}
+	    }
+	}
     }
+    # END INJURIES
+    elsif ( $keyword eq 'STARTS' ) {
+	print "STARTS\n";
+	if ( $updates && !($week && $home && $away) ) {
+	    print "line $lines missing or invalid WEEK/HOME/AWAY info, cannot update\n";
+	    $fatalerr++;
+	}
+	while (<DATA>) {
+	    $psp = $psc = $ps1b = $ps2b = $ps3b = $psss = $pslf = $pscf = $psrf = 0;
+	    $lines++;
+	    @line = split;
+	    if ( $#line == -1 ) {
+		last;
+	    }
+	    elsif ( $#line < $SCOLS ) {
+		print "line $lines STARTS format error\n";
+		$fatalerr++;
+		last;
+	    }
+	    else {
+		( $slot, $pos, $ibl, $mlb, $name ) = @line;
+		@starts = find( $mlb, $name, $lines);
+		$pos =~ tr/A-Z/a-z/;
+		$pos =~ s/\-.*$//;
+		if ( @starts ) {
+		    if ( $pos eq 'p' ) {
+			if ( $starts[3] == 0 ) {
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
+			}
+			else {
+			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
+			    $psp = -1;
+			}
+		    }
+		    if ( $pos eq 'c' ) {
+			if ( $starts[4] == 0 ) {
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
+			}
+			else {
+			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
+			    $psc = -1;
+			}
+		    }
+		    elsif ( $pos eq '1b' ) {
+			if ( $starts[5] == 0 ) {
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
+			}
+			else {
+			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
+			    $ps1b = -1;
+			}
+		    }
+		    elsif ( $pos eq '2b' ) {
+			if ( $starts[6] == 0 ) {
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
+			}
+			else {
+			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
+			    $ps2b = -1;
+			}
+		    }
+		    elsif ( $pos eq '3b' ) {
+			if ( $starts[7] == 0 ) {
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
+			}
+			else {
+			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
+			    $ps3b = -1;
+			}
+		    }
+		    elsif ( $pos eq 'ss' ) {
+			if ( $starts[8] == 0 ) {
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
+			}
+			else {
+			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
+			    $psss = -1;
+			}
+		    }
+		    elsif ( $pos eq 'lf' ) {
+			if ( $starts[9] == 0 ) {
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
+			}
+			else {
+			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
+			    $pslf = -1;
+			}
+		    }
+		    elsif ( $pos eq 'cf' ) {
+			if ( $starts[10] == 0 ) {
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
+			}
+			else {
+			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
+			    $pscf = -1;
+			}
+		    }
+		    elsif ( $pos eq 'rf' ) {
+			if ( $starts[11] == 0 ) {
+			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
+			    $softerr++;
+			}
+			else {
+			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
+			    $psrf = -1;
+			}
+		    }
+		}
+		else {
+		    #print "line $lines find error\n";
+		    $fatalerr++;
+		}
+	    }
 
-
-    if ( $keyword eq 'BATTERS' && !$team ) {
+	    if ( iblck($ibl) ) {
+		print "line $lines invalid IBL team designation: $ibl\n";
+		$fatalerr++;
+	    }
+	    if ( $updates && !$fatalerr ) {
+		$dbh->do("
+		    insert into $startsdb
+		    values ( '$starts[0]', '$starts[1]', 0, $psp, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, 0, 0, $week, '$home', '$away' );
+		    ");
+	    }
+	}
+    }
+    # END STARTS
+    elsif ( $keyword eq 'BATTERS' && !$team ) {
 	print "line $lines BATTERS missing IBL team designation\n";
 	$fatalerr++;
 	$batters++;
     }
-
-    if ( $keyword eq 'PITCHERS' && !$team ) {
-	print "line $lines PITCHERS missing IBL team designation\n";
-	$fatalerr++;
-	$pitchers++;
-    }
-
-    if ( $keyword eq 'BATTERS' && $team ) {
+    elsif ( $keyword eq 'BATTERS' && $team ) {
 	$batters++;
 	$order = 1;
 	$start = 0;
@@ -625,7 +809,12 @@ while (<DATA>) {
 	}
 
     }
-
+    # END BATTERS
+    elsif ( $keyword eq 'PITCHERS' && !$team ) {
+	print "line $lines PITCHERS missing IBL team designation\n";
+	$fatalerr++;
+	$pitchers++;
+    }
     elsif ( $keyword eq 'PITCHERS' && $team ) {
 	$pitchers++;
 	$start = 1;
@@ -705,201 +894,7 @@ while (<DATA>) {
 	    }
 	}
     }
-    
-    elsif ( $keyword eq 'STARTS' ) {
-	print "STARTS\n";
-	if ( $updates && !($week && $home && $away) ) {
-	    print "line $lines missing or invalid WEEK/HOME/AWAY info, cannot update\n";
-	    $fatalerr++;
-	}
-	while (<DATA>) {
-	    $psp = $psc = $ps1b = $ps2b = $ps3b = $psss = $pslf = $pscf = $psrf = 0;
-	    $lines++;
-	    @line = split;
-	    if ( $#line == -1 ) {
-		last;
-	    }
-	    elsif ( $#line < $SCOLS ) {
-		print "line $lines STARTS format error\n";
-		$fatalerr++;
-		last;
-	    }
-	    else {
-		( $slot, $pos, $ibl, $mlb, $name ) = @line;
-		@starts = find( $mlb, $name, $lines);
-		$pos =~ tr/A-Z/a-z/;
-		$pos =~ s/\-.*$//;
-		if ( @starts ) {
-		    if ( $pos eq 'p' ) {
-			if ( $starts[3] == 0 ) {
-			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
-			    $softerr++;
-			}
-			else {
-			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
-			    $psp = -1;
-			}
-		    }
-		    if ( $pos eq 'c' ) {
-			if ( $starts[4] == 0 ) {
-			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
-			    $softerr++;
-			}
-			else {
-			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
-			    $psc = -1;
-			}
-		    }
-		    elsif ( $pos eq '1b' ) {
-			if ( $starts[5] == 0 ) {
-			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
-			    $softerr++;
-			}
-			else {
-			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
-			    $ps1b = -1;
-			}
-		    }
-		    elsif ( $pos eq '2b' ) {
-			if ( $starts[6] == 0 ) {
-			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
-			    $softerr++;
-			}
-			else {
-			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
-			    $ps2b = -1;
-			}
-		    }
-		    elsif ( $pos eq '3b' ) {
-			if ( $starts[7] == 0 ) {
-			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
-			    $softerr++;
-			}
-			else {
-			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
-			    $ps3b = -1;
-			}
-		    }
-		    elsif ( $pos eq 'ss' ) {
-			if ( $starts[8] == 0 ) {
-			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
-			    $softerr++;
-			}
-			else {
-			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
-			    $psss = -1;
-			}
-		    }
-		    elsif ( $pos eq 'lf' ) {
-			if ( $starts[9] == 0 ) {
-			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
-			    $softerr++;
-			}
-			else {
-			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
-			    $pslf = -1;
-			}
-		    }
-		    elsif ( $pos eq 'cf' ) {
-			if ( $starts[10] == 0 ) {
-			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
-			    $softerr++;
-			}
-			else {
-			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
-			    $pscf = -1;
-			}
-		    }
-		    elsif ( $pos eq 'rf' ) {
-			if ( $starts[11] == 0 ) {
-			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
-			    $softerr++;
-			}
-			else {
-			    printf("%-3s %s extra start @ %s\n", $mlb, $name, $pos);
-			    $psrf = -1;
-			}
-		    }
-		}
-		else {
-		    #print "line $lines find error\n";
-		    $fatalerr++;
-		}
-	    }
-
-	    if ( iblck($ibl) ) {
-		print "line $lines invalid IBL team designation: $ibl\n";
-		$fatalerr++;
-	    }
-	    if ( $updates && !$fatalerr ) {
-		$dbh->do("
-		    insert into $startsdb
-		    values ( '$starts[0]', '$starts[1]', 0, $psp, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, 0, 0, $week, '$home', '$away' );
-		    ");
-	    }
-	}
-    }
-
-    elsif ( $keyword eq 'INJURIES' ) {
-	print "INJURIES\n";
-	$sched = schedck( $week, $home, $away, 'inj' );
-	if ( $sched == -1 ) {
-	    print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
-	    $fatalerr++;
-	} elsif ( $sched == 2 ) {
-	    print "$away @ $home not valid matchup for week $week\n";
-	    $fatalerr++;
-	} elsif ( $sched == 1 && !$redo) {
-	    print "week $week, $away @ $home injuries already submitted (use REDO)\n";
-	}
-	# valid matchup
-	else {
-	    $injuries = 1;
-	    if ( $sched == 1 && $redo ) {
-		undoinj();
-	    }
-	    while (<DATA>) {
-		$lines++;
-		@line = split;
-		if ( $#line == -1 ) {
-		    last;
-		}
-		elsif ( $#line < $ICOLS ) {
-		    print "line $lines INJURIES format error\n";
-		    $fatalerr++;
-		    last;
-		}
-		else {
-		    ( $slot, $pos, $ibl, $mlb, $name, $inj ) = @line;
-		    @starts = find( $mlb, $name, $lines);
-
-		    if ( $inj !~ /^\d+$/ ) {
-			print "line $lines \"$inj\" not valid injury days\n";
-			$fatalerr++;
-		    }
-		    elsif ( @starts ) {
-			printf("%-3s %s injured for %s day(s)\n", $mlb, $name, $inj);
-		    }
-		    else {
-			#print "line $lines find error\n";
-			$fatalerr++;
-		    }
-		}
-
-		if ( iblck($ibl) ) {
-		    print "line $lines invalid IBL team designation: $ibl\n";
-		    $fatalerr++;
-		}
-		if ( $updates && !$fatalerr ) {
-		    $dbh->do("
-			insert into $startsdb
-			values ( '$starts[0]', '$starts[1]', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $inj, 0, 0, $week, '$home', '$away' );
-			");
-		}
-	    }
-	}
-    }
-
+    # END PITCHERS
     elsif ( $keyword eq 'TOTALS' ) {
 	@line = split;
 	if ( iblck($ibl) == 0 ) {
@@ -948,10 +943,6 @@ while (<DATA>) {
 	    $xbk{$xteam} += $line[1];
 	}
     }
-
-#    if ( $week && $home && $away && $redo && !$redone) {
-#	$redone = 1;
-#    }
 }
 
 print "\n";
