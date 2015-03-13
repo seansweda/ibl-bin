@@ -83,6 +83,10 @@ if ( $week && $home && $away ) {
 	week = $week and home = '$home' and away = '$away';
 	");
     $dbh->do("
+	delete from $injdb where
+	week = $week and home = '$home' and away = '$away';
+	");
+    $dbh->do("
 	delete from $batdb where
 	week = $week and home = '$home' and away = '$away';
 	");

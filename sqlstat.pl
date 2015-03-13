@@ -175,6 +175,10 @@ sub undoinj {
 	week = $week and home = '$hcode' and away = '$acode';
 	");
     $dbh->do("
+	delete from $injdb where
+	week = $week and home = '$home' and away = '$away';
+	");
+    $dbh->do("
 	delete from $startsdb where
 	week = $week and home = '$home' and away = '$away' and inj > 0;
 	");
@@ -383,15 +387,56 @@ while (<DATA>) {
 		    last;
 		}
 		else {
-		    ( $slot, $pos, $ibl, $mlb, $name, $inj ) = @line;
-		    @starts = find( $mlb, $name, $lines);
+		    $day = shift @line;
+		    $type = shift @line;
+		    $ibl = shift @line;
+		    $mlb = shift @line;
+		    $name = shift @line;
+		    $inj = shift @line;
 
-		    if ( $inj !~ /^\d+$/ ) {
+		    if ( @line[0] =~ /^\d+$/ ) {
+			$dtd = shift @line;
+		    } else {
+			$dtd = 0
+		    }
+
+		    # default: injury+DTD
+		    $tcode = 0;
+		    if ( $type =~ /^[oO]/ ) {
+			# "out": fixed duration (no DTD)
+			$tcode = 1;
+		    } elsif ( $type =~ /^[sS]/ ) {
+			# "sus": suspension
+			$tcode = 2;
+		    } elsif ( $type =~ /^[aA]/ ) {
+			# "adj": no injury credit
+			$tcode = 3;
+		    }
+
+		    $tigname = $mlb . " " . $name;
+		    $tigname =~ s/\s+$//;
+
+		    @starts = find( $mlb, $name, $lines);
+		    if ( $day !~ /^\d+$/ || $day < 1 || $day > 4 ) {
+			print "line $lines \"$day\" not valid day [1-4]\n";
+			$fatalerr++;
+		    }
+		    elsif ( $inj !~ /^\d+$/ ) {
 			print "line $lines \"$inj\" not valid injury days\n";
 			$fatalerr++;
 		    }
 		    elsif ( @starts ) {
-			printf("%-3s %s injured for %s day(s)\n", $mlb, $name, $inj);
+			if ( $tcode == 0 ) {
+			    printf( "%-3s %s injured for %i day(s), DTD(%i)\n",
+				$mlb, $name, $inj, $dtd );
+			} elsif ( $tcode == 1 ) {
+			    printf( "%-3s %s out for %i day(s)\n",
+				$mlb, $name, $inj, $dtd );
+			} else {
+			    printf( "%-3s %s adj for %i day(s), no inj days\n",
+				$mlb, $name, $inj, $dtd );
+			}
+			#print "$week $home $away $day $tcode $ibl \"$tigname\" $inj $dtd \"@line\"\n";
 		    }
 		    else {
 			#print "line $lines find error\n";
@@ -405,9 +450,18 @@ while (<DATA>) {
 		}
 		if ( $updates && !$fatalerr ) {
 		    $dbh->do("
-			insert into $startsdb
-			values ( '$starts[0]', '$starts[1]', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $inj, 0, 0, $week, '$home', '$away' );
+			insert into $injdb
+			values ( $week, '$home', '$away', $day, $tcode,
+			'$ibl', '$tigname', $inj, $dtd, '@line' );
 			");
+		    if ( $tcode != 2 ) {
+			$dbh->do("
+			    insert into $startsdb
+			    values ( '$starts[0]', '$starts[1]',
+			    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $inj, 0, 0,
+			    $week, '$home', '$away' );
+			    ");
+		    }
 		}
 	    }
 	}

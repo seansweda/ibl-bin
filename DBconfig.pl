@@ -10,4 +10,5 @@ $pitdb = pit2015;
 $teamdb = teams2015;
 $scheddb = sched2015;
 $extradb = extra2015;
+$injdb = inj2015;
 
