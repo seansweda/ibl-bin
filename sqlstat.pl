@@ -103,7 +103,7 @@ sub iblcode {
     @s = $dbh->selectrow_array("
 	    select code from $teamdb where ibl = '$team';
 	    ");
-    return @s;
+    return $s[0];
 }
 
 sub gamescode {
@@ -111,7 +111,7 @@ sub gamescode {
     @s = $dbh->selectrow_array("
 	    select id from franchises where nickname = '$team';
 	    ");
-    return @s;
+    return $s[0];
 }
 
 sub schedck {
@@ -133,12 +133,10 @@ sub schedck {
 	$returncode = -1;
     }
     else {
-	@hcode = iblcode($home);
-	@acode = iblcode($away);
-	if ( @hcode && @acode ) {
+	if ( $hcode && $acode ) {
 	    @status = $dbh->selectrow_array("
 		    select $type from $scheddb where
-		    week = $week and home = '$hcode[0]' and away = '$acode[0]';
+		    week = $week and home = '$hcode' and away = '$acode';
 		    ");
 	    if ( @status ) {
 		if ( shift @status ) {
@@ -158,29 +156,23 @@ sub schedck {
 
 sub undoscores {
     print "REDO: removing scores week $week, $away @ $home\n";
-    @hcode = iblcode($home);
-    @acode = iblcode($away);
-    @hgame = gamescode($home);
-    @agame = gamescode($away);
     $dbh->do("
 	update $scheddb set scores = 0 where
-	week = $week and home = '$hcode[0]' and away = '$acode[0]';
+	week = $week and home = '$hcode' and away = '$acode';
 	");
     $dbh->do("
 	delete from games where
 	week = $week and
-	home_team_id = $hgame[0] and
-	away_team_id = $agame[0];
+	home_team_id = $hgame and
+	away_team_id = $agame;
 	");
 }
 
 sub undoinj {
     print "REDO: removing injuries week $week, $away @ $home\n";
-    @hcode = iblcode($home);
-    @acode = iblcode($away);
     $dbh->do("
 	update $scheddb set inj = 0 where
-	week = $week and home = '$hcode[0]' and away = '$acode[0]';
+	week = $week and home = '$hcode' and away = '$acode';
 	");
     $dbh->do("
 	delete from $startsdb where
@@ -190,11 +182,9 @@ sub undoinj {
 
 sub undostats {
     print "REDO: removing stats week $week, $away @ $home\n";
-    @hcode = iblcode($home);
-    @acode = iblcode($away);
     $dbh->do("
 	update $scheddb set status = 0 where
-	week = $week and home = '$hcode[0]' and away = '$acode[0]';
+	week = $week and home = '$hcode' and away = '$acode';
 	");
     $dbh->do("
 	delete from $startsdb where
@@ -284,6 +274,8 @@ while (<DATA>) {
 	else {
 	    print "HOME: $home\n";
 	}
+	$hcode = iblcode($home);
+	$hgame = gamescode($home);
     }
     elsif ( $keyword eq 'AWAY' ) {
 	$away = (split)[1];
@@ -296,6 +288,8 @@ while (<DATA>) {
 	else {
 	    print "AWAY: $away\n";
 	}
+	$acode = iblcode($away);
+	$agame = gamescode($away);
     }
     elsif ( $keyword eq 'SCORES' ) {
 	printf "\nSCORES\n";
@@ -1024,41 +1018,35 @@ if ( $updates ) {
     }
     else {
 	if ( $batters && $pitchers ) {
-	    @hcode = iblcode($home);
-	    @acode = iblcode($away);
 	    $dbh->do("
 		update $scheddb
 		set status = 1, inj = 1 where
-		week = $week and home = '$hcode[0]' and away = '$acode[0]';
+		week = $week and home = '$hcode' and away = '$acode';
 		");
 	    print "stats database updated successfully!\n";
 	}
 	if ( $injuries ) {
-	    @hcode = iblcode($home);
-	    @acode = iblcode($away);
 	    $dbh->do("
 		update $scheddb
 		set inj = 1 where
-		week = $week and home = '$hcode[0]' and away = '$acode[0]';
+		week = $week and home = '$hcode' and away = '$acode';
 		");
 	    print "injury database updated successfully!\n";
 	}
 	if ( $scores == 1 && @scores1 && @scores2 ) {
-	    @hgame = gamescode($home);
-	    @agame = gamescode($away);
 	    while ( @scores1 && @scores2 ) {
 		#printf "=%s ", shift @scores1;
 		#printf "=%s ", shift @scores2;
 		$loop = $dbh->prepare("
 		    insert into games
 		    (week, home_score, away_score, home_team_id, away_team_id)
-		    values ( $week, ?, ?, $hgame[0], $agame[0] );
+		    values ( $week, ?, ?, $hgame, $agame );
 		    ");
 		$loop->execute(int(shift @scores2), int(shift @scores1));
 	    }
 	    $dbh->do("
 		update $scheddb set scores = 1 where
-		week = $week and home = '$hcode[0]' and away = '$acode[0]';
+		week = $week and home = '$hcode' and away = '$acode';
 		");
 	    print "scores database updated successfully!\n";
 	}
