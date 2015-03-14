@@ -154,7 +154,7 @@ def main():
             loc = 'away'
         print "week %2i %s: %i served (%3i)" % (week, loc, served, length)
 
-        while length > 0:
+        while length > 0 and week < 27:
             week += 1
 
             series = get_series( player, name, week, loc )
@@ -186,6 +186,17 @@ def main():
                 player[name][week]['ASB'] = series
                 print "week %2i %s: %i served (%3i) %s" % \
                     (week, 'ASB ', served, length, dcode(player[name][week]['ASB']))
+
+        if length > 0:
+            # post-season
+            series = []
+            for x in range(40):
+                series.append(1)
+            served = update( series, code, length )
+            length -= served
+            player[name][week]['post'] = series
+            print "week %2i %s: %i served (%3i) %s" % \
+                (week, 'post', served, length, dcode(player[name][week]['post']))
 
         print player
         print
