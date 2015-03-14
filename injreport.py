@@ -19,6 +19,93 @@ def dumpenv(form):
     print "<p>"
     return
 
+def flip( site ):
+    if site == 'home':
+        return 'away'
+    else:
+        return 'home'
+
+def offday( week ):
+    offweeks = ( 2, 5, 8, 10, 13, 18, 21, 24 )
+    return offweeks.count( week )
+
+def allstar( week ):
+    if week == 15:
+        return True
+    else:
+        return False
+
+def get_series( player, name, week, loc ):
+    if player[name].has_key(week):
+        if player[name][week].has_key(loc):
+            return player[name][week][loc]
+        else:
+            player[name][week][loc] = {}
+    else:
+        player[name][week] = {}
+        player[name][week][loc] = {}
+
+    obj = [ 0, 0, 0 ]
+    for x in range( offday(week) ):
+        obj.append(1)
+    return obj
+
+def update( days, code, length ):
+    served = 0
+    for x in range( len(days) ):
+        if code == injured or code == no_dtd:
+            if days[x] & inj != inj:
+                if length > 0:
+                    days[x] += inj
+                    length -= 1
+                    served += 1
+                elif length == 0 and code == injured:
+                    days[x] += dtd
+                    length -= 1
+        if code == suspended:
+            if days[x] & sus != sus and days[x] & off != off:
+                if length > 0:
+                    days[x] += sus
+                    length -= 1
+                    served += 1
+        if code == adjustment:
+            if length > 0:
+                days[x] += adj
+                length -= 1
+                served += 1
+
+    return served
+
+def dcode( days ):
+    output = "["
+    dc = { off:'off', inj:'inj', dtd:'dtd', sus:'sus', adj:'adj' }
+    for x in days:
+        if x == ok:
+            output += "( OK  )"
+        else:
+            output += "( "
+            for val in dc.keys():
+                if x & val != 0:
+                    output += dc[val]
+                    output += " "
+            output += ")"
+    output += "]"
+    return output
+
+# sql table injury codes
+injured = 0
+no_dtd = 1
+suspended = 2
+adjustment = 3
+
+# display codes (bitwise)
+ok  =  0
+off =  1
+inj =  2
+dtd =  4
+sus =  8
+adj = 16
+
 def main():
     do_json = False
     is_cgi = False
@@ -55,28 +142,53 @@ def main():
             player[name] = {}
 
         print injury
-        print
+
         served = 3 - day + 1
-        print "served: %i" % served
+        if code != suspended:
+            served += offday( week )
         length -= served
 
         if ibl == home:
-            last = 'home'
+            loc = 'home'
         else:
-            last = 'away'
-        while length > 0:
-                week += 1
-                served = min( 3, length )
-                print "week %i %s: %i (%i)" % (week, last, served, length)
-                length -= served
-                if last == 'home':
-                    last = 'away'
-                else:
-                    last = 'home'
-                served = min( 3, length )
-                print "week %i %s: %i (%i)" % (week, last, served, length)
-                length -= served
+            loc = 'away'
+        print "week %2i %s: %i served (%3i)" % (week, loc, served, length)
 
+        while length > 0:
+            week += 1
+
+            series = get_series( player, name, week, loc )
+            served = update( series, code, length )
+            length -= served
+            player[name][week][loc] = series
+            print "week %2i %s: %i served (%3i) %s" % \
+                    (week, loc, served, length, dcode(player[name][week][loc]))
+
+            if length == 0:
+                break
+            loc = flip( loc )
+
+            series = get_series( player, name, week, loc )
+            served = update( series, code, length )
+            length -= served
+            player[name][week][loc] = series
+            print "week %2i %s: %i served (%3i) %s" % \
+                    (week, loc, served, length, dcode(player[name][week][loc]))
+
+            if allstar( week ) and code != suspended:
+                if player[name].has_key(week) and \
+                        player[name][week].has_key('ASB'):
+                    series = player[name][week]['ASB']
+                else:
+                    series = [ 1, 1, 1 ]
+                served = update( series, code, length )
+                length -= served
+                player[name][week]['ASB'] = series
+                print "week %2i %s: %i served (%3i) %s" % \
+                    (week, 'ASB ', served, length, dcode(player[name][week]['ASB']))
+
+        print player
+        print
 
 if __name__ == "__main__":
     main()
