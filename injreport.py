@@ -197,6 +197,8 @@ def main():
                 series.append(1)
             served = update( series, code, length )
             length -= served
+            if not player[name].has_key(week):
+                player[name][week] = {}
             player[name][week]['post'] = series
             print "week %2i %s: %i served (%3i) %s" % \
                 (week, 'post', served, length, dcode(player[name][week]['post']))
