@@ -135,6 +135,20 @@ def main():
         sys.exit(1)
     cursor = db.cursor()
 
+    report_week = 1
+    if len(sys.argv) > 1:
+        report_week = int(sys.argv[1])
+    elif is_cgi and form.has_key('week'):
+        report_week = int(form.getfirst('week'))
+    else:
+        # no user input so we'll find latest week with all results
+        sql = "select week, count(*) from %s where status = 1\
+                group by week order by week desc;" % DB.sched
+        cursor.execute(sql)
+        for report_week, num in cursor.fetchall():
+            if num == 24:
+                break
+
     player = {}
     sql = "select * from %s order by week, tig_name" % DB.inj
     cursor.execute(sql)
