@@ -52,18 +52,25 @@ def get_series( player, name, week, loc ):
         obj.append(1)
     return obj
 
-def update( days, code, length ):
+def update( days, code, length, day = 1 ):
     served = 0
-    for x in range( len(days) ):
-        if code == injured or code == no_dtd:
+    for x in range( day - 1, len(days) ):
+        if code == injured:
+            if days[x] & inj != inj:
+                if length > 1:
+                    days[x] += inj
+                    length -= 1
+                    served += 1
+                elif length == 1:
+                    days[x] += dtd
+                    length -= 1
+                    served += 1
+        if code == no_dtd:
             if days[x] & inj != inj:
                 if length > 0:
                     days[x] += inj
                     length -= 1
                     served += 1
-                elif length == 0 and code == injured:
-                    days[x] += dtd
-                    length -= 1
         if code == suspended:
             if days[x] & sus != sus and days[x] & off != off:
                 if length > 0:
@@ -160,17 +167,27 @@ def main():
 
         print injury
 
-        served = 3 - day + 1
-        if code != suspended:
-            served += offday( week )
-        length -= served
-
         if ibl == home:
             loc = 'home'
         else:
             loc = 'away'
-        print "week %2i %s: %i served (%3i)" % (week, loc, served, length)
 
+        # add 1 for dtd
+        if code == injured:
+            length += 1
+
+        served = 0
+        series = get_series( player, name, week, loc )
+        # when day > series length inj time assessed next series
+        if day <= len(series):
+            served = update( series, code, length, day )
+            length -= served
+        player[name][week][loc] = series
+
+        print "week %2i %s: %i served (%3i) %s" % \
+            (week, loc, served, length, dcode(player[name][week][loc]))
+
+        # zero length?
         while length > 0 and week < 27:
             week += 1
 
@@ -179,7 +196,7 @@ def main():
             length -= served
             player[name][week][loc] = series
             print "week %2i %s: %i served (%3i) %s" % \
-                    (week, loc, served, length, dcode(player[name][week][loc]))
+                (week, loc, served, length, dcode(player[name][week][loc]))
 
             if length == 0:
                 break
@@ -190,7 +207,7 @@ def main():
             length -= served
             player[name][week][loc] = series
             print "week %2i %s: %i served (%3i) %s" % \
-                    (week, loc, served, length, dcode(player[name][week][loc]))
+                (week, loc, served, length, dcode(player[name][week][loc]))
 
             if allstar( week ) and code != suspended:
                 if player[name].has_key(week) and \
@@ -206,14 +223,13 @@ def main():
 
         if length > 0:
             # post-season
+            week += 1
             series = []
             for x in range(40):
                 series.append(1)
             served = update( series, code, length )
             length -= served
-            if not player[name].has_key(week):
-                player[name][week] = {}
-            player[name][week]['post'] = series
+            player[name][week] = { 'post': series }
             print "week %2i %s: %i served (%3i) %s" % \
                 (week, 'post', served, length, dcode(player[name][week]['post']))
 
