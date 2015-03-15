@@ -5,6 +5,8 @@ import csv
 import sys
 import psycopg2
 
+import DB
+
 # dump environment and parameters for testing
 # not really necessary, mostly for learning purposes
 def dumpenv(form):
@@ -115,9 +117,10 @@ def main():
             #print fa
 
     status = {}
-    cursor.execute( "select ibl, sum(status) as box, sum(scores) as results\
-            from sched2014 s, teams2014 t where week <= (%s) and home = code\
-            group by ibl;", (week,) )
+    sql = "select ibl, sum(status) as box, sum(scores) as results\
+            from %s s, %s t where week <= %i and home = code\
+            group by ibl;" %  ( DB.sched, DB.teams, int(week) )
+    cursor.execute(sql)
     for ibl, box, result in cursor.fetchall():
         status[ibl] = ( box, result )
 

@@ -5,6 +5,8 @@ import csv
 import sys
 import psycopg2
 
+import DB
+
 # dump environment and parameters for testing
 # not really necessary, mostly for learning purposes
 def dumpenv(form):
@@ -134,7 +136,8 @@ def main():
     cursor = db.cursor()
 
     player = {}
-    cursor.execute("select * from inj2015 order by week, tig_name");
+    sql = "select * from %s order by week, tig_name" % DB.inj
+    cursor.execute(sql)
     for injury in cursor.fetchall():
         week, home, away, day, code, ibl, name, length, dtd, desc = injury
 
