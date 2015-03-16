@@ -264,28 +264,10 @@ def main():
             output = "%s " % name.rstrip()
 
             if code == injured or code == no_dtd:
-                days_out = totals( player[name][week], inj )
-                days_out.sort( key = lambda s: s[1], reverse=True )
-                days_out.sort( key = lambda s: s[0] == 'ASB' )
-
-                week_tot = 0
-                for x in days_out:
-                    week_tot += x[1]
-
-                if week_tot > 0:
-                    # week has injury days
-                    output += "out through week %i (" % week
-                    for x in days_out:
-                        output += "%i %s, " % ( x[1], x[0] )
-                    output = output[:-2] + ")"
-                    if code == injured:
-                        output += ", DTD(%i) %s day %i" % \
-                                (failed, loc, search(series, dtd))
+                if length > 0:
+                    output += "out for season"
                 else:
-                    # otherwise, check previous week
-                    if not player[name].has_key(week - 1):
-                        player[name][week - 1] = {}
-                    days_out = totals( player[name][week - 1], inj )
+                    days_out = totals( player[name][week], inj )
                     days_out.sort( key = lambda s: s[1], reverse=True )
                     days_out.sort( key = lambda s: s[0] == 'ASB' )
 
@@ -294,17 +276,38 @@ def main():
                         week_tot += x[1]
 
                     if week_tot > 0:
-                        output += "out through week %i (" % (int(week) - 1)
+                        # week has injury days
+                        output += "out through week %i (" % week
                         for x in days_out:
                             output += "%i %s, " % ( x[1], x[0] )
                         output = output[:-2] + ")"
-                    if code == injured:
-                        if len(output) - 1 >  len(name.rstrip()):
-                            output += ", "
-                        output += "DTD(%i) %s day %i week %i" % \
-                                (failed, loc, search(series, dtd), week)
+                        if code == injured:
+                            output += ", DTD(%i) %s day %i" % \
+                                    (failed, loc, search(series, dtd))
+                    else:
+                        # otherwise, check previous week
+                        if not player[name].has_key(week - 1):
+                            player[name][week - 1] = {}
+                        days_out = totals( player[name][week - 1], inj )
+                        days_out.sort( key = lambda s: s[1], reverse=True )
+                        days_out.sort( key = lambda s: s[0] == 'ASB' )
 
-                # END if injury
+                        week_tot = 0
+                        for x in days_out:
+                            week_tot += x[1]
+
+                        if week_tot > 0:
+                            output += "out through week %i (" % (int(week) - 1)
+                            for x in days_out:
+                                output += "%i %s, " % ( x[1], x[0] )
+                            output = output[:-2] + ")"
+                        if code == injured:
+                            if len(output) - 1 >  len(name.rstrip()):
+                                output += ", "
+                            output += "DTD(%i) %s day %i week %i" % \
+                                    (failed, loc, search(series, dtd), week)
+
+                # END if injured
 
             print output
             # END if report_week
