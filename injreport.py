@@ -182,6 +182,7 @@ def main():
         else:
             loc_q = [ 'away', 'home' ]
 
+        orig_length = length
         # add 1 for dtd
         if code == injured:
             length += 1
@@ -211,8 +212,7 @@ def main():
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
         while length > 0 and week < 27:
-            if loc == 'ASB':
-                loc = loc_q[0]
+            loc = loc_q[0]
             week += 1
             series = get_series( player, name, week, loc )
             served = update( series, code, length )
@@ -264,8 +264,12 @@ def main():
             output = "%s " % name.rstrip()
 
             if code == injured or code == no_dtd:
+                if orig_length == 1:
+                    output += "out %i day" % int(orig_length)
+                else:
+                    output += "out %i days" % int(orig_length)
                 if length > 0:
-                    output += "out for season"
+                    output += ", out for season"
                 else:
                     days_out = totals( player[name][week], inj )
                     days_out.sort( key = lambda s: s[1], reverse=True )
@@ -277,7 +281,7 @@ def main():
 
                     if week_tot > 0:
                         # week has injury days
-                        output += "out through week %i (" % week
+                        output += " through week %i (" % week
                         for x in days_out:
                             output += "%i %s, " % ( x[1], x[0] )
                         output = output[:-2] + ")"
@@ -297,14 +301,14 @@ def main():
                             week_tot += x[1]
 
                         if week_tot > 0:
-                            output += "out through week %i (" % (int(week) - 1)
+                            output += " through week %i (" % (int(week) - 1)
                             for x in days_out:
                                 output += "%i %s, " % ( x[1], x[0] )
                             output = output[:-2] + ")"
                         if code == injured:
-                            if len(output) - 1 >  len(name.rstrip()):
-                                output += ", "
-                            output += "DTD(%i) %s day %i week %i" % \
+                            #if len(output) - 1 >  len(name.rstrip()):
+                            #    output += ", "
+                            output += ", DTD(%i) %s day %i week %i" % \
                                     (failed, loc, search(series, dtd), week)
 
                 # END if injured
