@@ -5,6 +5,7 @@ import csv
 import sys
 import psycopg2
 
+sys.path.append('/home/ibl/bin')
 import DB
 
 # dump environment and parameters for testing
