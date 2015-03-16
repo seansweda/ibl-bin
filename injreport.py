@@ -198,7 +198,7 @@ def main():
         ##print "week %2i %s: %i served (%3i) %s" % \
         ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
-        if allstar( week ) and code != suspended:
+        if length > 0 and allstar( week ) and code != suspended:
             loc = 'ASB'
             if player[name].has_key(week) and \
                     player[name][week].has_key(loc):
@@ -232,7 +232,7 @@ def main():
             ##print "week %2i %s: %i served (%3i) %s" % \
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
-            if allstar( week ) and code != suspended:
+            if length > 0 and allstar( week ) and code != suspended:
                 loc = 'ASB'
                 if player[name].has_key(week) and \
                         player[name][week].has_key(loc):
