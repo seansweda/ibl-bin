@@ -21,12 +21,6 @@ def dumpenv(form):
     print "<p>"
     return
 
-def flip( site ):
-    if site == 'home':
-        return 'away'
-    else:
-        return 'home'
-
 def offday( week ):
     offweeks = ( 2, 5, 8, 10, 13, 18, 21, 24 )
     return offweeks.count( week )
@@ -184,15 +178,16 @@ def main():
             player[name] = {}
 
         if ibl == home:
-            loc = 'home'
+            loc_q = [ 'home', 'away' ]
         else:
-            loc = 'away'
+            loc_q = [ 'away', 'home' ]
 
         # add 1 for dtd
         if code == injured:
             length += 1
 
         served = 0
+        loc = loc_q[0]
         series = get_series( player, name, week, loc )
         # when day > series length inj time assessed next series
         if day <= len(series):
@@ -202,8 +197,22 @@ def main():
         ##print "week %2i %s: %i served (%3i) %s" % \
         ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
+        if allstar( week ) and code != suspended:
+            loc = 'ASB'
+            if player[name].has_key(week) and \
+                    player[name][week].has_key(loc):
+                series = player[name][week][loc]
+            else:
+                series = [ 1, 1, 1 ]
+            served = update( series, code, length )
+            length -= served
+            player[name][week][loc] = series
+            ##print "week %2i %s: %i served (%3i) %s" % \
+            ##    (week, loc, served, length, dcode(player[name][week][loc]))
+
         while length > 0 and week < 27:
-            prev = ( week, loc )
+            if loc == 'ASB':
+                loc = loc_q[0]
             week += 1
             series = get_series( player, name, week, loc )
             served = update( series, code, length )
@@ -214,8 +223,8 @@ def main():
 
             if length == 0:
                 break
-            prev = ( week, loc )
-            loc = flip( loc )
+            loc_q.reverse()
+            loc = loc_q[0]
             series = get_series( player, name, week, loc )
             served = update( series, code, length )
             length -= served
@@ -224,7 +233,6 @@ def main():
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
             if allstar( week ) and code != suspended:
-                prev = ( week, loc )
                 loc = 'ASB'
                 if player[name].has_key(week) and \
                         player[name][week].has_key(loc):
@@ -236,29 +244,29 @@ def main():
                 player[name][week][loc] = series
                 ##print "week %2i %s: %i served (%3i) %s" % \
                 ##    (week, loc, served, length, dcode(player[name][week][loc]))
-                loc = prev[1]
+
             # END while length loop
 
         if length > 0:
             # post-season
-            prev = ( week, loc )
             week += 1
             series = []
+            loc = 'playoffs'
             for x in range(40):
                 series.append(1)
             served = update( series, code, length )
             length -= served
-            player[name][week] = { 'post': series }
+            player[name][week] = { loc: series }
             ##print "week %2i %s: %i served (%3i) %s" % \
-            ##    (week, 'post', served, length, dcode(player[name][week]['post']))
+            ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
         if week >= report_week:
             output = "%s " % name.rstrip()
 
             if code == injured or code == no_dtd:
                 days_out = totals( player[name][week], inj )
-                days_out.sort( key = lambda s: s[1] )
-                days_out.reverse()
+                days_out.sort( key = lambda s: s[1], reverse=True )
+                days_out.sort( key = lambda s: s[0] == 'ASB' )
 
                 week_tot = 0
                 for x in days_out:
@@ -275,9 +283,11 @@ def main():
                                 (failed, loc, search(series, dtd))
                 else:
                     # otherwise, check previous week
+                    if not player[name].has_key(week - 1):
+                        player[name][week - 1] = {}
                     days_out = totals( player[name][week - 1], inj )
-                    days_out.sort( key = lambda s: s[1] )
-                    days_out.reverse()
+                    days_out.sort( key = lambda s: s[1], reverse=True )
+                    days_out.sort( key = lambda s: s[0] == 'ASB' )
 
                     week_tot = 0
                     for x in days_out:
