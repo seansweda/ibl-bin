@@ -52,6 +52,23 @@ def get_series( player, name, week, loc ):
         obj.append(1)
     return obj
 
+def search( days, code ):
+    found = -1
+    for x in range( len(days) ):
+        if days[x] & code == code:
+            found = x
+
+    return found + 1
+
+def totals( week, code ):
+    found = {}
+    for loc in week.keys():
+        found[loc] = 0
+        for x in week[loc]:
+            if x & code == code:
+                found[loc] += 1
+    return found.items()
+
 def update( days, code, length, day = 1 ):
     served = 0
     for x in range( day - 1, len(days) ):
@@ -157,15 +174,14 @@ def main():
                 break
 
     player = {}
-    sql = "select * from %s order by week, tig_name" % DB.inj
+    sql = "select * from %s order by tig_name, week;" % DB.inj
     cursor.execute(sql)
     for injury in cursor.fetchall():
-        week, home, away, day, code, ibl, name, length, dtd, desc = injury
+        week, home, away, day, code, ibl, name, length, failed, desc = injury
+        ##print injury
 
         if not player.has_key(name):
             player[name] = {}
-
-        print injury
 
         if ibl == home:
             loc = 'home'
@@ -183,46 +199,49 @@ def main():
             served = update( series, code, length, day )
             length -= served
         player[name][week][loc] = series
+        ##print "week %2i %s: %i served (%3i) %s" % \
+        ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
-        print "week %2i %s: %i served (%3i) %s" % \
-            (week, loc, served, length, dcode(player[name][week][loc]))
-
-        # zero length?
         while length > 0 and week < 27:
+            prev = ( week, loc )
             week += 1
-
             series = get_series( player, name, week, loc )
             served = update( series, code, length )
             length -= served
             player[name][week][loc] = series
-            print "week %2i %s: %i served (%3i) %s" % \
-                (week, loc, served, length, dcode(player[name][week][loc]))
+            ##print "week %2i %s: %i served (%3i) %s" % \
+            ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
             if length == 0:
                 break
+            prev = ( week, loc )
             loc = flip( loc )
-
             series = get_series( player, name, week, loc )
             served = update( series, code, length )
             length -= served
             player[name][week][loc] = series
-            print "week %2i %s: %i served (%3i) %s" % \
-                (week, loc, served, length, dcode(player[name][week][loc]))
+            ##print "week %2i %s: %i served (%3i) %s" % \
+            ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
             if allstar( week ) and code != suspended:
+                prev = ( week, loc )
+                loc = 'ASB'
                 if player[name].has_key(week) and \
-                        player[name][week].has_key('ASB'):
-                    series = player[name][week]['ASB']
+                        player[name][week].has_key(loc):
+                    series = player[name][week][loc]
                 else:
                     series = [ 1, 1, 1 ]
                 served = update( series, code, length )
                 length -= served
-                player[name][week]['ASB'] = series
-                print "week %2i %s: %i served (%3i) %s" % \
-                    (week, 'ASB ', served, length, dcode(player[name][week]['ASB']))
+                player[name][week][loc] = series
+                ##print "week %2i %s: %i served (%3i) %s" % \
+                ##    (week, loc, served, length, dcode(player[name][week][loc]))
+                loc = prev[1]
+            # END while length loop
 
         if length > 0:
             # post-season
+            prev = ( week, loc )
             week += 1
             series = []
             for x in range(40):
@@ -230,11 +249,57 @@ def main():
             served = update( series, code, length )
             length -= served
             player[name][week] = { 'post': series }
-            print "week %2i %s: %i served (%3i) %s" % \
-                (week, 'post', served, length, dcode(player[name][week]['post']))
+            ##print "week %2i %s: %i served (%3i) %s" % \
+            ##    (week, 'post', served, length, dcode(player[name][week]['post']))
 
-        print player
-        print
+        if week >= report_week:
+            output = "%s " % name.rstrip()
+
+            if code == injured or code == no_dtd:
+                days_out = totals( player[name][week], inj )
+                days_out.sort( key = lambda s: s[1] )
+                days_out.reverse()
+
+                week_tot = 0
+                for x in days_out:
+                    week_tot += x[1]
+
+                if week_tot > 0:
+                    # week has injury days
+                    output += "out through week %i (" % week
+                    for x in days_out:
+                        output += "%i %s, " % ( x[1], x[0] )
+                    output = output[:-2] + ")"
+                    if code == injured:
+                        output += ", DTD(%i) %s day %i" % \
+                                (failed, loc, search(series, dtd))
+                else:
+                    # otherwise, check previous week
+                    days_out = totals( player[name][week - 1], inj )
+                    days_out.sort( key = lambda s: s[1] )
+                    days_out.reverse()
+
+                    week_tot = 0
+                    for x in days_out:
+                        week_tot += x[1]
+
+                    if week_tot > 0:
+                        output += "out through week %i (" % (int(week) - 1)
+                        for x in days_out:
+                            output += "%i %s, " % ( x[1], x[0] )
+                        output = output[:-2] + ")"
+                    if code == injured:
+                        if len(output) - 1 >  len(name.rstrip()):
+                            output += ", "
+                        output += "DTD(%i) %s day %i week %i" % \
+                                (failed, loc, search(series, dtd), week)
+
+                # END if injury
+
+            print output
+            # END if report_week
+
+        # END injury loop
 
 if __name__ == "__main__":
     main()
