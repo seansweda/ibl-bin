@@ -402,13 +402,13 @@ while (<DATA>) {
 
 		    # default: injury+DTD
 		    $tcode = 0;
-		    if ( $type =~ /^[oO]/ ) {
+		    if ( $type =~ /^[oO]/ && length($type) >= 3 ) {
 			# "out": fixed duration (no DTD)
 			$tcode = 1;
-		    } elsif ( $type =~ /^[sS]/ ) {
+		    } elsif ( $type =~ /^[sS]/ && length($type) >= 3 ) {
 			# "sus": suspension
 			$tcode = 2;
-		    } elsif ( $type =~ /^[aA]/ ) {
+		    } elsif ( $type =~ /^[aA]/ && length($type) >= 3 ) {
 			# "adj": no injury credit
 			$tcode = 3;
 		    }
