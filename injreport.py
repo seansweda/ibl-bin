@@ -170,8 +170,8 @@ def main():
     elif is_cgi and form.has_key('week'):
         report_week = int(form.getfirst('week'))
     else:
-        # no user input so we'll find latest week with all results
-        sql = "select week, count(*) from %s where status = 1\
+        # no user input so we'll find latest week with all inj reported
+        sql = "select week, count(*) from %s where inj = 1\
                 group by week order by week desc;" % DB.sched
         cursor.execute(sql)
         for report_week, num in cursor.fetchall():
