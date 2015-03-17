@@ -153,7 +153,8 @@ def main():
             do_json = False
             print "Content-Type: text/html"
             print
-            print "<html><head><title>IBL Injury Report</title></head><body>"
+            if not form.has_key('notitle'):
+                print "<html><head><title>IBL Injury Report</title></head><body>"
             #dumpenv(form)
 
     try:
