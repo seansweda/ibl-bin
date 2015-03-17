@@ -153,7 +153,7 @@ def main():
             do_json = False
             print "Content-Type: text/html"
             print
-            print "<html><head><title>Free Agent signing order</title></head><body>"
+            print "<html><head><title>IBL Injury Report</title></head><body>"
             #dumpenv(form)
 
     try:
@@ -176,6 +176,9 @@ def main():
         for report_week, num in cursor.fetchall():
             if num == 24:
                 break
+
+    if is_cgi:
+        print "<table>"
 
     player = {}
     sql = "select * from %s order by tig_name, week;" % DB.inj
@@ -326,10 +329,17 @@ def main():
                         output += ", DTD(%i) %s day %i week %i" % \
                                 (failed, loc, search(series, dtd), week)
 
-            print '%-80s\t"%s"' % ( output + '.', desc )
+            if is_cgi:
+                print '<tr><td>%s</td><td>"%s"</td></tr>' % \
+                        ( output + '.', desc )
+            else:
+                print '%-80s\t"%s"' % ( output + '.', desc )
             # END if report_week
 
         # END injury loop
+
+    if is_cgi:
+        print "</table>"
 
 if __name__ == "__main__":
     main()
