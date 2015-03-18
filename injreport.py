@@ -1,12 +1,16 @@
 #!/usr/bin/python
 
 import os
-import csv
 import sys
+import getopt
 import psycopg2
 
 sys.path.append('/home/ibl/bin')
 import DB
+
+def usage():
+    print "usage: %s [-w week]" % sys.argv[0]
+    sys.exit(1)
 
 # dump environment and parameters for testing
 # not really necessary, mostly for learning purposes
@@ -136,7 +140,7 @@ dtd =  4
 sus =  8
 adj = 16
 
-def main():
+def main( player = {}, quiet = False, report_week = 0 ):
     do_json = False
     is_cgi = False
     if 'GATEWAY_INTERFACE' in os.environ:
@@ -164,29 +168,26 @@ def main():
         sys.exit(1)
     cursor = db.cursor()
 
-    report_week = 1
-    if len(sys.argv) > 1:
-        report_week = int(sys.argv[1])
-    elif is_cgi and form.has_key('week'):
-        report_week = int(form.getfirst('week'))
-    else:
-        # no user input so we'll find latest week with all inj reported
+    if report_week == 0:
+        # no user supplied week so we'll find latest week with all inj reported
         sql = "select week, count(*) from %s where inj = 1\
                 group by week order by week desc;" % DB.sched
         cursor.execute(sql)
         for report_week, num in cursor.fetchall():
             if num == 24:
                 break
+    elif is_cgi and form.has_key('week'):
+        report_week = int(form.getfirst('week'))
 
     if is_cgi:
         print "<table>"
 
-    player = {}
     sql = "select * from %s order by tig_name, week;" % DB.inj
     cursor.execute(sql)
     for injury in cursor.fetchall():
         week, home, away, day, code, ibl, name, length, failed, desc = injury
         ##print injury
+        name = name.rstrip()
 
         if not player.has_key(name):
             player[name] = {}
@@ -274,8 +275,8 @@ def main():
             ##print "week %2i %s: %i served (%3i) %s" % \
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
-        if week >= report_week:
-            output = "%s " % name.rstrip()
+        if not quiet and week >= report_week:
+            output = "%s " % name
 
             if code == suspended:
                 output += "suspended for %i game" % int(orig_length)
@@ -343,5 +344,16 @@ def main():
         print "</table>"
 
 if __name__ == "__main__":
-    main()
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'w:')
+    except getopt.GetoptError, err:
+        print str(err)
+        usage()
+
+    week = 0
+    for (opt, arg) in opts:
+        if opt == '-w':
+            week = int(arg)
+
+    main( report_week = week )
 
