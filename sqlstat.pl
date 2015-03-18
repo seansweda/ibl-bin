@@ -400,9 +400,10 @@ while (<DATA>) {
 			$dtd = 0
 		    }
 
-		    # default: injury+DTD
-		    $tcode = 0;
-		    if ( $type =~ /^[oO]/ && length($type) >= 3 ) {
+		    if ( $type =~ /^[iI]/ && length($type) >= 3 ) {
+			# default: injury+DTD
+			$tcode = 0;
+		    } elsif ( $type =~ /^[oO]/ && length($type) >= 3 ) {
 			# "out": fixed duration (no DTD)
 			$tcode = 1;
 		    } elsif ( $type =~ /^[sS]/ && length($type) >= 3 ) {
@@ -411,6 +412,9 @@ while (<DATA>) {
 		    } elsif ( $type =~ /^[aA]/ && length($type) >= 3 ) {
 			# "adj": no injury credit
 			$tcode = 3;
+		    } else {
+			print "line $lines \"$type\" not valid injury code\n";
+			$fatalerr++;
 		    }
 
 		    $tigname = $mlb . " " . $name;
