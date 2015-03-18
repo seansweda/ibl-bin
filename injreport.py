@@ -153,14 +153,16 @@ def main( player = {}, quiet = False, report_week = 0 ):
         if form.has_key('json'):
             import json
             do_json = True
-            print "Content-Type: application/json"
-            print
+            if not quiet:
+                print "Content-Type: application/json"
+                print
         else:
             do_json = False
-            print "Content-Type: text/html"
-            print
-            if not form.has_key('notitle'):
-                print "<html><head><title>IBL Injury Report</title></head><body>"
+            if not quiet:
+                print "Content-Type: text/html"
+                print
+                if not form.has_key('notitle'):
+                    print "<html><head><title>IBL Injury Report</title></head><body>"
             #dumpenv(form)
 
     try:
@@ -181,7 +183,7 @@ def main( player = {}, quiet = False, report_week = 0 ):
     elif is_cgi and form.has_key('week'):
         report_week = int(form.getfirst('week'))
 
-    if is_cgi:
+    if is_cgi and not quiet:
         print "<table>"
 
     sql = "select * from %s order by tig_name, week;" % DB.inj
@@ -342,7 +344,7 @@ def main( player = {}, quiet = False, report_week = 0 ):
 
         # END injury loop
 
-    if is_cgi:
+    if is_cgi and not quiet:
         print "</table>"
 
 if __name__ == "__main__":
