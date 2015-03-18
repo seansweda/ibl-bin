@@ -72,30 +72,32 @@ def update( days, code, length, day = 1 ):
     served = 0
     for x in range( day - 1, len(days) ):
         if code == injured:
-            if days[x] & inj != inj:
+            if days[x] & inj == 0:
                 if length > 1:
                     days[x] += inj
                     length -= 1
                     served += 1
-                elif length == 1:
-                    days[x] += dtd
+                elif length == 1 and days[x] & (inj + off) == 0:
+                    if days[x] & dtd == 0:
+                        days[x] += dtd
                     length -= 1
                     served += 1
         if code == no_dtd:
-            if days[x] & inj != inj:
+            if days[x] & inj == 0:
                 if length > 0:
                     days[x] += inj
                     length -= 1
                     served += 1
         if code == suspended:
-            if days[x] & sus != sus and days[x] & off != off:
+            if days[x] & (sus + off) == 0:
                 if length > 0:
                     days[x] += sus
                     length -= 1
                     served += 1
         if code == adjustment:
             if length > 0:
-                days[x] += adj
+                if days[x] & adj == 0:
+                    days[x] += adj
                 length -= 1
                 served += 1
 
