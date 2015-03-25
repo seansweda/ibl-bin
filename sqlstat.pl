@@ -400,6 +400,7 @@ while (<DATA>) {
 			$dtd = 0
 		    }
 
+		    $tcode = -1;
 		    if ( $type =~ /^[iI]/ && length($type) >= 3 ) {
 			# default: injury+DTD
 			$tcode = 0;
@@ -436,7 +437,10 @@ while (<DATA>) {
 			} elsif ( $tcode == 1 ) {
 			    printf( "%-3s %s out for %i day(s)\n",
 				$mlb, $name, $inj, $dtd );
-			} else {
+			} elsif ( $tcode == 2 ) {
+			    printf( "%-3s %s suspended for %i day(s)\n",
+				$mlb, $name, $inj, $dtd );
+			} elsif ( $tcode == 3 ) {
 			    printf( "%-3s %s adj for %i day(s), no inj days\n",
 				$mlb, $name, $inj, $dtd );
 			}
@@ -458,7 +462,7 @@ while (<DATA>) {
 			values ( $week, '$home', '$away', $day, $tcode,
 			'$ibl', '$tigname', $inj, $dtd, '@line' );
 			");
-		    if ( $tcode != 2 ) {
+		    if ( $tcode != 3 ) {
 			$dbh->do("
 			    insert into $startsdb
 			    values ( '$starts[0]', '$starts[1]',
