@@ -172,7 +172,9 @@ def main( player = {}, quiet = False, report_week = 0 ):
         sys.exit(1)
     cursor = db.cursor()
 
-    if report_week == 0:
+    if is_cgi and form.has_key('week'):
+        report_week = int(form.getfirst('week'))
+    elif report_week == 0:
         # no user supplied week so we'll find latest week with all inj reported
         sql = "select week, count(*) from %s where inj = 1\
                 group by week order by week desc;" % DB.sched
@@ -180,8 +182,6 @@ def main( player = {}, quiet = False, report_week = 0 ):
         for report_week, num in cursor.fetchall():
             if num == 24:
                 break
-    elif is_cgi and form.has_key('week'):
-        report_week = int(form.getfirst('week'))
 
     if is_cgi and not quiet:
         print "<table>"
