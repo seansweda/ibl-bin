@@ -30,6 +30,7 @@ if ( $entity->is_multipart ) {
 
 # strip out additional crap here
 $msg =~ s/\xA0/ /g;	# hex A0 -> space
+$msg =~ s/\xC2//g;	# hex C2 -> null
 
 print $msg;
 
