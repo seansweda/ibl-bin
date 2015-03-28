@@ -280,7 +280,7 @@ def main( player = {}, quiet = False, report_week = 0 ):
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
         if not quiet and week >= report_week:
-            output = "%s " % name
+            output = "%s %s " % (ibl, name)
 
             if code == suspended:
                 output += "suspended for %i game" % int(orig_length)
