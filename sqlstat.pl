@@ -55,7 +55,7 @@ sub find {
 	    ");
     if ($#s == -1 ) {
 	printf("line %s %-3s %s not found, perhaps:\n", $where, $mlb, $name);
-	$loop = $dbh->prepare("
+	my $loop = $dbh->prepare("
 		select mlb, name from $startsdb
 		where name ~* ? and week is null order by mlb, name desc;
 		");
@@ -457,11 +457,12 @@ while (<DATA>) {
 		    $fatalerr++;
 		}
 		if ( $updates && !$fatalerr ) {
-		    $dbh->do("
+		    $loop = $dbh->prepare("
 			insert into $injdb
 			values ( $week, '$home', '$away', $day, $tcode,
-			'$ibl', '$tigname', $inj, $dtd, '@line' );
+			'$ibl', '$tigname', $inj, $dtd, ? );
 			");
+		    $loop->execute( "@line" );
 		    if ( $tcode != 3 ) {
 			$dbh->do("
 			    insert into $startsdb
