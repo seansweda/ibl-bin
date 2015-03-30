@@ -26,6 +26,16 @@ def dumpenv(form):
     print "<p>"
     return
 
+def injdays( player, stop ):
+    total = 0
+    for week in player.keys():
+        if week <= stop:
+            for series in player[week].keys():
+                for x in player[week][series]:
+                    if ( x & (inj + sus)) > 0:
+                        total += 1
+    return total
+
 def offday( week ):
     offweeks = ( 2, 5, 8, 10, 13, 18, 21, 24 )
     return offweeks.count( week )

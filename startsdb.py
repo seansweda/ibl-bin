@@ -19,16 +19,6 @@ def usage():
     print "usage: %s [-i] [-w week] [-y year]" % sys.argv[0]
     sys.exit(1)
 
-def injdays( player, stop ):
-    total = 0
-    for week in player.keys():
-        if week <= stop:
-            for series in player[week].keys():
-                for x in player[week][series]:
-                    if ( x & (injreport.inj + injreport.sus)) > 0:
-                        total += 1
-    return total
-
 def main( week ):
     do_json = False
     is_cgi = False
@@ -83,7 +73,7 @@ def main( week ):
         else:
             fmtstr = "%3i"
         if player.has_key(tig_name):
-            print fmtstr % int( injdays( player[tig_name], week ) )
+            print fmtstr % int( injreport.injdays( player[tig_name], week ) )
         else:
             print fmtstr % 0
 
