@@ -1,9 +1,11 @@
 #!/usr/bin/python
+# -t <team>: usage for specific team
 
 import os
 import csv
 import sys
 import psycopg2
+import getopt
 
 sys.path.append('/home/ibl/bin')
 import DB
@@ -18,6 +20,10 @@ IBL_G = {}
 
 pitcher = 1
 batter = 2
+
+def usage():
+    print "usage: %s [-t team]" % sys.argv[0]
+    sys.exit(1)
 
 def cardpath():
     if 'CARDPATH' in os.environ.keys():
@@ -97,7 +103,7 @@ def main():
             do_json = False
             print "Content-Type: text/html"
             print
-            print "<html><head><title>Free Agent signing order</title></head><body>"
+            print "<html><head><title>Usage Report</title></head><body>"
             #dumpenv(form)
 
     try:
@@ -106,6 +112,12 @@ def main():
         print str(err)
         sys.exit(1)
     cursor = db.cursor()
+
+    do_team = 'ALL'
+    if not is_cgi:
+        for (opt, arg) in opts:
+            if opt == '-t':
+                do_team = arg.upper()
 
     mlb_file = cardpath() + '/' + 'usage.txt'
     if not os.path.isfile(mlb_file):
@@ -158,8 +170,10 @@ def main():
     IBL_G['FA'] = max( IBL_G.values() )
 
     print "BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
-    sql = "select ibl_team, tig_name from teams where item_type = %s \
-            order by tig_name;" % batter
+    sql = "select ibl_team, tig_name from teams where item_type = %s" % batter
+    if do_team != 'ALL':
+        sql += " and ibl_team = '%s'" % do_team
+    sql += " order by tig_name;"
     cursor.execute(sql)
     for ibl, name, in cursor.fetchall():
         tig_name = name.rstrip()
@@ -168,8 +182,10 @@ def main():
 
     print
     print "PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
-    sql = "select ibl_team, tig_name from teams where item_type = %s \
-            order by tig_name;" % pitcher
+    sql = "select ibl_team, tig_name from teams where item_type = %s" % pitcher
+    if do_team != 'ALL':
+        sql += " and ibl_team = '%s'" % do_team
+    sql += " order by tig_name;"
     cursor.execute(sql)
     for ibl, name, in cursor.fetchall():
         tig_name = name.rstrip()
@@ -178,5 +194,11 @@ def main():
 
 
 if __name__ == "__main__":
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 't:')
+    except getopt.GetoptError, err:
+        print str(err)
+        usage()
+
     main()
 
