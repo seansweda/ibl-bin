@@ -169,18 +169,6 @@ def main():
         IBL_G[ibl.rstrip()] = float(g)
     IBL_G['FA'] = max( IBL_G.values() )
 
-    print "BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
-    sql = "select ibl_team, tig_name from teams where item_type = %s" % batter
-    if do_team != 'ALL':
-        sql += " and ibl_team = '%s'" % do_team
-    sql += " order by tig_name;"
-    cursor.execute(sql)
-    for ibl, name, in cursor.fetchall():
-        tig_name = name.rstrip()
-        if MLB.has_key(tig_name):
-            print std_usage( tig_name, batter, gp(ibl) )
-
-    print
     print "PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
     sql = "select ibl_team, tig_name from teams where item_type = %s" % pitcher
     if do_team != 'ALL':
@@ -191,6 +179,18 @@ def main():
         tig_name = name.rstrip()
         if MLB.has_key(tig_name):
             print std_usage( tig_name, pitcher, gp(ibl) )
+
+    print
+    print "BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
+    sql = "select ibl_team, tig_name from teams where item_type = %s" % batter
+    if do_team != 'ALL':
+        sql += " and ibl_team = '%s'" % do_team
+    sql += " order by tig_name;"
+    cursor.execute(sql)
+    for ibl, name, in cursor.fetchall():
+        tig_name = name.rstrip()
+        if MLB.has_key(tig_name):
+            print std_usage( tig_name, batter, gp(ibl) )
 
 
 if __name__ == "__main__":
