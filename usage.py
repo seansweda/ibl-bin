@@ -9,6 +9,16 @@ sys.path.append('/home/ibl/bin')
 import DB
 import injreport
 
+INJ = {}
+MLB = {}
+BFP = {}
+IBL_B = {}
+IBL_P = {}
+IBL_G = {}
+
+pitcher = 1
+batter = 2
+
 def cardpath():
     if 'CARDPATH' in os.environ.keys():
         cardpath = os.environ.get('CARDPATH')
@@ -29,6 +39,46 @@ def dumpenv(form):
         print
     print "<p>"
     return
+
+def gp ( ibl ):
+    if IBL_G.has_key(ibl):
+        return IBL_G[ibl]
+    else:
+        return 0
+
+def std_usage( name, role, g ):
+    if role == pitcher:
+        U = IBL_P
+    elif role == batter:
+        U = IBL_B
+    else:
+        return ''
+
+    ibl_U = 0
+    if U.has_key(name):
+        ibl_U = U[name]
+    mlb_U = MLB[name]
+
+    inj = 0
+    if INJ.has_key(name):
+        inj = injreport.injdays( INJ[name], 27 )
+    credit = int( 1 + mlb_U / 162 ) * inj
+
+    U_75 = mlb_U * 3 / 4
+    U_133 = mlb_U * 4 / 3
+    U_150 = mlb_U * 3 / 2
+
+    if g == 0:
+        rate = 0
+        injrate = 0
+    else:
+        rate = ( ibl_U * 162 / g ) / mlb_U * 100
+        injrate = ( ibl_U * 162 / g + credit ) / mlb_U * 100
+
+    output = "%-18s %4.0f %4.0f %4i %4i %7.1f %7.1f %7.1f %6.1f%% %6.1f%%" %\
+            ( name, mlb_U, ibl_U, inj, credit, \
+            U_75 - ibl_U - credit, U_133 - ibl_U, U_150 - ibl_U, rate, injrate )
+    return output
 
 def main():
     do_json = False
@@ -67,15 +117,12 @@ def main():
         print bfp_file + " not found"
         sys.exit(1)
 
-    INJ = {}
     injreport.main( INJ, quiet=True, report_week = 1 )
 
-    MLB = {}
     with open( mlb_file, 'rU' ) as s:
         for line in csv.reader(s):
-            MLB[line[0].rstrip()] = line[1]
+            MLB[line[0].rstrip()] = float(line[1])
 
-    BFP = {}
     with open( bfp_file, 'rU' ) as s:
         for line in csv.reader(s):
             sp = line[1].strip()
@@ -92,62 +139,42 @@ def main():
 
     sql = "select mlb, name, sum(ab + bb)\
             from %s group by mlb, name order by mlb, name;" % DB.bat
-    IBL_B = {}
     cursor.execute(sql)
-    for mlb, name, ibl in cursor.fetchall():
+    for mlb, name, u in cursor.fetchall():
         tig_name = mlb.rstrip() + " " + name.rstrip()
-        IBL_B[tig_name] = ibl
+        IBL_B[tig_name] = float(u)
 
     sql = "select mlb, name, sum(ip + h + bb)\
             from %s group by mlb, name order by mlb, name;" % DB.pit
-    IBL_P = {}
     cursor.execute(sql)
-    for mlb, name, ibl in cursor.fetchall():
+    for mlb, name, u in cursor.fetchall():
         tig_name = mlb.rstrip() + " " + name.rstrip()
-        IBL_P[tig_name] = ibl
+        IBL_P[tig_name] = float(u)
 
-    print "BATTERS             MLB  IBL  INJ CRED     75%    133%    150%"
-    cursor.execute( "select tig_name from players where is_batter='Y'\
-            order by tig_name;" )
-    for name, in cursor.fetchall():
+    sql = "select ibl, sum(gs) from %s group by ibl;" % DB.pit
+    cursor.execute(sql)
+    for ibl, g in cursor.fetchall():
+        IBL_G[ibl.rstrip()] = float(g)
+    IBL_G['FA'] = max( IBL_G.values() )
+
+    print "BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
+    sql = "select ibl_team, tig_name from teams where item_type = %s \
+            order by tig_name;" % batter
+    cursor.execute(sql)
+    for ibl, name, in cursor.fetchall():
         tig_name = name.rstrip()
         if MLB.has_key(tig_name):
-            ibl_U = 0
-            if IBL_B.has_key(tig_name):
-                ibl_U = float( IBL_B[tig_name] )
-            mlb_U = float( MLB[tig_name] )
-            inj = 0
-            if INJ.has_key(tig_name):
-                inj = injreport.injdays( INJ[tig_name], 27 )
-            credit = int( 1 + mlb_U / 162 ) * inj
-            U_75 = mlb_U * 3 / 4
-            U_133 = mlb_U * 4 / 3
-            U_150 = mlb_U * 3 / 2
-            print "%-18s %4.0f %4.0f %4i %4i %7.1f %7.1f %7.1f" %\
-                    ( tig_name, mlb_U, ibl_U, inj, credit, \
-                    U_75 - ibl_U - credit, U_133 - ibl_U, U_150 - ibl_U )
+            print std_usage( tig_name, batter, gp(ibl) )
 
     print
-    print "PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%"
-    cursor.execute( "select tig_name from players where is_pitcher='Y'\
-            order by tig_name;" )
-    for name, in cursor.fetchall():
+    print "PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
+    sql = "select ibl_team, tig_name from teams where item_type = %s \
+            order by tig_name;" % pitcher
+    cursor.execute(sql)
+    for ibl, name, in cursor.fetchall():
         tig_name = name.rstrip()
         if MLB.has_key(tig_name):
-            ibl_U = 0
-            if IBL_P.has_key(tig_name):
-                ibl_U = float( IBL_P[tig_name] )
-            mlb_U = float( MLB[tig_name] )
-            inj = 0
-            if INJ.has_key(tig_name):
-                inj = injreport.injdays( INJ[tig_name], 27 )
-            credit = int( 1 + mlb_U / 162 ) * inj
-            U_75 = mlb_U * 3 / 4
-            U_133 = mlb_U * 4 / 3
-            U_150 = mlb_U * 3 / 2
-            print "%-18s %4.0f %4.0f %4i %4i %7.1f %7.1f %7.1f" %\
-                    ( tig_name, mlb_U, ibl_U, inj, credit, \
-                    U_75 - ibl_U - credit, U_133 - ibl_U, U_150 - ibl_U )
+            print std_usage( tig_name, pitcher, gp(ibl) )
 
 
 if __name__ == "__main__":
