@@ -6,6 +6,7 @@ import csv
 import sys
 import psycopg2
 import getopt
+import time
 
 sys.path.append('/home/ibl/bin')
 import DB
@@ -114,7 +115,10 @@ def main():
     cursor = db.cursor()
 
     do_team = 'ALL'
-    if not is_cgi:
+    if is_cgi:
+        if form.has_key('team'):
+            do_team = form.getfirst('team').upper()
+    else:
         for (opt, arg) in opts:
             if opt == '-t':
                 do_team = arg.upper()
@@ -129,8 +133,6 @@ def main():
         print bfp_file + " not found"
         sys.exit(1)
 
-    injreport.main( INJ, quiet=True, report_week = 1 )
-
     with open( mlb_file, 'rU' ) as s:
         for line in csv.reader(s):
             MLB[line[0].rstrip()] = float(line[1])
@@ -142,12 +144,7 @@ def main():
             rest = line[3].strip()
             BFP[line[0].rstrip()] = (sp, rp, rest.split('/') )
 
-#    sql = []
-#    sql.append( "select mlb, name, sum(ab + bb)\
-#            from %s group by mlb, name order by mlb, name;" % DB.bat )
-#    sql.append( "select mlb, name, sum(ip + h + bb)\
-#            from %s group by mlb, name order by mlb, name;" % DB.pit )
-#    sql.reverse()
+    injreport.main( INJ, quiet=True, report_week = 1 )
 
     sql = "select mlb, name, sum(ab + bb)\
             from %s group by mlb, name order by mlb, name;" % DB.bat
@@ -168,6 +165,9 @@ def main():
     for ibl, g in cursor.fetchall():
         IBL_G[ibl.rstrip()] = float(g)
     IBL_G['FA'] = max( IBL_G.values() )
+
+    if is_cgi:
+        print "<pre>"
 
     print "PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
     sql = "select ibl_team, tig_name from teams where item_type = %s" % pitcher
@@ -191,6 +191,9 @@ def main():
         tig_name = name.rstrip()
         if MLB.has_key(tig_name):
             print std_usage( tig_name, batter, gp(ibl) )
+
+    if is_cgi:
+        print "</pre></body></html>"
 
 
 if __name__ == "__main__":
