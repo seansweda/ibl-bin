@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -t <team>: usage for specific team
 # -g: per game output
+# -r: rates output
 # -B: batters only
 # -P: pitchers only
 
@@ -52,11 +53,52 @@ def dumpenv(form):
 
 def gp ( ibl ):
     if IBL_G.has_key(ibl):
-        return IBL_G[ibl]
+        return float( IBL_G[ibl] )
     else:
-        return 0
+        return 0.0
 
-def adv_usage( name, role, g ):
+def r_usage( name, role, g ):
+    if role == pitcher:
+        U = IBL_P
+    elif role == batter:
+        U = IBL_B
+    else:
+        return ''
+
+    ibl_U = 0
+    if U.has_key(name):
+        ibl_U = U[name]
+    mlb_U = MLB[name]
+
+    inj = 0
+    if INJ.has_key(name):
+        inj = injreport.injdays( INJ[name], 27 )
+    credit = int( 1 + mlb_U / 162 ) * inj
+
+    U_75 = mlb_U * 3 / 4
+    U_75 = int( U_75 - ibl_U - credit + 1 )
+
+    U_133 = mlb_U * 4 / 3
+    U_133 = int( U_133 - ibl_U )
+
+    if g == 0:
+        rate = 0
+        injrate = 0
+    else:
+        rate = ( ibl_U * 162 / g ) / mlb_U * 100
+        injrate = ( ibl_U * 162 / g + credit ) / mlb_U * 100
+
+    output = "%-18s" % name
+    output += "%4i %6.1f %6.1f" \
+            % ( U_75, U_75 / (162 - g), U_75 / (162.0 - g) * 6.0 )
+    output += "   %4i %6.1f %6.1f" \
+            % ( U_133, U_133 / (162 - g), U_133 / (162.0 - g) * 6.0 )
+
+    output += "  %6.1f%% %6.1f%%" % ( rate, injrate )
+
+    return output
+
+def g_usage( name, role, g ):
     if role == pitcher:
         U = IBL_P
     elif role == batter:
@@ -187,7 +229,8 @@ def main():
     cursor = db.cursor()
 
     do_team = 'ALL'
-    do_adv = False
+    do_g = False
+    do_r = False
     do_bat = True
     do_pit = True
 
@@ -203,7 +246,9 @@ def main():
             elif opt == '-P':
                 do_bat = False
             elif opt == '-g':
-                do_adv = True
+                do_g = True
+            elif opt == '-r':
+                do_r = True
 
     mlb_file = cardpath() + '/' + 'usage.txt'
     if not os.path.isfile(mlb_file):
@@ -266,8 +311,10 @@ def main():
         print "<pre>"
 
     if do_pit:
-        if do_adv:
+        if do_g:
             print "PITCHERS           75%   SP/f SP/24  RP/f RP/1d   133%  SP/f SP/24  RP/f RP/1d"
+        elif do_r:
+            print "PITCHERS           75%  per/g  per/w   133%  per/g  per/w     RATE    +INJ"
         else:
             print "PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
 
@@ -279,8 +326,10 @@ def main():
         for ibl, name, in cursor.fetchall():
             tig_name = name.rstrip()
             if MLB.has_key(tig_name):
-                if do_adv:
-                    print adv_usage( tig_name, pitcher, gp(ibl) )
+                if do_g:
+                    print g_usage( tig_name, pitcher, gp(ibl) )
+                elif do_r:
+                    print r_usage( tig_name, pitcher, gp(ibl) )
                 else:
                     print std_usage( tig_name, pitcher, gp(ibl) )
 
@@ -288,8 +337,10 @@ def main():
         print
 
     if do_bat:
-        if do_adv:
+        if do_g:
             print "BATTERS            75%    2/g   3/g   4/g   5/g   133%   2/g   3/g   4/g   5/g"
+        elif do_r:
+            print "BATTERS            75%  per/g  per/w   133%  per/g  per/w     RATE    +INJ"
         else:
             print "BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
 
@@ -301,8 +352,10 @@ def main():
         for ibl, name, in cursor.fetchall():
             tig_name = name.rstrip()
             if MLB.has_key(tig_name):
-                if do_adv:
-                    print adv_usage( tig_name, batter, gp(ibl) )
+                if do_g:
+                    print g_usage( tig_name, batter, gp(ibl) )
+                elif do_r:
+                    print r_usage( tig_name, batter, gp(ibl) )
                 else:
                     print std_usage( tig_name, batter, gp(ibl) )
 
@@ -312,7 +365,7 @@ def main():
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 't:gBP')
+        opts, args = getopt.getopt(sys.argv[1:], 't:grBP')
     except getopt.GetoptError, err:
         print str(err)
         usage()
