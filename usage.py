@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -t <team>: usage for specific team
+# -g: per game output
+# -B: batters only
+# -P: pitchers only
 
 import os
 import csv
@@ -52,6 +55,75 @@ def gp ( ibl ):
         return IBL_G[ibl]
     else:
         return 0
+
+def adv_usage( name, role, g ):
+    if role == pitcher:
+        U = IBL_P
+    elif role == batter:
+        U = IBL_B
+    else:
+        return ''
+
+    ibl_U = 0
+    if U.has_key(name):
+        ibl_U = U[name]
+    mlb_U = MLB[name]
+
+    inj = 0
+    if INJ.has_key(name):
+        inj = injreport.injdays( INJ[name], 27 )
+    credit = int( 1 + mlb_U / 162 ) * inj
+
+    U_75 = mlb_U * 3 / 4
+    U_75 = int( U_75 - ibl_U - credit + 1 )
+
+    U_133 = mlb_U * 4 / 3
+    U_133 = int( U_133 - ibl_U )
+
+    u75 = []
+    u133 = []
+    if role == pitcher:
+        fat_SP = BFP[name][0]
+        if fat_SP > 0:
+            u75.append( U_75 / fat_SP )
+            u75.append( U_75 / 24.0 )
+            u133.append( U_133 / fat_SP )
+            u133.append( U_133 / 24.0 )
+        else:
+            u75 += [ 0, 0 ]
+            u133 += [ 0, 0 ]
+        fat_RP = BFP[name][1]
+        if fat_RP > 0:
+            u75.append( U_75 / fat_RP )
+            u133.append( U_133 / fat_RP )
+        else:
+            u75.append( 0 )
+            u133.append( 0 )
+        rest1 = BFP[name][2][1]
+        if rest1 > 0:
+            u75.append( U_75 / rest1 )
+            u133.append( U_133 / rest1 )
+        else:
+            u75.append( 0 )
+            u133.append( 0 )
+
+    elif role == batter:
+        for p in range(2,6):
+            u75.append( U_75 / float(p) )
+        for p in range(2,6):
+            u133.append( U_133 / float(p) )
+
+    output = "%-18s" % name
+    output += "%4i " % U_75
+    u75.reverse()
+    while len(u75):
+        output += " %5.0f" % round( u75.pop(), 0 )
+    output += "   %4i" % U_133
+    u133.reverse()
+    while len(u133):
+        output += " %5i" % int( u133.pop() )
+
+    return output
 
 def std_usage( name, role, g ):
     if role == pitcher:
@@ -115,6 +187,10 @@ def main():
     cursor = db.cursor()
 
     do_team = 'ALL'
+    do_adv = False
+    do_bat = True
+    do_pit = True
+
     if is_cgi:
         if form.has_key('team'):
             do_team = form.getfirst('team').upper()
@@ -122,6 +198,12 @@ def main():
         for (opt, arg) in opts:
             if opt == '-t':
                 do_team = arg.upper()
+            elif opt == '-B':
+                do_pit = False
+            elif opt == '-P':
+                do_bat = False
+            elif opt == '-g':
+                do_adv = True
 
     mlb_file = cardpath() + '/' + 'usage.txt'
     if not os.path.isfile(mlb_file):
@@ -140,9 +222,23 @@ def main():
     with open( bfp_file, 'rU' ) as s:
         for line in csv.reader(s):
             sp = line[1].strip()
+            if sp.isdigit():
+                sp = float( sp )
+            else:
+                sp = float( 0 )
             rp = line[2].strip()
-            rest = line[3].strip()
-            BFP[line[0].rstrip()] = (sp, rp, rest.split('/') )
+            if rp.isdigit():
+                rp = float( rp )
+            else:
+                rp = float( 0 )
+            rest = []
+            for x in line[3].split('/'):
+                val = x.strip()
+                if val.isdigit():
+                    rest.append( float(val) )
+                else:
+                    rest.append( float(0) )
+            BFP[line[0].rstrip()] = (sp, rp, rest )
 
     injreport.main( INJ, quiet=True, report_week = 1 )
 
@@ -169,28 +265,46 @@ def main():
     if is_cgi:
         print "<pre>"
 
-    print "PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
-    sql = "select ibl_team, tig_name from teams where item_type = %s" % pitcher
-    if do_team != 'ALL':
-        sql += " and ibl_team = '%s'" % do_team
-    sql += " order by tig_name;"
-    cursor.execute(sql)
-    for ibl, name, in cursor.fetchall():
-        tig_name = name.rstrip()
-        if MLB.has_key(tig_name):
-            print std_usage( tig_name, pitcher, gp(ibl) )
+    if do_pit:
+        if do_adv:
+            print "PITCHERS           75%   SP/f SP/24  RP/f RP/1d   133%  SP/f SP/24  RP/f RP/1d"
+        else:
+            print "PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
 
-    print
-    print "BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
-    sql = "select ibl_team, tig_name from teams where item_type = %s" % batter
-    if do_team != 'ALL':
-        sql += " and ibl_team = '%s'" % do_team
-    sql += " order by tig_name;"
-    cursor.execute(sql)
-    for ibl, name, in cursor.fetchall():
-        tig_name = name.rstrip()
-        if MLB.has_key(tig_name):
-            print std_usage( tig_name, batter, gp(ibl) )
+        sql = "select ibl_team, tig_name from teams where item_type = %s" % pitcher
+        if do_team != 'ALL':
+            sql += " and ibl_team = '%s'" % do_team
+        sql += " order by tig_name;"
+        cursor.execute(sql)
+        for ibl, name, in cursor.fetchall():
+            tig_name = name.rstrip()
+            if MLB.has_key(tig_name):
+                if do_adv:
+                    print adv_usage( tig_name, pitcher, gp(ibl) )
+                else:
+                    print std_usage( tig_name, pitcher, gp(ibl) )
+
+    if do_bat and do_pit:
+        print
+
+    if do_bat:
+        if do_adv:
+            print "BATTERS            75%    2/g   3/g   4/g   5/g   133%   2/g   3/g   4/g   5/g"
+        else:
+            print "BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
+
+        sql = "select ibl_team, tig_name from teams where item_type = %s" % batter
+        if do_team != 'ALL':
+            sql += " and ibl_team = '%s'" % do_team
+        sql += " order by tig_name;"
+        cursor.execute(sql)
+        for ibl, name, in cursor.fetchall():
+            tig_name = name.rstrip()
+            if MLB.has_key(tig_name):
+                if do_adv:
+                    print adv_usage( tig_name, batter, gp(ibl) )
+                else:
+                    print std_usage( tig_name, batter, gp(ibl) )
 
     if is_cgi:
         print "</pre></body></html>"
@@ -198,7 +312,7 @@ def main():
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 't:')
+        opts, args = getopt.getopt(sys.argv[1:], 't:gBP')
     except getopt.GetoptError, err:
         print str(err)
         usage()
