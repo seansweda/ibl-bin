@@ -175,11 +175,7 @@ def main( player = {}, quiet = False, report_week = 0 ):
                     print "<html><head><title>IBL Injury Report</title></head><body>"
             #dumpenv(form)
 
-    try:
-        db = psycopg2.connect("dbname=ibl_stats user=ibl")
-    except psycopg2.DatabaseError, err:
-        print str(err)
-        sys.exit(1)
+    db = DB.connect()
     cursor = db.cursor()
 
     if is_cgi and form.has_key('week'):

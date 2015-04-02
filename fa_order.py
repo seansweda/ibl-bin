@@ -42,11 +42,7 @@ def main():
             print "<html><head><title>Free Agent signing order</title></head><body>"
             #dumpenv(form)
 
-    try:
-        db = psycopg2.connect("dbname=ibl_stats user=ibl")
-    except psycopg2.DatabaseError, err:
-        print str(err)
-        sys.exit(1)
+    db = DB.connect()
     cursor = db.cursor()
 
     def late(team):

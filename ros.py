@@ -19,6 +19,9 @@ import getopt
 
 import psycopg2
 
+sys.path.append('/home/ibl/bin')
+import DB
+
 from card import p_split, p_hash, cardpath, batters, pitchers
 
 def usage():
@@ -97,11 +100,7 @@ sqlbase = "select t.tig_name, comments, status, item_type, bats, throws\
         from teams t left outer join players p on (t.tig_name = p.tig_name)\
         where ibl_team = (%s) order by item_type, tig_name;"
 
-try:
-    db = psycopg2.connect("dbname=ibl_stats user=ibl")
-except psycopg2.DatabaseError, err:
-    print str(err)
-    sys.exit(1)
+db = DB.connect()
 cursor = db.cursor()
 
 try:

@@ -11,11 +11,7 @@ def usage():
     print "usage: %s " % sys.argv[0]
     sys.exit(1)
 
-try:
-    db = psycopg2.connect("dbname=ibl_stats user=ibl")
-except psycopg2.DatabaseError, err:
-    print str(err)
-    sys.exit(1)
+db = DB.connect()
 cursor = db.cursor()
 
 try:

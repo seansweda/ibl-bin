@@ -38,11 +38,7 @@ def main( week ):
             print
             #dumpenv(form)
 
-    try:
-        db = psycopg2.connect("dbname=ibl_stats user=ibl")
-    except psycopg2.DatabaseError, err:
-        print str(err)
-        sys.exit(1)
+    db = DB.connect()
     cursor = db.cursor()
 
     if is_cgi and form.has_key('week'):

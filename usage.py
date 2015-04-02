@@ -221,11 +221,7 @@ def main():
             print "<html><head><title>Usage Report</title></head><body>"
             #dumpenv(form)
 
-    try:
-        db = psycopg2.connect("dbname=ibl_stats user=ibl")
-    except psycopg2.DatabaseError, err:
-        print str(err)
-        sys.exit(1)
+    db = DB.connect()
     cursor = db.cursor()
 
     do_team = 'ALL'
