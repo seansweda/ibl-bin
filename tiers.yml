@@ -1,0 +1,29 @@
+---
+tier0:
+- MOR
+- BAL
+- TRI
+- SFP
+- NJR
+- PAD
+tier1:
+- CSG
+- SKY
+- KAT
+- MNM
+- CAN
+- HAV
+- WMS
+- MCM
+tier2:
+- POR
+- GTY
+- BOW
+- ODM
+- SEA
+- SDQ
+- MAD
+- NYK
+tier3:
+- PHI
+- COU
