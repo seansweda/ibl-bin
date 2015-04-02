@@ -207,7 +207,10 @@ def main( player = {}, quiet = False, report_week = 0 ):
         else:
             loc_q = [ 'away', 'home' ]
 
-        orig_length = length
+        reported_day = day
+        reported_week = week
+        reported_loc = loc_q[0]
+        reported_length = length
         # add 1 for dtd
         if code == injured:
             length += 1
@@ -289,18 +292,20 @@ def main( player = {}, quiet = False, report_week = 0 ):
             output = "%s %s " % (ibl, name)
 
             if code == suspended:
-                output += "suspended for %i game" % int(orig_length)
+                output += "suspended for %i game" % int(reported_length)
             elif code == adjustment:
-                output += "adjustment for %i day" % int(orig_length)
+                output += "adjustment for %i day" % int(reported_length)
             else:
                 # default is injury
-                output += "out for %i day" % int(orig_length)
-            if orig_length > 1:
+                output += "out for %i day" % int(reported_length)
+            if reported_length != 1:
                 output += "s"
 
             if length > 0:
                 output += ", out for season"
             else:
+                output += ", from week %s (%s day %s)" \
+                        % ( reported_week, reported_loc, reported_day )
                 days_out = totals( player[name][week], kind(code) )
                 days_out.sort( key = lambda s: s[1], reverse=True )
                 days_out.sort( key = lambda s: s[0] == 'ASB' )
@@ -316,7 +321,7 @@ def main( player = {}, quiet = False, report_week = 0 ):
                         output += "%i %s, " % ( x[1], x[0] )
                     output = output[:-2] + ")"
                     if code == injured:
-                        output += ", DTD(%i) %s day %i" % \
+                        output += ", DTD (+%i) %s day %i" % \
                                 (failed, loc, search(series, dtd))
                 else:
                     # otherwise, check previous week
@@ -338,7 +343,7 @@ def main( player = {}, quiet = False, report_week = 0 ):
                     if code == injured:
                         #if len(output) - 1 >  len(name.rstrip()):
                         #    output += ", "
-                        output += ", DTD(%i) %s day %i week %i" % \
+                        output += ", DTD (+%i) %s day %i week %i" % \
                                 (failed, loc, search(series, dtd), week)
 
             if is_cgi:
