@@ -7,6 +7,9 @@ import time
 import yaml
 import psycopg2
 
+sys.path.append('/home/ibl/bin')
+import DB
+
 def usage():
     print "usage: %s " % sys.argv[0]
     sys.exit(1)
@@ -21,7 +24,7 @@ except getopt.GetoptError, err:
     usage()
 
 try:
-    f = open('/home/sweda/bin/tiers.yml', 'rU')
+    f = open( DB.bin_dir() + '/data/tiers.yml', 'rU')
 except IOError, err:
     print str(err)
     sys.exit(1)

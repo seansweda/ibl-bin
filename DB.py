@@ -13,6 +13,10 @@ sched  = 'sched2015'
 extra  = 'extra2015'
 inj    = 'inj2015'
 
+
+def bin_dir():
+    return os.path.dirname( os.path.realpath(__file__) )
+
 def connect():
     name='ibl_stats'
     user='ibl'

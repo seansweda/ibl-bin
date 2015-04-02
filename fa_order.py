@@ -79,7 +79,7 @@ def main():
     # lastyear.csv should be ordered to break ties
     fa = []
     lastyear = {}
-    with open( '/home/ibl/bin/lastyear.csv', 'rU' ) as s:
+    with open( DB.bin_dir() + '/data/lastyear.csv', 'rU' ) as s:
         for line in csv.reader(s):
             fa.append( line[0] )
             lastyear[line[0]] = float(line[1])/(float(line[1])+float(line[2]))
