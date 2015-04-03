@@ -152,10 +152,10 @@ dtd =  4
 sus =  8
 adj = 16
 
-def main( player = {}, quiet = False, report_week = 0 ):
+def main( player = {}, module = False, report_week = 0 ):
     do_json = False
     is_cgi = False
-    if 'GATEWAY_INTERFACE' in os.environ:
+    if not module and 'GATEWAY_INTERFACE' in os.environ:
         import cgi
         #import cgitb; cgitb.enable()
         form = cgi.FieldStorage()
@@ -163,25 +163,29 @@ def main( player = {}, quiet = False, report_week = 0 ):
         if form.has_key('json'):
             import json
             do_json = True
-            if not quiet:
-                print "Content-Type: application/json"
-                print
+            print "Content-Type: application/json"
+            print
         else:
             do_json = False
-            if not quiet:
-                print "Content-Type: text/html"
-                print
-                if not form.has_key('notitle'):
-                    print "<html><head><title>IBL Injury Report</title></head><body>"
+            print "Content-Type: text/html"
+            print
+            if not form.has_key('notitle'):
+                print "<html><head><title>IBL Injury Report</title></head><body>"
             #dumpenv(form)
 
     db = DB.connect()
     cursor = db.cursor()
 
-    if is_cgi and form.has_key('week'):
-        report_week = int(form.getfirst('week'))
-    elif report_week == 0:
-        # no user supplied week so we'll find latest week with all inj reported
+    if is_cgi:
+        if form.has_key('week'):
+            report_week = int(form.getfirst('week'))
+    elif not module:
+        for (opt, arg) in opts:
+            if opt == '-w':
+                report_week = int(arg)
+
+    if report_week == 0:
+    # no user supplied week so we'll find latest week with all inj reported
         sql = "select week, count(*) from %s where inj = 1\
                 group by week order by week desc;" % DB.sched
         cursor.execute(sql)
@@ -189,7 +193,7 @@ def main( player = {}, quiet = False, report_week = 0 ):
             if num == 24:
                 break
 
-    if is_cgi and not quiet:
+    if is_cgi and not module:
         print "<table>"
 
     sql = "select * from %s order by tig_name, week;" % DB.inj
@@ -288,7 +292,7 @@ def main( player = {}, quiet = False, report_week = 0 ):
             ##print "week %2i %s: %i served (%3i) %s" % \
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
-        if not quiet and week >= report_week:
+        if not module and week >= report_week:
             output = "%s %s " % (ibl, name)
 
             if code == suspended:
@@ -355,7 +359,7 @@ def main( player = {}, quiet = False, report_week = 0 ):
 
         # END injury loop
 
-    if is_cgi and not quiet:
+    if is_cgi and not module:
         print "</table>"
 
 if __name__ == "__main__":
@@ -365,10 +369,5 @@ if __name__ == "__main__":
         print str(err)
         usage()
 
-    week = 0
-    for (opt, arg) in opts:
-        if opt == '-w':
-            week = int(arg)
-
-    main( report_week = week )
+    main()
 

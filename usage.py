@@ -281,7 +281,7 @@ def main():
                     rest.append( float(0) )
             BFP[line[0].rstrip()] = (sp, rp, rest )
 
-    injreport.main( INJ, quiet=True, report_week = 1 )
+    injreport.main( INJ, module=True, report_week = 1 )
 
     sql = "select mlb, name, sum(ab + bb)\
             from %s group by mlb, name order by mlb, name;" % DB.bat
