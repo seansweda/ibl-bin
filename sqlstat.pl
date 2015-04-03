@@ -259,7 +259,7 @@ while (<DATA>) {
     elsif ( $keyword eq 'WEEK' ) {
 	$week = (split)[1];
 	if ( $week >= 1 && $week <= 28 ) {
-	    print "WEEK: $week\n";
+	    print "WEEK $week\n";
 	}
 	else {
 	    print "line $lines WEEK format error: $week\n";
@@ -276,7 +276,7 @@ while (<DATA>) {
 	    $home = '';
 	}
 	else {
-	    print "HOME: $home\n";
+	    print "HOME $home\n";
 	}
 	$hcode = iblcode($home);
 	$hgame = gamescode($home);
@@ -290,7 +290,7 @@ while (<DATA>) {
 	    $away = '';
 	}
 	else {
-	    print "AWAY: $away\n";
+	    print "AWAY $away\n";
 	}
 	$acode = iblcode($away);
 	$agame = gamescode($away);
