@@ -189,8 +189,9 @@ def main( player = {}, module = False, report_week = 0 ):
         sql = "select week, count(*) from %s where inj = 1\
                 group by week order by week desc;" % DB.sched
         cursor.execute(sql)
-        for report_week, num in cursor.fetchall():
+        for week, num in cursor.fetchall():
             if num == 24:
+                report_week = week
                 break
 
     if is_cgi and not module:
@@ -292,7 +293,7 @@ def main( player = {}, module = False, report_week = 0 ):
             ##print "week %2i %s: %i served (%3i) %s" % \
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
-        if not module and week >= report_week:
+        if not module and week > report_week:
             output = "%s %s " % (ibl, name)
 
             if code == suspended:
