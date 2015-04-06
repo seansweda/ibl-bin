@@ -4,6 +4,7 @@
 # -i: initial starts/limits
 # -w: week
 # -y: override year
+# -t: team
 
 import os
 import sys
@@ -16,8 +17,17 @@ import DB
 import injreport
 
 def usage():
-    print "usage: %s [-i] [-w week] [-y year]" % sys.argv[0]
+    print "usage: %s [-i] [-w week] [-y year] [-t team]" % sys.argv[0]
     sys.exit(1)
+
+def output( name, starts, inj, is_cgi ):
+    (gp, p, c, b1, b2, b3, ss, lf, cf, rf) = starts
+    if is_cgi:
+        fmt = '"%-18s", %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i'
+    else:
+        fmt = "%-18s %3i %3i %3i %3i %3i %3i %3i %3i %3i %3i %3i"
+
+    return fmt % ( name, gp, p, c, b1, b2, b3, ss, lf, cf, rf, inj )
 
 def main( starts = {}, module = False, report_week = 27 ):
     do_json = False
@@ -41,6 +51,7 @@ def main( starts = {}, module = False, report_week = 27 ):
     db = DB.connect()
     cursor = db.cursor()
 
+    team = ''
     if is_cgi:
         if form.has_key('week'):
             report_week = int(form.getfirst('week'))
@@ -48,6 +59,8 @@ def main( starts = {}, module = False, report_week = 27 ):
         for (opt, arg) in opts:
             if opt == '-i':
                 report_week = 0
+            elif opt == '-t':
+                team = arg
             elif opt == '-w':
                 report_week = arg
             elif opt == '-y':
@@ -60,43 +73,44 @@ def main( starts = {}, module = False, report_week = 27 ):
             group by mlb, name order by mlb asc, name asc;" \
             % ( DB.starts, int(report_week) )
 
-    player = {}
-    injreport.main( player, module=True, report_week = 1 )
+    inj = {}
+    injreport.main( inj, module=True, report_week = 1 )
 
     if not module and not is_cgi:
-        print "MLB Name             GP  SP   C  1B  2B  3B  SS  LF  CF  RF INJ"
+        print "MLB Name            GP  SP   C  1B  2B  3B  SS  LF  CF  RF INJ"
 
     cursor.execute(sql)
     for line in cursor.fetchall():
         tig_name = line[0].rstrip() + " " + line[1].rstrip()
         starts[tig_name] = line[2:]
 
-    for tig_name in sorted(starts):
-        (gp, p, c, b1, b2, b3, ss, lf, cf, rf) = starts[tig_name]
-        if is_cgi:
-            fmtstr = '"%-18s", %i, %i, %i, %i, %i, %i, %i, %i, %i, %i,'
+    if not module:
+        if len( team ) > 0:
+            sql = "select tig_name from teams where ibl_team = '%s' \
+                    and item_type > 0 order by item_type, tig_name;" \
+                    % team.upper()
+            cursor.execute(sql)
+            for tig_name, in cursor.fetchall():
+                tig_name = tig_name.rstrip()
+                if inj.has_key(tig_name):
+                    days = int(injreport.injdays( inj[tig_name], report_week ))
+                else:
+                    days = 0
+                if starts.has_key(tig_name):
+                    print output( tig_name, starts[tig_name], days, is_cgi )
         else:
-            fmtstr = "%-18s %3i %3i %3i %3i %3i %3i %3i %3i %3i %3i"
-        if not module:
-            print fmtstr % ( tig_name, gp, p, c, b1, b2, b3, ss, lf, cf, rf ),
-
-        if is_cgi:
-            fmtstr = "%i"
-        else:
-            fmtstr = "%3i"
-        if not module:
-            if player.has_key(tig_name):
-                print fmtstr % \
-                        int(injreport.injdays( player[tig_name], report_week ))
-            else:
-                print fmtstr % 0
+            for tig_name in sorted(starts):
+                if inj.has_key(tig_name):
+                    days = int(injreport.injdays( inj[tig_name], report_week ))
+                else:
+                    days = 0
+                print output( tig_name, starts[tig_name], days, is_cgi )
 
     db.close()
-    ##print player
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'w:y:i')
+        opts, args = getopt.getopt(sys.argv[1:], 't:w:y:i')
     except getopt.GetoptError, err:
         print str(err)
         usage()
