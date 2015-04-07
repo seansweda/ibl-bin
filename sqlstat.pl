@@ -422,7 +422,7 @@ while (<DATA>) {
 		    $tigname =~ s/\s+$//;
 
 		    @starts = find( $mlb, $name, $lines);
-		    if ( $day !~ /^\d+$/ || $day < 1 || $day > 4 ) {
+		    if ( $day !~ /^\d+$/ || $day < 1 || $day > 5 ) {
 			print "line $lines \"$day\" not valid day [1-4]\n";
 			$fatalerr++;
 		    }
