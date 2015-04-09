@@ -1,7 +1,7 @@
 #!/bin/bash
 
 data=/tmp/picks.txt
-year=${PICKSYEAR:-`date +%Y`}
+year=${IBL_PICKSYEAR:-`date +%Y`}
 
 if [ $# -eq 0 ]; then
     exec picks.py -y $year

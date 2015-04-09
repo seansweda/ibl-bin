@@ -15,8 +15,8 @@ def usage():
     sys.exit(1)
 
 def cardpath():
-    if 'CARDPATH' in os.environ.keys():
-        cardpath = os.environ.get('CARDPATH')
+    if 'IBL_CARDPATH' in os.environ.keys():
+        cardpath = os.environ.get('IBL_CARDPATH')
     else:
         cardpath = "/home/iblgame/" + time.strftime("%Y") + "/build"
     return cardpath
