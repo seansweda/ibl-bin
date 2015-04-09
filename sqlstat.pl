@@ -57,7 +57,8 @@ sub find {
 	printf("line %s %-3s %s not found, perhaps:\n", $where, $mlb, $name);
 	my $loop = $dbh->prepare("
 		select mlb, name from $startsdb
-		where name ~* ? and week is null order by mlb, name desc;
+		where name ~* ? and week is null order by mlb, name desc
+		limit 10;
 		");
 	$loop->execute($name);
 	while ( @f = $loop->fetchrow_array ) {
@@ -418,10 +419,8 @@ while (<DATA>) {
 			$fatalerr++;
 		    }
 
-		    $tigname = $mlb . " " . $name;
-		    $tigname =~ s/\s+$//;
-
 		    @starts = find( $mlb, $name, $lines);
+
 		    if ( $day !~ /^\d+$/ || $day < 1 || $day > 5 ) {
 			print "line $lines \"$day\" not valid day [1-4]\n";
 			$fatalerr++;
@@ -431,6 +430,11 @@ while (<DATA>) {
 			$fatalerr++;
 		    }
 		    elsif ( @starts ) {
+			$mlb = $starts[0];
+			$mlb =~ s/\s+$//;
+			$name = $starts[1];
+			$name =~ s/\s+$//;
+			$tigname = $mlb . " " . $name;
 			if ( $tcode == 0 ) {
 			    printf( "%-3s %s injured for %i day(s), DTD(%i)\n",
 				$mlb, $name, $inj, $dtd );
@@ -500,6 +504,10 @@ while (<DATA>) {
 		$pos =~ tr/A-Z/a-z/;
 		$pos =~ s/\-.*$//;
 		if ( @starts ) {
+		    $mlb = $starts[0];
+		    $mlb =~ s/\s+$//;
+		    $name = $starts[1];
+		    $name =~ s/\s+$//;
 		    if ( $pos eq 'p' ) {
 			if ( $starts[3] == 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
@@ -656,6 +664,10 @@ while (<DATA>) {
 		}
 		@starts = find( $mlb, $name, $lines);
 		if ( @starts ) {
+		    $mlb = $starts[0];
+		    $mlb =~ s/\s+$//;
+		    $name = $starts[1];
+		    $name =~ s/\s+$//;
 		    if ( $starts[2] == 0 ) {
 			printf("line %s %-3s %s illegal appearance\n", $lines, $mlb, $name);
 			$softerr++;
@@ -688,6 +700,10 @@ while (<DATA>) {
 		    $start = 0;
 		}
 		if ( $start && @starts ) {
+		    $mlb = $starts[0];
+		    $mlb =~ s/\s+$//;
+		    $name = $starts[1];
+		    $name =~ s/\s+$//;
 		    #printf("%-3s %s start @ %s\n", $mlb, $name, $pos);
 		    if ( $pos eq 'c' ) {
 			if ( $starts[4] == 0 ) {
@@ -907,6 +923,10 @@ while (<DATA>) {
 		}
 		@starts = find( $mlb, $name, $lines);
 		if ( @starts ) {
+		    $mlb = $starts[0];
+		    $mlb =~ s/\s+$//;
+		    $name = $starts[1];
+		    $name =~ s/\s+$//;
 		    if ( $starts[2] == 0) {
 			printf("line %s %-3s %s illegal appearance\n", $lines, $mlb, $name);
 			$softerr++;
