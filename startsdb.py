@@ -74,7 +74,7 @@ def main( starts = {}, module = False, report_week = 27 ):
             % ( DB.starts, int(report_week) )
 
     inj = {}
-    injreport.main( inj, module=True, report_week = 1 )
+    injreport.main( inj, module=True )
 
     if not module and not is_cgi:
         print "MLB Name            GP  SP   C  1B  2B  3B  SS  LF  CF  RF INJ"
