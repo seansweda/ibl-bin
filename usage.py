@@ -88,7 +88,7 @@ def r_usage( name, role, g ):
         rate = ( ibl_U * 162 / g ) / mlb_U * 100
         injrate = ( ibl_U * 162 / g + credit ) / mlb_U * 100
 
-    output = "%-18s" % name
+    output = "%-18s" % injreport.space(name)
     output += "%4i %6.1f %6.1f" \
             % ( U_75, U_75 / (162 - g), U_75 / (162.0 - g) * 6.0 )
     output += "   %4i %6.1f %6.1f" \
@@ -155,7 +155,7 @@ def g_usage( name, role, g ):
         for p in range(2,6):
             u133.append( U_133 / float(p) )
 
-    output = "%-18s" % name
+    output = "%-18s" % injreport.space(name)
     output += "%4i " % U_75
     u75.reverse()
     while len(u75):
@@ -197,7 +197,7 @@ def std_usage( name, role, g ):
         injrate = ( ibl_U * 162 / g + credit ) / mlb_U * 100
 
     output = "%-18s %4.0f %4.0f %4i %4i %7.1f %7.1f %7.1f %6.1f%% %6.1f%%" %\
-            ( name, mlb_U, ibl_U, inj, credit, \
+            ( injreport.space(name), mlb_U, ibl_U, inj, credit, \
             U_75 - ibl_U - credit, U_133 - ibl_U, U_150 - ibl_U, rate, injrate )
     return output
 

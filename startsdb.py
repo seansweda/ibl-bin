@@ -27,7 +27,8 @@ def output( name, starts, inj, is_cgi ):
     else:
         fmt = "%-18s %3i %3i %3i %3i %3i %3i %3i %3i %3i %3i %3i"
 
-    return fmt % ( name, gp, p, c, b1, b2, b3, ss, lf, cf, rf, inj )
+    return fmt % ( injreport.space(name), \
+            gp, p, c, b1, b2, b3, ss, lf, cf, rf, inj )
 
 def main( starts = {}, module = False, report_week = 27 ):
     do_json = False

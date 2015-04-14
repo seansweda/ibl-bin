@@ -138,6 +138,12 @@ def kind ( code ):
         # default is injury
         return inj
 
+def space ( tigname ):
+    if tigname[2] == ' ':
+        return tigname[0:2] + ' ' + tigname[2:]
+    else:
+        return tigname
+
 # sql table injury codes
 injured = 0
 no_dtd = 1
@@ -294,7 +300,7 @@ def main( player = {}, module = False, report_week = 0 ):
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
         if not module and week > report_week:
-            output = "%s %s " % (ibl, name)
+            output = "%s %s " % (ibl, space(name) )
 
             if code == suspended:
                 output += "suspended for %i game" % int(reported_length)
