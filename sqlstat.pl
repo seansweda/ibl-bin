@@ -650,7 +650,7 @@ while (<DATA>) {
 		last;
 	    }
 	    if ( $#line < $BCOLS ) {
-		if ( $#prev > 0 ) {
+		if ( @prev ) {
 		    push @trunc, $lines;
 		    #print "line $lines attempting to unwrap truncated BATTERS line\n";
 		    while ( @prev ) {
