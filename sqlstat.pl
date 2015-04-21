@@ -33,6 +33,7 @@ $updates = 0;
 $scores = 0;
 $input = '';
 $xteam = '';
+@trunc = ();
 
 # err flags
 $softerr = 0;
@@ -640,6 +641,7 @@ while (<DATA>) {
 	    print "line $lines invalid IBL team designation: $team\n";
 	    $fatalerr++;
 	}
+	@prev = split;
 	while (<DATA>) {
 	    $g = $psc = $ps1b = $ps2b = $ps3b = $psss = $pslf = $pscf = $psrf = 0;
 	    $lines++;
@@ -647,7 +649,22 @@ while (<DATA>) {
 	    if ( $#line == -1 ) {
 		last;
 	    }
-	    elsif ( $#line != $BCOLS ) {
+	    if ( $#line < $BCOLS ) {
+		if ( $#prev > 0 ) {
+		    push @trunc, $lines;
+		    #print "line $lines attempting to unwrap truncated BATTERS line\n";
+		    while ( @prev ) {
+			unshift @line, pop @prev;
+		    }
+		} else {
+		    @prev = @line;
+		    next;
+		}
+	    }
+	    if ( $line[0] == 'BATTERS' ) {
+		next;
+	    }
+	    if ( $#line != $BCOLS ) {
 		print "line $lines BATTERS format error\n";
 		$fatalerr++;
 		last;
@@ -1023,12 +1040,17 @@ while (<DATA>) {
 }
 
 print "\n";
-printf ("lines: %s\n", $lines);
-printf ("Total BATTERS: %s\n", $batters);
-printf ("Total PITCHERS: %s\n", $pitchers);
-printf ("Total WINS: %s\n", $wins);
-printf ("Total LOSSES: %s\n", $losses);
+printf "lines: %s\n", $lines;
+printf "Total BATTERS: %s\n", $batters;
+printf "Total PITCHERS: %s\n", $pitchers;
+printf "Total WINS: %s\n", $wins;
+printf "Total LOSSES: %s\n", $losses;
 print "\n";
+if ( $#trunc > 0 ) {
+    printf "truncated lines: %i (", $#trunc + 1;
+    print join(", ", @trunc);
+    print ")\n";
+}
 
 # printf "%s E: %d\n", $index, $xe{$index};
 # printf "%s PB: %d\n", $index, $xpb{$index};
