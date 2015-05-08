@@ -319,8 +319,9 @@ def main():
             sql += " and ibl_team = '%s'" % do_team
         sql += " order by tig_name;"
         cursor.execute(sql)
-        for ibl, name, in cursor.fetchall():
-            tig_name = name.rstrip()
+        for ibl, tig_name, in cursor.fetchall():
+            tig_name = tig_name.rstrip()
+            ibl = ibl.rstrip()
             if MLB.has_key(tig_name):
                 if do_g:
                     print g_usage( tig_name, pitcher, gp(ibl) )
@@ -345,8 +346,9 @@ def main():
             sql += " and ibl_team = '%s'" % do_team
         sql += " order by tig_name;"
         cursor.execute(sql)
-        for ibl, name, in cursor.fetchall():
-            tig_name = name.rstrip()
+        for ibl, tig_name, in cursor.fetchall():
+            tig_name = tig_name.rstrip()
+            ibl = ibl.rstrip()
             if MLB.has_key(tig_name):
                 if do_g:
                     print g_usage( tig_name, batter, gp(ibl) )
