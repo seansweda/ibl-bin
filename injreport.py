@@ -300,6 +300,11 @@ def main( player = {}, module = False, report_week = 0 ):
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
         if not module and week > report_week:
+            # get current IBL team
+            sql = "select ibl_team from teams where tig_name = (%s); "
+            cursor.execute(sql, (name, ))
+            ibl, = cursor.fetchone()
+
             output = "%s %s " % (ibl, space(name) )
 
             if code == suspended:
