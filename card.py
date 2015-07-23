@@ -122,9 +122,9 @@ def main():
         datafile = datadir + '/' + pitchers
 
     if bat:
-        print "Player                   1B  2B  3B  HR  HB  BB  HG       H  OB  XB  Pw"
+        print "Player                   1B  2B  3B  HR  HB  BB  HG       H  OB  TB  Pw"
     else:
-        print "Player                   1B  2B  DF  HB  BB IFR OFR  HG       H  OB  XB"
+        print "Player                   1B  2B  DF  HB  BB IFR OFR  HG       H  OB  TB"
 
     if hashmode:
         cards = p_hash(datafile)
