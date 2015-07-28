@@ -203,7 +203,10 @@ def main( player = {}, module = False, report_week = 0 ):
     if is_cgi and not module:
         print "<table>"
 
-    sql = "select * from %s order by tig_name, week;" % DB.inj
+    sql = "select week, home, away, day, type, ibl_team, \
+             t.tig_name, length, dtd, description from %s i, teams t \
+             where i.tig_name = t.tig_name\
+             order by ibl_team, t.tig_name, week;" % DB.inj
     cursor.execute(sql)
     for injury in cursor.fetchall():
         week, home, away, day, code, ibl, name, length, failed, desc = injury
@@ -300,11 +303,6 @@ def main( player = {}, module = False, report_week = 0 ):
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
         if not module and week > report_week:
-            # get current IBL team
-            sql = "select ibl_team from teams where tig_name = (%s); "
-            cursor.execute(sql, (name, ))
-            ibl, = cursor.fetchone()
-
             output = "%s %s " % (ibl, space(name) )
 
             if code == suspended:
