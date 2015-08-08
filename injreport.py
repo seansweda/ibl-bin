@@ -295,7 +295,7 @@ def main( player = {}, module = False, report_week = 0 ):
             series = []
             loc = 'playoffs'
             for x in range(40):
-                series.append(1)
+                series.append(0)
             served = update( series, code, length )
             length -= served
             player[name][week] = { loc: series }
