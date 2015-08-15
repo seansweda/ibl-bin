@@ -259,43 +259,55 @@ while (<DATA>) {
 	}
     }
     elsif ( $keyword eq 'WEEK' ) {
-	$week = (split)[1];
-	if ( $week >= 1 && $week <= 28 ) {
-	    print "WEEK $week\n";
-	}
-	else {
-	    print "line $lines WEEK format error: $week\n";
-	    $fatalerr++;
-	    $week = '';
+	if ( $week ) {
+	    print "line $lines skipping WEEK, already set to $week\n";
+	} else {
+	    $week = (split)[1];
+	    if ( $week >= 1 && $week <= 28 ) {
+		print "WEEK $week\n";
+	    }
+	    else {
+		print "line $lines WEEK format error: $week\n";
+		$fatalerr++;
+		$week = '';
+	    }
 	}
     }
     elsif ( $keyword eq 'HOME' ) {
-	$home = (split)[1];
-	$home =~ tr/a-z/A-Z/;
-	if ( iblck($home) ) {
-	    print "line $lines invalid IBL team designation: $home\n";
-	    $fatalerr++;
-	    $home = '';
+	if ( $home ) {
+	    print "line $lines skipping HOME, already set to $home\n";
+	} else {
+	    $home = (split)[1];
+	    $home =~ tr/a-z/A-Z/;
+	    if ( iblck($home) ) {
+		print "line $lines invalid IBL team designation: $home\n";
+		$fatalerr++;
+		$home = '';
+	    }
+	    else {
+		print "HOME $home\n";
+	    }
+	    $hcode = iblcode($home);
+	    $hgame = gamescode($home);
 	}
-	else {
-	    print "HOME $home\n";
-	}
-	$hcode = iblcode($home);
-	$hgame = gamescode($home);
     }
     elsif ( $keyword eq 'AWAY' ) {
-	$away = (split)[1];
-	$away =~ tr/a-z/A-Z/;
-	if ( iblck($away) ) {
-	    print "line $lines invalid IBL team designation: $away\n";
-	    $fatalerr++;
-	    $away = '';
+	if ( $away ) {
+	    print "line $lines skipping AWAY, already set to $away\n";
+	} else {
+	    $away = (split)[1];
+	    $away =~ tr/a-z/A-Z/;
+	    if ( iblck($away) ) {
+		print "line $lines invalid IBL team designation: $away\n";
+		$fatalerr++;
+		$away = '';
+	    }
+	    else {
+		print "AWAY $away\n";
+	    }
+	    $acode = iblcode($away);
+	    $agame = gamescode($away);
 	}
-	else {
-	    print "AWAY $away\n";
-	}
-	$acode = iblcode($away);
-	$agame = gamescode($away);
     }
     elsif ( $keyword eq 'SCORES' ) {
 	printf "\nSCORES\n";
