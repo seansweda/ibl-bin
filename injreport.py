@@ -315,15 +315,15 @@ def main( player = {}, module = False, report_week = 0 ):
             if reported_length != 1:
                 output += "s"
 
-            if length > 0:
-                output += ", out for season"
-            else:
-                output += ", from week %s (%s day %s)" \
-                        % ( reported_week, reported_loc, reported_day )
-                days_out = totals( player[name][week], kind(code) )
-                days_out.sort( key = lambda s: s[1], reverse=True )
-                days_out.sort( key = lambda s: s[0] == 'ASB' )
+            output += ", from week %s (%s day %s)" \
+                    % ( reported_week, reported_loc, reported_day )
+            days_out = totals( player[name][week], kind(code) )
+            days_out.sort( key = lambda s: s[1], reverse=True )
+            days_out.sort( key = lambda s: s[0] == 'ASB' )
 
+            if length > 0:
+                output += " through end of season"
+            else:
                 week_tot = 0
                 for x in days_out:
                     week_tot += x[1]
