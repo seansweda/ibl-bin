@@ -89,10 +89,19 @@ def r_usage( name, role, g ):
         injrate = ( ibl_U * 162 / g + credit ) / mlb_U * 100
 
     output = "%-18s" % injreport.space(name)
-    output += "%4i %6.1f %6.1f" \
-            % ( U_75, U_75 / (162 - g), U_75 / (162.0 - g) * 6.0 )
-    output += "   %4i %6.1f %6.1f" \
-            % ( U_133, U_133 / (162 - g), U_133 / (162.0 - g) * 6.0 )
+    output += "%4i " % U_75
+    if g >= 162:
+        output += "%6s %6s" % ( '-', '-' )
+    else:
+        output += "%6.1f %6.1f" \
+            % ( U_75 / (162 - g), U_75 / (162.0 - g) * 6.0 )
+
+    output += "   %4i " % U_133
+    if g >= 162:
+        output += "%6s %6s" % ( '-', '-' )
+    else:
+        output += "%6.1f %6.1f" \
+            % ( U_133 / (162 - g), U_133 / (162.0 - g) * 6.0 )
 
     output += "  %6.1f%% %6.1f%%" % ( rate, injrate )
 
