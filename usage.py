@@ -75,11 +75,11 @@ def r_usage( name, role, g ):
         inj = injreport.injdays( INJ[name], 27 )
     credit = int( 1 + mlb_U / 162 ) * inj
 
-    U_75 = mlb_U * 3 / 4
-    U_75 = int( U_75 - ibl_U - credit + 1 )
+    U_75 = int( mlb_U * 3 / 4 ) + 1
+    U_75 -= ( ibl_U + credit )
 
-    U_133 = mlb_U * 4 / 3
-    U_133 = int( U_133 - ibl_U )
+    U_133 = int ( mlb_U * 4 / 3 )
+    U_133 -= ibl_U
 
     if g == 0:
         rate = 0
@@ -90,18 +90,18 @@ def r_usage( name, role, g ):
 
     output = "%-18s" % injreport.space(name)
     output += "%4i " % U_75
-    if g >= 162:
+    if g >= 162 or U_75 <= 0:
         output += "%6s %6s" % ( '-', '-' )
     else:
         output += "%6.1f %6.1f" \
-            % ( U_75 / (162 - g), U_75 / (162.0 - g) * 6.0 )
+            % ( U_75 / (162 - g), min( U_75 / (162.0 - g) * 6.0, U_75 ) )
 
     output += "   %4i " % U_133
-    if g >= 162:
+    if g >= 162 or U_133 <= 0:
         output += "%6s %6s" % ( '-', '-' )
     else:
         output += "%6.1f %6.1f" \
-            % ( U_133 / (162 - g), U_133 / (162.0 - g) * 6.0 )
+            % ( U_133 / (162 - g), min( U_133 / (162.0 - g) * 6.0, U_133 ) )
 
     output += "  %6.1f%% %6.1f%%" % ( rate, injrate )
 
@@ -125,11 +125,11 @@ def g_usage( name, role, g ):
         inj = injreport.injdays( INJ[name], 27 )
     credit = int( 1 + mlb_U / 162 ) * inj
 
-    U_75 = mlb_U * 3 / 4
-    U_75 = int( U_75 - ibl_U - credit + 1 )
+    U_75 = int( mlb_U * 3 / 4 ) + 1
+    U_75 -= ( ibl_U + credit )
 
-    U_133 = mlb_U * 4 / 3
-    U_133 = int( U_133 - ibl_U )
+    U_133 = int ( mlb_U * 4 / 3 )
+    U_133 -= ibl_U
 
     u75 = []
     u133 = []
