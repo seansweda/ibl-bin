@@ -377,7 +377,7 @@ while (<DATA>) {
 	if ( $sched == -1 ) {
 	    print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
 	    $fatalerr++;
-	} elsif ( $sched == 2 ) {
+	} elsif ( $sched == 2 && $updates != 2 ) {
 	    print "$away @ $home not valid matchup for week $week\n";
 	    $fatalerr++;
 	} elsif ( $sched == 1 && !$redo) {
@@ -386,8 +386,12 @@ while (<DATA>) {
 	# valid matchup
 	else {
 	    $injuries = 1;
-	    if ( $sched == 1 && $redo ) {
+	    if ( $sched > 0 && $redo ) {
 		undoinj();
+	    }
+	    if ( $sched == 2 ) {
+		print "$away @ $home not valid matchup for week $week\n";
+		print "admin override\n";
 	    }
 	    while (<DATA>) {
 		$lines++;
@@ -434,8 +438,8 @@ while (<DATA>) {
 
 		    @starts = find( $mlb, $name, $lines);
 
-		    if ( $day !~ /^\d+$/ || $day < 1 || $day > 5 ) {
-			print "line $lines \"$day\" not valid day [1-4]\n";
+		    if ( $day !~ /^\d+$/ || $day < 1 ) {
+			print "line $lines \"$day\" not valid day\n";
 			$fatalerr++;
 		    }
 		    elsif ( $inj !~ /^\d+$/ ) {
