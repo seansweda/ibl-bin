@@ -56,9 +56,14 @@ def get_series( player, name, week, loc ):
         player[name][week] = {}
         player[name][week][loc] = {}
 
-    obj = [ 0, 0, 0 ]
-    for x in range( offday(week) ):
-        obj.append(1)
+    if week == 28:
+        obj = []
+        for x in range(40):
+            obj.append(0)
+    else:
+        obj = [ 0, 0, 0 ]
+        for x in range( offday(week) ):
+            obj.append(1)
     return obj
 
 def search( days, code ):
@@ -216,7 +221,9 @@ def main( player = {}, module = False, report_week = 0 ):
         if not player.has_key(name):
             player[name] = {}
 
-        if ibl == home:
+        if week == 28:
+            loc_q = [ 'playoffs' ]
+        elif ibl == home:
             loc_q = [ 'home', 'away' ]
         else:
             loc_q = [ 'away', 'home' ]
@@ -291,14 +298,13 @@ def main( player = {}, module = False, report_week = 0 ):
 
         if length > 0:
             # post-season
-            week += 1
-            series = []
+            if week == 27:
+                week += 1
             loc = 'playoffs'
-            for x in range(40):
-                series.append(0)
+            series = get_series( player, name, week, loc )
             served = update( series, code, length )
             length -= served
-            player[name][week] = { loc: series }
+            player[name][week][loc] = series
             ##print "week %2i %s: %i served (%3i) %s" % \
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
