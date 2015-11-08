@@ -233,7 +233,8 @@ def main():
     db = DB.connect()
     cursor = db.cursor()
 
-    do_team = 'ALL'
+    do_team = ''
+    sql_team = ''
     do_g = False
     do_r = False
     do_bat = True
@@ -246,6 +247,8 @@ def main():
         for (opt, arg) in opts:
             if opt == '-t':
                 do_team = arg.upper()
+            elif opt == '-A':
+                sql_team = " and ibl_team != 'FA'"
             elif opt == '-B':
                 do_pit = False
             elif opt == '-P':
@@ -254,6 +257,9 @@ def main():
                 do_g = True
             elif opt == '-r':
                 do_r = True
+
+    if len( do_team ) > 0 and len( sql_team ) == 0:
+        sql_team = " and ibl_team = '%s'" % do_team
 
     mlb_file = cardpath() + '/' + 'usage.txt'
     if not os.path.isfile(mlb_file):
@@ -324,8 +330,7 @@ def main():
             print "PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
 
         sql = "select ibl_team, tig_name from teams where item_type = %s" % pitcher
-        if do_team != 'ALL':
-            sql += " and ibl_team = '%s'" % do_team
+        sql += sql_team
         sql += " order by tig_name;"
         cursor.execute(sql)
         for ibl, tig_name, in cursor.fetchall():
@@ -351,8 +356,7 @@ def main():
             print "BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
 
         sql = "select ibl_team, tig_name from teams where item_type = %s" % batter
-        if do_team != 'ALL':
-            sql += " and ibl_team = '%s'" % do_team
+        sql += sql_team
         sql += " order by tig_name;"
         cursor.execute(sql)
         for ibl, tig_name, in cursor.fetchall():
@@ -372,7 +376,7 @@ def main():
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 't:grBP')
+        opts, args = getopt.getopt(sys.argv[1:], 't:grABP')
     except getopt.GetoptError, err:
         print str(err)
         usage()
