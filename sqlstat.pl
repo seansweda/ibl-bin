@@ -526,7 +526,7 @@ while (<DATA>) {
 		    $name = $starts[1];
 		    $name =~ s/\s+$//;
 		    if ( $pos eq 'p' ) {
-			if ( $starts[3] == 0 ) {
+			if ( $starts[3] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -536,7 +536,7 @@ while (<DATA>) {
 			}
 		    }
 		    if ( $pos eq 'c' ) {
-			if ( $starts[4] == 0 ) {
+			if ( $starts[4] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -546,7 +546,7 @@ while (<DATA>) {
 			}
 		    }
 		    elsif ( $pos eq '1b' ) {
-			if ( $starts[5] == 0 ) {
+			if ( $starts[5] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -556,7 +556,7 @@ while (<DATA>) {
 			}
 		    }
 		    elsif ( $pos eq '2b' ) {
-			if ( $starts[6] == 0 ) {
+			if ( $starts[6] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -566,7 +566,7 @@ while (<DATA>) {
 			}
 		    }
 		    elsif ( $pos eq '3b' ) {
-			if ( $starts[7] == 0 ) {
+			if ( $starts[7] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -576,7 +576,7 @@ while (<DATA>) {
 			}
 		    }
 		    elsif ( $pos eq 'ss' ) {
-			if ( $starts[8] == 0 ) {
+			if ( $starts[8] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -586,7 +586,7 @@ while (<DATA>) {
 			}
 		    }
 		    elsif ( $pos eq 'lf' ) {
-			if ( $starts[9] == 0 ) {
+			if ( $starts[9] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -596,7 +596,7 @@ while (<DATA>) {
 			}
 		    }
 		    elsif ( $pos eq 'cf' ) {
-			if ( $starts[10] == 0 ) {
+			if ( $starts[10] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -606,7 +606,7 @@ while (<DATA>) {
 			}
 		    }
 		    elsif ( $pos eq 'rf' ) {
-			if ( $starts[11] == 0 ) {
+			if ( $starts[11] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -701,7 +701,7 @@ while (<DATA>) {
 		    $mlb =~ s/\s+$//;
 		    $name = $starts[1];
 		    $name =~ s/\s+$//;
-		    if ( $starts[2] == 0 ) {
+		    if ( $starts[2] <= 0 ) {
 			printf("line %s %-3s %s illegal appearance\n", $lines, $mlb, $name);
 			$softerr++;
 		    }
@@ -739,7 +739,7 @@ while (<DATA>) {
 		    $name =~ s/\s+$//;
 		    #printf("%-3s %s start @ %s\n", $mlb, $name, $pos);
 		    if ( $pos eq 'c' ) {
-			if ( $starts[4] == 0 ) {
+			if ( $starts[4] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -749,7 +749,7 @@ while (<DATA>) {
 			$sc++;
 		    }
 		    elsif ( $pos eq '1b' ) {
-			if ( $starts[5] == 0 ) {
+			if ( $starts[5] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -759,7 +759,7 @@ while (<DATA>) {
 			$s1b++;
 		    }
 		    elsif ( $pos eq '2b' ) {
-			if ( $starts[6] == 0 ) {
+			if ( $starts[6] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -769,7 +769,7 @@ while (<DATA>) {
 			$s2b++;
 		    }
 		    elsif ( $pos eq '3b' ) {
-			if ( $starts[7] == 0 ) {
+			if ( $starts[7] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -779,7 +779,7 @@ while (<DATA>) {
 			$s3b++;
 		    }
 		    elsif ( $pos eq 'ss' ) {
-			if ( $starts[8] == 0 ) {
+			if ( $starts[8] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -789,7 +789,7 @@ while (<DATA>) {
 			$sss++;
 		    }
 		    elsif ( $pos eq 'lf' ) {
-			if ( $starts[9] == 0 ) {
+			if ( $starts[9] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -799,7 +799,7 @@ while (<DATA>) {
 			$slf++;
 		    }
 		    elsif ( $pos eq 'cf' ) {
-			if ( $starts[10] == 0 ) {
+			if ( $starts[10] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -809,7 +809,7 @@ while (<DATA>) {
 			$scf++;
 		    }
 		    elsif ( $pos eq 'rf' ) {
-			if ( $starts[11] == 0 ) {
+			if ( $starts[11] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ %s\n", $lines, $mlb, $name, $pos);
 			    $softerr++;
 			}
@@ -960,13 +960,13 @@ while (<DATA>) {
 		    $mlb =~ s/\s+$//;
 		    $name = $starts[1];
 		    $name =~ s/\s+$//;
-		    if ( $starts[2] == 0) {
+		    if ( $starts[2] <= 0) {
 			printf("line %s %-3s %s illegal appearance\n", $lines, $mlb, $name);
 			$softerr++;
 		    }
 		    $dec =~ tr/a-z/A-Z/;
 		    if ( $start ) {
-			if ( $starts[3] == 0 ) {
+			if ( $starts[3] <= 0 ) {
 			    printf("line %s %-3s %s illegal start @ p\n", $lines, $mlb, $name);
 			    $softerr++;
 			}
