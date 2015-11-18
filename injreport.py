@@ -318,53 +318,55 @@ def main( player = {}, module = False, report_week = 0 ):
             else:
                 # default is injury
                 output += "out for %i day" % int(reported_length)
+
             if reported_length != 1:
                 output += "s"
+            output += ", "
 
-            output += ", from week %s (%s day %s)" \
+            if reported_length > 1:
+                output += "from "
+            output += "week %s (%s day %s)" \
                     % ( reported_week, reported_loc, reported_day )
-            days_out = totals( player[name][week], kind(code) )
-            days_out.sort( key = lambda s: s[1], reverse=True )
-            days_out.sort( key = lambda s: s[0] == 'ASB' )
 
             if length > 0:
                 output += " through end of season"
             else:
+                days_out = totals( player[name][week], kind(code) )
+                days_out.sort( key = lambda s: s[1], reverse=True )
+                days_out.sort( key = lambda s: s[0] == 'ASB' )
+
                 week_tot = 0
                 for x in days_out:
                     week_tot += x[1]
 
-                if week_tot > 0:
-                    # week has affected days
-                    output += " through week %i (" % week
-                    for x in days_out:
-                        output += "%i %s, " % ( x[1], x[0] )
-                    output = output[:-2] + ")"
-                    if code == injured:
-                        output += ", DTD (+%i) %s day %i" % \
-                                (failed, loc, search(series, dtd))
-                else:
-                    # otherwise, check previous week
-                    if not player[name].has_key(week - 1):
-                        player[name][week - 1] = {}
-                    days_out = totals( player[name][week - 1], kind(code) )
+                if week_tot == 0:
+                    # player available start of week, check previous
+                    thru_week = week - 1
+                    if not player[name].has_key(thru_week):
+                        player[name][thru_week] = {}
+                    days_out = totals( player[name][thru_week], kind(code) )
                     days_out.sort( key = lambda s: s[1], reverse=True )
                     days_out.sort( key = lambda s: s[0] == 'ASB' )
 
-                    week_tot = 0
-                    for x in days_out:
-                        week_tot += x[1]
+                else:
+                    thru_week = week
 
-                    if week_tot > 0:
-                        output += " through week %i (" % (int(week) - 1)
+                if reported_length > 1:
+                    output += " through week %i (" % thru_week
+                    if reported_week == thru_week:
+                        # ends same week it starts
+                        output += "%s day %i)" % ( reported_loc, \
+                                reported_day + reported_length -1 )
+                    else:
                         for x in days_out:
                             output += "%i %s, " % ( x[1], x[0] )
                         output = output[:-2] + ")"
-                    if code == injured:
-                        #if len(output) - 1 >  len(name.rstrip()):
-                        #    output += ", "
-                        output += ", DTD (+%i) %s day %i week %i" % \
-                                (failed, loc, search(series, dtd), week)
+
+                if code == injured:
+                    output += ", DTD (+%i) %s day %i" % \
+                            (failed, loc, search(series, dtd))
+                    if thru_week != week:
+                        output += " week %i" % week
 
             if is_cgi:
                 print '<tr><td>%s</td><td>"%s"</td></tr>' % \
