@@ -208,13 +208,14 @@ def main( player = {}, module = False, report_week = 0 ):
     if is_cgi and not module:
         print "<table>"
 
-    sql = "select week, home, away, day, type, ibl_team, \
-             t.tig_name, length, dtd, description from %s i, teams t \
-             where i.tig_name = t.tig_name\
-             order by ibl_team, t.tig_name, week;" % DB.inj
+    sql = "select week, home, away, day, type, ibl, ibl_team, \
+             i.tig_name, length, dtd, description from %s i \
+             left outer join teams t on i.tig_name = t.tig_name\
+             order by ibl_team, i.tig_name, week;" % DB.inj
     cursor.execute(sql)
     for injury in cursor.fetchall():
-        week, home, away, day, code, ibl, name, length, failed, desc = injury
+        week, home, away, day, code, inj_team, ibl, name, length, failed, \
+                desc = injury
         ##print injury
         name = name.rstrip()
 
@@ -223,7 +224,7 @@ def main( player = {}, module = False, report_week = 0 ):
 
         if week == 28:
             loc_q = [ 'playoffs' ]
-        elif ibl == home:
+        elif inj_team == home:
             loc_q = [ 'home', 'away' ]
         else:
             loc_q = [ 'away', 'home' ]
@@ -309,6 +310,8 @@ def main( player = {}, module = False, report_week = 0 ):
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
         if not module and week > report_week:
+            if not ibl:
+                ibl = inj_team
             output = "%s %s " % (ibl, space(name) )
 
             if code == suspended:
