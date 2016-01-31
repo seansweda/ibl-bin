@@ -31,9 +31,12 @@ except IOError, err:
 
 y = yaml.safe_load(f)
 
-# default is year + 1
-year = int(time.strftime("%Y"))
-year = "%s" % ( int(year) + 1 )
+if y.has_key('year'):
+    year = str( y['year'] )
+else:
+  # default is year + 1
+  year = int(time.strftime("%Y"))
+  year = "%s" % ( int(year) + 1 )
 
 for (opt, arg) in opts:
     if opt == '-y':
