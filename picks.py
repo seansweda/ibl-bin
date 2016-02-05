@@ -18,7 +18,7 @@ db = DB.connect()
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'y:')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'sy:')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -34,13 +34,17 @@ y = yaml.safe_load(f)
 if y.has_key('year'):
     year = str( y['year'] )
 else:
-  # default is year + 1
-  year = int(time.strftime("%Y"))
-  year = "%s" % ( int(year) + 1 )
+    # default is year + 1
+    year = int(time.strftime("%Y"))
+    year = "%s" % ( int(year) + 1 )
+
+skip = 0
 
 for (opt, arg) in opts:
     if opt == '-y':
         year = arg
+    elif opt == '-s':
+        skip = 1
 
 sqlbase = "select ibl_team from teams where item_type=0 and tig_name = (%s);"
 
@@ -58,18 +62,20 @@ for ibl, count in cursor.fetchall():
     roster[ibl] = count
 
 for rnd in xrange(1,16):
-    for pick in xrange(1,25):
-        original = order1[ pick - 1 ] if rnd % 2 == 1 else order2[ pick - 1 ] 
+    pick = 1
+    for slot in xrange(1,25):
+        original = order1[ slot - 1 ] if rnd % 2 == 1 else order2[ slot - 1 ]
         pickstr = original + '#' + str(rnd)
         cursor.execute(sqlbase, (pickstr + ' (%s)' % year[-2:],))
         owner = cursor.fetchone()
-        if owner:
+        if owner and ( not skip or roster[owner[0]] < 35 ):
             print "%s%-5s  %3s  (%s)" % (
                     ' ' if roster[owner[0]] < 35 else '*',
-                    str(rnd) + '-' + str(pick),
+                    str(rnd) + '-' + ( str(pick) if skip else str(slot) ),
                     owner[0], pickstr
                     )
             roster[owner[0]] += 1
+            pick += 1
     print
 
 exit
