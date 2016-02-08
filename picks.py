@@ -18,7 +18,7 @@ db = DB.connect()
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'sy:')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'st:r:y:')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -39,12 +39,20 @@ else:
     year = "%s" % ( int(year) + 1 )
 
 skip = 0
+all_teams = 1
+all_rounds = 1
 
 for (opt, arg) in opts:
     if opt == '-y':
         year = arg
     elif opt == '-s':
         skip = 1
+    elif opt == '-t':
+        all_teams = 0
+        do_team = arg.upper()
+    elif opt == '-r':
+        all_rounds = 0
+        do_round = int(arg)
 
 sqlbase = "select ibl_team from teams where item_type=0 and tig_name = (%s);"
 
@@ -69,14 +77,16 @@ for rnd in xrange(1,16):
         cursor.execute(sqlbase, (pickstr + ' (%s)' % year[-2:],))
         owner = cursor.fetchone()
         if owner and ( not skip or roster[owner[0]] < 35 ):
-            print "%s%-5s  %3s  (%s)" % (
+            if ( all_teams or do_team == owner[0] ) and ( all_rounds or do_round == rnd ):
+                print "%s%-5s  %3s  (%s)" % (
                     ' ' if roster[owner[0]] < 35 else '*',
                     str(rnd) + '-' + ( str(pick) if skip else str(slot) ),
                     owner[0], pickstr
                     )
             roster[owner[0]] += 1
             pick += 1
-    print
+    if ( all_teams and all_rounds):
+        print
 
 exit
 
