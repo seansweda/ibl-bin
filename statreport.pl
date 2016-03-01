@@ -3,7 +3,7 @@
 # $Id$
 
 # flags
-# -t: team totals
+# -T: team totals
 # -h: home stats
 # -a: away stats
 # -w: through week #
@@ -48,6 +48,9 @@ sub ipconv {
 
 while (@ARGV) {
     if ( $ARGV[0] eq '-t' ) {
+	shift @ARGV;
+    }
+    if ( $ARGV[0] eq '-T' ) {
 	$totals = 1;
 	shift @ARGV;
     }
