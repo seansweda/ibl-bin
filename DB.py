@@ -5,13 +5,13 @@ import sys
 import psycopg2
 
 # tables for current season
-starts = 'starts2015'
-bat    = 'bat2015'
-pit    = 'pit2015'
-teams  = 'teams2015'
-sched  = 'sched2015'
-extra  = 'extra2015'
-inj    = 'inj2015'
+starts = 'starts2016'
+bat    = 'bat2016'
+pit    = 'pit2016'
+teams  = 'teams2016'
+sched  = 'sched2016'
+extra  = 'extra2016'
+inj    = 'inj2016'
 
 
 def bin_dir():
