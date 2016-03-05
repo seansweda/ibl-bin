@@ -3,6 +3,7 @@
 # flags
 # -c: card info
 # -d: defensive ratings
+# -r: baserunning
 # -a: active roster
 # -i: inactive roster
 # -n: number of players
@@ -16,6 +17,7 @@
 import os
 import sys
 import getopt
+import subprocess
 
 import psycopg2
 
@@ -63,6 +65,10 @@ def poslist(p, max):
             break
     return defense.rstrip()
 
+def brun(p):
+    runs = "%2s/%2s/%2s" % ( p[2], p[3], p[4] )
+    return runs
+
 def pitrat(p):
     defense = "%s/%s  %s/%s  %s" % \
             ( p[2].replace('/0', '/ 0'), p[3], p[6], p[7], p[8] )
@@ -89,6 +95,7 @@ do_active = True
 do_inactive = True
 do_card = False
 do_def = False
+do_br = False
 do_find = False
 count = False
 eol = ''
@@ -104,7 +111,7 @@ db = DB.connect()
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'BPaipAcdLnf')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'BPaipAcdrLnf')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -130,6 +137,8 @@ for (opt, arg) in opts:
         do_card = True
     elif opt == '-d':
         do_def = True
+    elif opt == '-r':
+        do_br = True
     elif opt == '-L':
         eol = ''
     elif opt == '-n':
@@ -156,8 +165,13 @@ if do_card or do_def:
     b_cards = p_hash( cardpath() + '/' + batters )
     p_cards = p_hash( cardpath() + '/' + pitchers )
     b_def = p_hash( cardpath() + '/defense.txt' )
+    b_run = p_hash( cardpath() + '/br.txt' )
     p_def = p_hash( cardpath() + '/pitrat.txt' )
     p_fat = p_hash( cardpath() + '/bfp.txt' )
+
+rows, cols = subprocess.check_output(['stty', 'size']).split()
+rows = int(rows)
+cols = int(cols)
 
 last = -1
 for arg in args:
@@ -230,11 +244,21 @@ for arg in args:
                         else:
                             print "%s" % num,
                     if (mlb, name) in b_def:
-                        print ".", poslist( b_def[(mlb,name)][2:], 24 ),
+                        if do_br:
+                            print ".",
+                            print brun( b_run[(mlb,name)] ), ".",
+                            print poslist( b_def[(mlb,name)][2:], cols - 66 ),
+                        else:
+                            print ".",
+                            print poslist( b_def[(mlb,name)][2:], cols - 55 ),
                 elif not (do_card or do_def):
                     print " %-40s" % ( trim(how) ),
                 elif do_def and (mlb, name) in b_def:
-                    print poslist( b_def[(mlb,name)][2:], 56 ),
+                    if do_br:
+                        print brun( b_run[(mlb,name)] ), ".",
+                        print poslist( b_def[(mlb,name)][2:], cols - 32 ),
+                    else:
+                        print poslist( b_def[(mlb,name)][2:], cols - 21 ),
                 print
     if count and b_num and p_num:
         print "%s: %2s players (%2s pitchers, %2s batters, %s uncarded)" % \
