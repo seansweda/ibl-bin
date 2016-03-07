@@ -71,7 +71,7 @@ def brun(p):
 
 def pitrat(p):
     defense = "%s/%s  %s/%s  %s" % \
-            ( p[2].replace('/0', '/ 0'), p[3], p[6], p[7], p[8] )
+            ( p[2].replace('/0', '/ 0'), p[3], p[6], p[7], p[5] )
     return defense
 
 def pitfat(p):
