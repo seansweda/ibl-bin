@@ -52,7 +52,7 @@ def dumpenv(form):
     return
 
 def gp ( ibl ):
-    if IBL_G.has_key(ibl):
+    if IBL_G.has_key(ibl) and IBL_G[ibl]:
         return float( IBL_G[ibl] )
     else:
         return 0.0
@@ -316,7 +316,7 @@ def main():
     cursor.execute(sql)
     for ibl, g in cursor.fetchall():
         IBL_G[ibl.rstrip()] = float(g)
-    IBL_G['FA'] = max( IBL_G.values() )
+    IBL_G['FA'] = max( IBL_G.values(), 0 )
 
     if is_cgi:
         print "<pre>"
