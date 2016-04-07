@@ -41,8 +41,8 @@ def star(val, string):
     if do_card or do_def:
         return trim(string)
     else:
-        if val == 1: return '*'
-        else : return ' '
+        if val == 1: return ' '
+        else : return '*'
 
 def cardtop(p, type):
     # pitcher
