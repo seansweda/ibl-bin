@@ -2,9 +2,20 @@
 
 import sys
 import re
+import getopt
 
 import psycopg2
 import DB
+
+try:
+    (opts, args) = getopt.getopt(sys.argv[1:], 'd')
+except getopt.GetoptError, err:
+    print str(err)
+
+debug = 0
+for (opt, arg) in opts:
+    if opt == '-d':
+        debug = 1
 
 week = 0
 home = 0
@@ -67,12 +78,12 @@ if week and home and away:
     cursor.execute(sql)
     ( s, ) = cursor.fetchone()
 
-    #debug
-    #print "WEEK %s" % week
-    #print "HOME %s next: %s" % ( home, h_next )
-    #print "AWAY %s next: %s" % ( away, a_next )
-    #if redo:
-    #    print "REDO"
+    if debug:
+        print "WEEK %s" % week
+        print "HOME %s next: %s" % ( home, h_next )
+        print "AWAY %s next: %s" % ( away, a_next )
+        if redo:
+            print "REDO"
 
     if not s or redo:
         print home,
