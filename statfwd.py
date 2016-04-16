@@ -20,7 +20,6 @@ for (opt, arg) in opts:
 week = 0
 home = 0
 away = 0
-redo = 0
 
 h_next = ''
 a_next = ''
@@ -38,10 +37,6 @@ if match:
 match = re.search(r'(^|\n)AWAY\s+([A-Z]+)', grs)
 if match:
     away = match.group(2)
-
-match = re.search(r'(^|\n)REDO', grs)
-if match:
-    redo = match.group()
 
 if week and home and away:
     db = DB.connect()
@@ -72,24 +67,10 @@ if week and home and away:
     if not s:
         a_next = team[c]
 
-    sql = "select status from %s\
-            where week = %i and home = '%s' and away = '%s';"\
-            % ( DB.sched, int(week), code[home], code[away] )
-    cursor.execute(sql)
-    ( s, ) = cursor.fetchone()
-
     if debug:
         print "WEEK %s" % week
         print "HOME %s next: %s" % ( home, h_next )
         print "AWAY %s next: %s" % ( away, a_next )
-        if redo:
-            print "REDO"
 
-    if not s or redo:
-        print home,
-        print away,
-
-    print h_next,
-    print a_next,
-    print
+    print away, h_next, a_next
 
