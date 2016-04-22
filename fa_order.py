@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
 import os
-import csv
 import sys
 import psycopg2
+import yaml
 
 sys.path.append('/home/ibl/bin')
 import DB
@@ -47,6 +47,12 @@ def main():
 
     def late(team):
         # tuple is (boxes, results)
+        # teams on probation pick last
+        if team in y['probation']:
+            return 2
+        # teams under caretaker control are exempt from late penalty
+        if team in y['exempt']:
+            return 0
         # catch odd case where boxes are current but scores broken
         if status[team][0] == week:
             return 0
@@ -76,13 +82,25 @@ def main():
                 break
 
     # start with last year
-    # lastyear.csv should be ordered to break ties
+    # lastyear should be ordered to break ties
     fa = []
     lastyear = {}
-    with open( DB.bin_dir() + '/data/lastyear.csv', 'rU' ) as s:
-        for line in csv.reader(s):
-            fa.append( line[0] )
-            lastyear[line[0]] = float(line[1])/(float(line[1])+float(line[2]))
+
+    try:
+        f = open( DB.bin_dir() + '/data/fa.yml', 'rU' )
+    except IOError, err:
+        print str(err)
+        sys.exit(1)
+
+    y = yaml.safe_load(f)
+
+    if y.has_key('lastyear'):
+        for rec in y['lastyear']:
+            fa.append( rec[0] )
+            lastyear[rec[0]] = float(rec[1])/(float(rec[1])+float(rec[2]))
+    else:
+        sys.exit(1)
+
     #print fa
     #print lastyear
 
