@@ -72,5 +72,5 @@ if week and home and away:
         print "HOME %s next: %s" % ( home, h_next )
         print "AWAY %s next: %s" % ( away, a_next )
 
-    print away, h_next, a_next
+    print home, away, h_next, a_next
 
