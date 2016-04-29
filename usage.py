@@ -316,7 +316,10 @@ def main():
     cursor.execute(sql)
     for ibl, g in cursor.fetchall():
         IBL_G[ibl.rstrip()] = float(g)
-    IBL_G['FA'] = max( IBL_G.values(), 0 )
+    if IBL_G.values():
+        IBL_G['FA'] = max( IBL_G.values() )
+    else:
+        IBL_G['FA'] = 0
 
     if is_cgi:
         print "<pre>"
