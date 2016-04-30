@@ -123,7 +123,9 @@ def main():
             print legal[pos],
         print ")",
 
-        if sum(ros.values()) == 35 and ros[active] == 25 and legal[1] >= 4 \
+        if sum(ros.values()) == 35 \
+                and ( ros[active] <= 25 or ros[active] <= 35 and week >= 24 ) \
+                and legal[1] >= 4 \
                 and len( filter( lambda z: z >= 2, legal[2:] ) ) == 8:
             print "LEGAL"
         else:
