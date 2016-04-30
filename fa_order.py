@@ -5,7 +5,6 @@ import sys
 import psycopg2
 import yaml
 
-sys.path.append('/home/ibl/bin')
 import DB
 
 # dump environment and parameters for testing

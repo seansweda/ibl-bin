@@ -12,7 +12,6 @@ import psycopg2
 import getopt
 import time
 
-sys.path.append('/home/ibl/bin')
 import DB
 import injreport
 

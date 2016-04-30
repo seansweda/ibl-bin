@@ -21,7 +21,6 @@ import subprocess
 
 import psycopg2
 
-sys.path.append('/home/ibl/bin')
 import DB
 
 from card import p_split, p_hash, cardpath, batters, pitchers
