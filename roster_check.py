@@ -40,7 +40,7 @@ def main():
             do_json = False
             print "Content-Type: text/html"
             print
-            print "<html><head><title>Free Agent signing order</title></head><body>"
+            print "<html><head><title>Legal Roster check</title></head><body>"
             #dumpenv(form)
 
     db = DB.connect()
