@@ -103,6 +103,10 @@ def main():
         for player, in cursor.fetchall():
             #print player, starts[player]
 
+            # check if player has appearances left
+            if starts[player][0] <= 0:
+                continue
+
             # check if player is out for a series
             if inj.has_key(player):
                 if inj[player].has_key(week):
