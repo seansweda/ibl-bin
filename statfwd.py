@@ -26,15 +26,15 @@ a_next = ''
 
 grs = sys.stdin.read()
 
-match = re.search(r'(^|\n)WEEK\s+([0-9]+)', grs)
+match = re.search(r'(^|\n)\s*WEEK\s+([0-9]+)', grs)
 if match:
     week = match.group(2)
 
-match = re.search(r'(^|\n)HOME\s+([A-Z]+)', grs)
+match = re.search(r'(^|\n)\s*HOME\s+([A-Z]+)', grs)
 if match:
     home = match.group(2)
 
-match = re.search(r'(^|\n)AWAY\s+([A-Z]+)', grs)
+match = re.search(r'(^|\n)\s*AWAY\s+([A-Z]+)', grs)
 if match:
     away = match.group(2)
 
