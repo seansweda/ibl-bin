@@ -44,22 +44,22 @@ def main():
     db = DB.connect()
     cursor = db.cursor()
 
+    boxes = 0
+    results = 1
+
     def late(team):
-        # tuple is (boxes, results)
+        # array is (boxes, results)
         # teams on probation pick last
         if team in y['probation']:
             return 2
         # teams under caretaker control are exempt from late penalty
         if team in y['exempt']:
             return 0
-        # catch odd case where boxes are current but scores broken
-        if status[team][0] == week:
-            return 0
         # results must be current
-        if status[team][1] != week:
+        if status[team][results] != week:
             return 1
         # boxes must be no more than 1 week behind
-        if status[team][0] < week - 1:
+        if status[team][boxes] < week - 1:
             return 1
         #  return 0, team has nothing outstanding
         return 0
@@ -131,12 +131,20 @@ def main():
             #print fa
 
     status = {}
-    sql = "select ibl, sum(status) as box, sum(scores) as results\
+    sql = "select ibl, sum(status) as box\
+            from %s s, %s t where week <= %i and home = code\
+            group by ibl;" %  ( DB.sched, DB.teams, int(week) - 1 )
+    cursor.execute(sql)
+    for ibl, box in cursor.fetchall():
+        status[ibl] = {}
+        status[ibl][boxes] = box
+
+    sql = "select ibl, sum(scores) as results\
             from %s s, %s t where week <= %i and home = code\
             group by ibl;" %  ( DB.sched, DB.teams, int(week) )
     cursor.execute(sql)
-    for ibl, box, result in cursor.fetchall():
-        status[ibl] = ( box, result )
+    for ibl, result in cursor.fetchall():
+        status[ibl][results] = result
 
     #print status
     # sort teams who are up to date ahead of those who are not
