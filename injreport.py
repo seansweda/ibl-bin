@@ -248,6 +248,10 @@ def main( player = {}, module = False, report_week = 0 ):
         ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
         if length > 0 and allstar( week ) and code != suspended:
+            # dtd expires during ASB
+            if code == injured and length <= 3:
+                code = no_dtd
+                length -= 1
             loc = 'ASB'
             if player[name].has_key(week) and \
                     player[name][week].has_key(loc):
@@ -282,6 +286,10 @@ def main( player = {}, module = False, report_week = 0 ):
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
             if length > 0 and allstar( week ) and code != suspended:
+                # dtd expires during ASB
+                if code == injured and length <= 3:
+                    code = no_dtd
+                    length -= 1
                 loc = 'ASB'
                 if player[name].has_key(week) and \
                         player[name][week].has_key(loc):
@@ -355,11 +363,18 @@ def main( player = {}, module = False, report_week = 0 ):
 
                 if reported_length > 1:
                     output += " through week %i (" % thru_week
+
                     if reported_week == thru_week:
-                        # ends same week it starts
-                        output += "%s day %i)" % ( reported_loc, \
-                                reported_day + reported_length -1 )
+                        # ends same week it starts (check for ASB days)
+                        days_out.sort( key = lambda s: s[1], reverse=True )
+                        if days_out[0][0] == 'ASB' and days_out[0][1] > 0:
+                            output += "%s day %i)" % ( 'ASB', days_out[0][1] )
+                        else:
+                            output += "%s day %i)" % ( reported_loc, \
+                                    reported_day + reported_length - 1 )
+
                     else:
+                        # ends in future week
                         for x in days_out:
                             output += "%i %s, " % ( x[1], x[0] )
                         output = output[:-2] + ")"
