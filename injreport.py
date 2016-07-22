@@ -195,13 +195,13 @@ def main( player = {}, module = False, report_week = 0 ):
                 report_week = int(arg)
 
     if report_week == 0:
-    # no user supplied week so we'll find latest week with all inj reported
+    # no user supplied week, use latest week without all inj reported
         sql = "select week, count(*) from %s where inj = 1\
                 group by week order by week desc;" % DB.sched
         cursor.execute(sql)
         for week, num in cursor.fetchall():
             if num == 24:
-                report_week = week
+                report_week = week + 1
                 break
 
     if is_cgi and not module:
@@ -316,7 +316,7 @@ def main( player = {}, module = False, report_week = 0 ):
             ##print "week %2i %s: %i served (%3i) %s" % \
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
-        if not module and week > report_week:
+        if not module and week >= report_week:
             if not ibl:
                 ibl = inj_team
             output = "%s %s " % (ibl, space(name) )
