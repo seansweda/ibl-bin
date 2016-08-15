@@ -106,6 +106,56 @@ def r_usage( name, role, g ):
 
     return output
 
+def o_usage( name, role, g ):
+    if role == pitcher:
+        U = IBL_P
+    elif role == batter:
+        U = IBL_B
+    else:
+        return ''
+
+    ibl_U = 0
+    if U.has_key(name):
+        ibl_U = U[name]
+    mlb_U = MLB[name]
+
+    inj = 0
+    if INJ.has_key(name):
+        inj = injreport.injdays( INJ[name], 27 )
+    credit = int( 1 + mlb_U / 162 ) * inj
+
+    U_133 = int ( mlb_U * 4 / 3 )
+    U_133 -= ibl_U
+
+    U_150 = int( mlb_U * 3 / 2 )
+    U_150 -= ibl_U
+
+    if g == 0:
+        rate = 0
+        injrate = 0
+    else:
+        rate = ( ibl_U * 162 / g ) / mlb_U * 100
+        injrate = ( ibl_U * 162 / g + credit ) / mlb_U * 100
+
+    output = "%-18s" % injreport.space(name)
+    output += "%4i " % U_133
+    if g >= 162 or U_133 <= 0:
+        output += "%6s %6s" % ( '-', '-' )
+    else:
+        output += "%6.1f %6.1f" \
+            % ( U_133 / (162 - g), min( U_133 / (162.0 - g) * 6.0, U_133 ) )
+
+    output += "   %4i " % U_150
+    if g >= 162 or U_150 <= 0:
+        output += "%6s %6s" % ( '-', '-' )
+    else:
+        output += "%6.1f %6.1f" \
+            % ( U_150 / (162 - g), min( U_150 / (162.0 - g) * 6.0, U_150 ) )
+
+    output += "  %6.1f%% %6.1f%%" % ( rate, injrate )
+
+    return output
+
 def g_usage( name, role, g ):
     if role == pitcher:
         U = IBL_P
@@ -236,6 +286,7 @@ def main():
     sql_team = ''
     do_g = False
     do_r = False
+    do_o = False
     do_bat = True
     do_pit = True
 
@@ -256,6 +307,8 @@ def main():
                 do_g = True
             elif opt == '-r':
                 do_r = True
+            elif opt == '-o':
+                do_o = True
 
     if len( do_team ) > 0 and len( sql_team ) == 0:
         sql_team = " and ibl_team = '%s'" % do_team
@@ -328,6 +381,8 @@ def main():
             print "PITCHERS           75%   SP/f SP/24  RP/f RP/1d   133%  SP/f SP/24  RP/f RP/1d"
         elif do_r:
             print "PITCHERS           75%  per/g  per/w   133%  per/g  per/w     RATE    +INJ"
+        elif do_o:
+            print "PITCHERS          133%  per/g  per/w   150%  per/g  per/w     RATE    +INJ"
         else:
             print "PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
 
@@ -343,6 +398,8 @@ def main():
                     print g_usage( tig_name, pitcher, gp(ibl) )
                 elif do_r:
                     print r_usage( tig_name, pitcher, gp(ibl) )
+                elif do_o:
+                    print o_usage( tig_name, pitcher, gp(ibl) )
                 else:
                     print std_usage( tig_name, pitcher, gp(ibl) )
 
@@ -354,6 +411,8 @@ def main():
             print "BATTERS            75%    2/g   3/g   4/g   5/g   133%   2/g   3/g   4/g   5/g"
         elif do_r:
             print "BATTERS            75%  per/g  per/w   133%  per/g  per/w     RATE    +INJ"
+        elif do_o:
+            print "BATTERS           133%  per/g  per/w   150%  per/g  per/w     RATE    +INJ"
         else:
             print "BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
 
@@ -369,6 +428,8 @@ def main():
                     print g_usage( tig_name, batter, gp(ibl) )
                 elif do_r:
                     print r_usage( tig_name, batter, gp(ibl) )
+                elif do_o:
+                    print o_usage( tig_name, batter, gp(ibl) )
                 else:
                     print std_usage( tig_name, batter, gp(ibl) )
 
@@ -378,7 +439,7 @@ def main():
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 't:grABP')
+        opts, args = getopt.getopt(sys.argv[1:], 't:groABP')
     except getopt.GetoptError, err:
         print str(err)
         usage()
