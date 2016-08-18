@@ -23,6 +23,7 @@ away = 0
 
 h_next = ''
 a_next = ''
+admin = False
 
 grs = sys.stdin.read()
 
@@ -37,6 +38,10 @@ if match:
 match = re.search(r'(^|\n)\s*AWAY\s+([A-Z]+)', grs)
 if match:
     away = match.group(2)
+
+match = re.search(r'(^|\n)\s*ADMIN\s+\w+', grs)
+if match:
+    admin = True
 
 if week and home and away:
     db = DB.connect()
@@ -72,5 +77,6 @@ if week and home and away:
         print "HOME %s next: %s" % ( home, h_next )
         print "AWAY %s next: %s" % ( away, a_next )
 
-    print home, away, h_next, a_next
+    if not admin:
+        print home, away, h_next, a_next
 
