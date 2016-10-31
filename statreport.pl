@@ -23,6 +23,7 @@ $where = "";
 $versus = "";
 
 use DBI;
+use Getopt::Std;
 
 sub pconv {
     my $rate = shift;
@@ -46,69 +47,58 @@ sub ipconv {
     return $retval;
 }
 
+sub usage {
+    print "usage: statreport [-a | -h ] [ -T ] [ -v opponent ] (team1 team2 ...)\n";
+    exit(1);
+}
+
+my %opt=();
+if ( ! getopts("ahTy:v:", \%opt) ) {
+    usage()
+}
+
+if ( defined $opt{T} ) {
+    $totals = 1;
+}
+
+if ( defined $opt{h} && defined $opt{a} ) {
+    usage()
+}
+
+if ( defined $opt{a} ) {
+    $away = 1;
+    $groupby = "ibl, away";
+    $split = "ibl = away";
+}
+
+if ( defined $opt{h} ) {
+    $home = 1;
+    $groupby = "ibl, home";
+    $split = "ibl = home";
+}
+
+if ( defined $opt{y} ) {
+    # override db (undocumented)
+    $year = $opt{y};
+    $startsdb = 'starts' . $year;
+    $batdb = 'bat' . $year;
+    $pitdb = 'pit' . $year;
+    $teamdb = 'teams' . $year;
+    $scheddb = 'sched' . $year;
+}
+
+if ( defined $opt{v} ) {
+    $versus = $opt{v};
+    $versus =~ tr/a-z/A-Z/;
+    if ( $totals ) {
+	$where = sprintf "(home = '%s' or away = '%s') and ibl != '%s' and", $versus, $versus, $versus;
+    } else {
+	$where = sprintf "(home = '%s' or away = '%s') and", $versus, $versus;
+    }
+}
+
 while (@ARGV) {
-    if ( $ARGV[0] eq '-t' ) {
-	shift @ARGV;
-    }
-    if ( $ARGV[0] eq '-T' ) {
-	$totals = 1;
-	shift @ARGV;
-    }
-    elsif ( $ARGV[0] eq '-h' ) {
-	if ( $away ) {
-	    print "usage: statreport [-a | -h ] [ -t ] [ -v opponent ] (team1 team2 ...)\n";
-	    exit(1);
-	}
-	$home = 1;
-	$groupby = "ibl, home";
-	$split = "ibl = home";
-	shift @ARGV;
-    }
-    elsif ( $ARGV[0] eq '-a' ) {
-	if ( $home ) {
-	    print "usage: statreport [-a | -h ] [ -t ] [ -v opponent ] (team1 team2 ...)\n";
-	    exit(1);
-	}
-	$away = 1;
-	$groupby = "ibl, away";
-	$split = "ibl = away";
-	shift @ARGV;
-    }
-    elsif ( $ARGV[0] eq '-w' ) {
-	shift @ARGV;
-	$week = shift @ARGV;
-    }
-    elsif ( $ARGV[0] eq '-v' ) {
-	if ( $versus ) {
-	    print "usage: statreport [-a | -h ] [ -t ] [ -v opponent ] (team1 team2 ...)\n";
-	    exit(1);
-	}
-	shift @ARGV;
-	$versus = shift @ARGV;
-	$versus =~ tr/a-z/A-Z/;
-	if ( $totals ) {
-	    $where = sprintf "(home = '%s' or away = '%s') and ibl != '%s' and", $versus, $versus, $versus;
-	} else {
-	    $where = sprintf "(home = '%s' or away = '%s') and", $versus, $versus;
-	}
-    }
-    elsif ( $ARGV[0] eq '-y' ) {
-	# override db
-	shift @ARGV;
-	$year = shift @ARGV;
-	$startsdb = 'starts' . $year;
-	$batdb = 'bat' . $year;
-	$pitdb = 'pit' . $year;
-	$teamdb = 'teams' . $year;
-	$scheddb = 'sched' . $year;
-    }
-    elsif ( length($ARGV[0]) == 3 ) {
-    	push @teams, shift @ARGV;
-    }
-    else {
-	print "usage: statreport [-a | -h ] [ -t ] [ -v opponent ] (team1 team2 ...)\n";
-	exit(1);
-    }
+    push @teams, shift @ARGV;
 }
 
 $dbh = DBI->connect("dbi:Pg:dbname=$dbname", "$username");
