@@ -15,6 +15,7 @@ $username = 'ibl';
 $totals = 0;
 $home = 0;
 $away = 0;
+$start = 0;
 $week = 28;
 $groupby = "ibl";
 $split = "";
@@ -53,7 +54,7 @@ sub usage {
 }
 
 my %opt=();
-if ( ! getopts("ahTy:v:", \%opt) ) {
+if ( ! getopts("ahTy:v:s:e:", \%opt) ) {
     usage()
 }
 
@@ -75,6 +76,14 @@ if ( defined $opt{h} ) {
     $home = 1;
     $groupby = "ibl, home";
     $split = "ibl = home";
+}
+
+if ( defined $opt{s} ) {
+    $start = $opt{s};
+}
+
+if ( defined $opt{e} ) {
+    $week = $opt{e};
 }
 
 if ( defined $opt{y} ) {
@@ -105,7 +114,7 @@ $dbh = DBI->connect("dbi:Pg:dbname=$dbname", "$username");
 
 if ( $totals ) {
     if ( @teams ) {
-	print "-t does all teams\n";
+	print "-T does all teams\n";
 	exit(1);
     }
     else {
@@ -123,7 +132,8 @@ if ( $totals ) {
 	print "IBL     AB    R    H   BI  2B  3B  HR   BB   SO  SB  CS   AVG  OBP  SLG\n";
 	$loop = $dbh->prepare("select ibl, sum(ab), sum(r), sum(h), sum(bi),
 		sum(d), sum(t), sum(hr), sum(bb), sum(k), sum(sb), sum(cs)
-		from $batdb where $where week <= $week group by $groupby $having 
+		from $batdb where $where week >= $start and week <= $week
+		group by $groupby $having
 		order by sum(r) desc;");
 	$loop->execute;
 	while ( @line = $loop->fetchrow_array ) {
@@ -136,7 +146,7 @@ if ( $totals ) {
 	}
 	@line = $dbh->selectrow_array("select sum(ab), sum(r), sum(h), sum(bi),
 		sum(d), sum(t), sum(hr), sum(bb), sum(k), sum(sb), sum(cs)
-		from $batdb where $where week <= $week;");
+		from $batdb where $where week >= $start and week <= $week;");
 	( $ab, $r, $h, $bi, $d, $t, $hr, $bb, $k, $sb, $cs ) = @line;
 	printf "%-56s %s %s %s\n",
 	    "AVG",
@@ -155,7 +165,8 @@ if ( $totals ) {
 	print "IBL      G   W   L   PCT  SV     IP    H    R   ER  HR   BB   SO    ERA\n";
 	$loop = $dbh->prepare("select ibl, sum(w), sum(l), sum(sv), sum(gs),
 		sum(ip), sum(h), sum(r), sum(er), sum(hr), sum(bb), sum(so)
-		from $pitdb where $where week <= $week group by $groupby $having 
+		from $pitdb where $where week >= $start and week <= $week
+		group by $groupby $having
 		order by sum(r) asc;");
 	$loop->execute;
 	while ( @line = $loop->fetchrow_array ) {
@@ -168,7 +179,7 @@ if ( $totals ) {
 	}
 	@line = $dbh->selectrow_array("select sum(w), sum(l), sum(sv), sum(gs),
 		sum(ip), sum(h), sum(r), sum(er), sum(hr), sum(bb), sum(so)
-		from $pitdb where $where week <= $week;");
+		from $pitdb where $where week >= $start and week <= $week;");
 	( $w, $l, $sv, $gs, $ip, $h, $r, $er, $hr, $bb, $so ) = @line;
 	printf "%-64s %6.2f\n",
 	    "AVG", ( $ip > 0 ) ? $er * 9 / $ip * 3 : 999.99;
@@ -202,9 +213,11 @@ else {
 	$sth = $dbh->selectcol_arrayref("select name from $teamdb where ibl = '$team';");
 	printf "%s\n", shift @$sth;
 	print "MLB NAME            G  AB   R   H  BI  2B  3B  HR  BB  SO  SB CS  AVG  OBP  SLG\n";
-	$loop = $dbh->prepare("select mlb, trim(name), sum(g), sum(ab), sum(r), sum(h),
-		sum(bi), sum(d), sum(t), sum(hr), sum(bb), sum(k), sum(sb), sum(cs)
-		from $batdb where $where week <= $week group by $groupby, mlb, name
+	$loop = $dbh->prepare("select mlb, trim(name), sum(g), sum(ab), sum(r),
+		sum(h), sum(bi), sum(d), sum(t), sum(hr), sum(bb), sum(k),
+		sum(sb), sum(cs)
+		from $batdb where $where week >= $start and week <= $week
+		group by $groupby, mlb, name
 		having ibl = ? $having order by mlb, name;");
 	$loop->execute($team);
 	while ( @line = $loop->fetchrow_array ) {
@@ -236,9 +249,11 @@ else {
 	$sth = $dbh->selectcol_arrayref("select name from $teamdb where ibl = '$team';");
 	printf "%s\n", shift @$sth;
 	print "MLB NAME            W   L  PCT  SV   G  GS    IP   H   R  ER  HR  BB  SO    ERA\n";
-	$loop = $dbh->prepare("select mlb, trim(name), sum(w), sum(l), sum(sv), sum(g),
-		sum(gs), sum(ip), sum(h), sum(r), sum(er), sum(hr), sum(bb), sum(so)
-		from $pitdb where $where week <= $week group by $groupby, mlb, name 
+	$loop = $dbh->prepare("select mlb, trim(name), sum(w), sum(l), sum(sv),
+		sum(g), sum(gs), sum(ip), sum(h), sum(r), sum(er), sum(hr),
+		sum(bb), sum(so)
+		from $pitdb where $where week >= $start and week <= $week
+		group by $groupby, mlb, name
 		having ibl = ? $having order by mlb, name;");
 	$loop->execute($team);
 	while ( @line = $loop->fetchrow_array ) {
