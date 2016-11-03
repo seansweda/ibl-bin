@@ -2,8 +2,10 @@
 # -t <team>: usage for specific team
 # -g: per game output
 # -r: rates output
+# -a: calculate 133 per Almanac (1.33)
 # -B: batters only
 # -P: pitchers only
+# -A: rostered players only
 
 import os
 import csv
@@ -24,6 +26,8 @@ IBL_G = {}
 
 pitcher = 1
 batter = 2
+
+u133 = 4.0 / 3.0
 
 def usage():
     print "usage: %s [-t team]" % sys.argv[0]
@@ -77,7 +81,7 @@ def r_usage( name, role, g ):
     U_75 = int( mlb_U * 3 / 4 ) + 1
     U_75 -= ( ibl_U + credit )
 
-    U_133 = int ( mlb_U * 4 / 3 )
+    U_133 = int ( mlb_U * u133 )
     U_133 -= ibl_U
 
     if g == 0:
@@ -124,7 +128,7 @@ def o_usage( name, role, g ):
         inj = injreport.injdays( INJ[name], 27 )
     credit = int( 1 + mlb_U / 162 ) * inj
 
-    U_133 = int ( mlb_U * 4 / 3 )
+    U_133 = int ( mlb_U * u133 )
     U_133 -= ibl_U
 
     U_150 = int( mlb_U * 3 / 2 )
@@ -177,7 +181,7 @@ def g_usage( name, role, g ):
     U_75 = int( mlb_U * 3 / 4 ) + 1
     U_75 -= ( ibl_U + credit )
 
-    U_133 = int ( mlb_U * 4 / 3 )
+    U_133 = int ( mlb_U * u133 )
     U_133 -= ibl_U
 
     u75 = []
@@ -244,7 +248,7 @@ def std_usage( name, role, g ):
     credit = int( 1 + mlb_U / 162 ) * inj
 
     U_75 = mlb_U * 3 / 4
-    U_133 = mlb_U * 4 / 3
+    U_133 = mlb_U * u133
     U_150 = mlb_U * 3 / 2
 
     if g == 0:
@@ -309,6 +313,9 @@ def main():
                 do_r = True
             elif opt == '-o':
                 do_o = True
+            elif opt == '-a':
+                global u133
+                u133 = 1.33
 
     if len( do_team ) > 0 and len( sql_team ) == 0:
         sql_team = " and ibl_team = '%s'" % do_team
@@ -439,7 +446,7 @@ def main():
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 't:groABP')
+        opts, args = getopt.getopt(sys.argv[1:], 't:groaABP')
     except getopt.GetoptError, err:
         print str(err)
         usage()
