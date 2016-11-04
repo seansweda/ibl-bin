@@ -78,7 +78,9 @@ def r_usage( name, role, g ):
         inj = injreport.injdays( INJ[name], 27 )
     credit = int( 1 + mlb_U / 162 ) * inj
 
-    U_75 = int( mlb_U * 3 / 4 ) + 1
+    U_75 = mlb_U * 3 / 4
+    if U_75 != int ( U_75 ):
+        U_75 = int ( U_75 ) + 1
     U_75 -= ( ibl_U + credit )
 
     U_133 = int ( mlb_U * u133 )
@@ -178,7 +180,9 @@ def g_usage( name, role, g ):
         inj = injreport.injdays( INJ[name], 27 )
     credit = int( 1 + mlb_U / 162 ) * inj
 
-    U_75 = int( mlb_U * 3 / 4 ) + 1
+    U_75 = mlb_U * 3 / 4
+    if U_75 != int ( U_75 ):
+        U_75 = int ( U_75 ) + 1
     U_75 -= ( ibl_U + credit )
 
     U_133 = int ( mlb_U * u133 )
