@@ -9,9 +9,17 @@ use CGI::Pretty;
 $CGI::POST_MAX=1024 * 100;  # max 100K posts
 $CGI::DISABLE_UPLOADS = 1;  # no uploads
 
+use List::Util qw[min max sum];
+
 sub regrate {
     my $pa = shift;
-    return ( .75 - .75 / 900 * $pa );
+    if ( $pa > 750 ) {
+	return( 0 );
+    } elsif ( $pa > 6 ) {
+	return ( .75 - .75 / 750 * $pa );
+    } else {
+	return ( .99 - .04 * $pa );
+    }
 }
 
 sub simplereg {
@@ -20,12 +28,7 @@ sub simplereg {
     my $ltarget = ( $lh + $rh ) / 2;
     my $rtarget = $ltarget;
 
-    my $regpa;
-    if ( $lh > $rh ) {
-	$regpa = $_[1];
-    } else {
-	$regpa = $_[3];
-    }
+    my $regpa = min( $_[1], $_[3] );
 
     my $lrate = ( $lh - ( regrate( $regpa ) * ( $lh - $ltarget ) ) * $_[3] / ( $_[1] + $_[3] ) * 2 );
     my $rrate = ( $rh - ( regrate( $regpa ) * ( $rh - $rtarget ) ) * $_[1] / ( $_[1] + $_[3] ) * 2 );
