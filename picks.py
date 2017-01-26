@@ -1,4 +1,10 @@
 #!/usr/bin/python
+# flags
+# -y: year
+# -r: round
+# -t: team
+# -s: skip unusable picks
+# -S: skip & remove unusable picks
 
 import os
 import sys
@@ -17,7 +23,7 @@ db = DB.connect()
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'st:r:y:')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'sSt:r:y:')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -38,6 +44,7 @@ else:
     year = "%s" % ( int(year) + 1 )
 
 skip = 0
+remove = 0
 all_teams = 1
 all_rounds = 1
 
@@ -46,6 +53,9 @@ for (opt, arg) in opts:
         year = arg
     elif opt == '-s':
         skip = 1
+    elif opt == '-S':
+        skip = 1
+        remove = 1
     elif opt == '-t':
         all_teams = 0
         do_team = arg.upper()
@@ -63,29 +73,40 @@ y['tier3'].reverse()
 order2 = y['tier0'] + y['tier1'] + y['tier2'] + y['tier3']
 
 roster = {}
+picks = {}
 
 cursor.execute( "select ibl_team, count(*) from teams where item_type > 0 group by ibl_team;" )
 for ibl, count in cursor.fetchall():
     roster[ibl] = count
+
+cursor.execute( "select ibl_team, trim(tig_name) from teams where item_type = 0 and trim(tig_name) ~ '.(%s).$'" % year[-2:] )
+for ibl, pk in cursor.fetchall():
+    picks[ pk.split()[0] ] = ibl
 
 for rnd in xrange(1,16):
     pick = 1
     for slot in xrange(1,25):
         original = order1[ slot - 1 ] if rnd % 2 == 1 else order2[ slot - 1 ]
         pickstr = original + '#' + str(rnd)
-        cursor.execute(sqlbase, (pickstr + ' (%s)' % year[-2:],))
-        owner = cursor.fetchone()
-        if owner and ( not skip or roster[owner[0]] < 35 ):
-            if ( all_teams or do_team == owner[0] ) and ( all_rounds or do_round == rnd ):
+        if picks.has_key( pickstr ):
+            owner = picks[ pickstr ]
+        else:
+            if not remove:
+                pick += 1
+            continue
+        if not skip or roster[owner] < 35:
+            if ( all_teams or do_team == owner ) and ( all_rounds or do_round == rnd ):
                 print "%s%-5s  %3s  (%s)" % (
-                    ' ' if roster[owner[0]] < 35 else '*',
+                    ' ' if roster[owner] < 35 else '*',
                     str(rnd) + '-' + ( str(pick) if skip else str(slot) ),
-                    owner[0], pickstr
+                    owner, pickstr
                     )
-            roster[owner[0]] += 1
+            roster[owner] += 1
             pick += 1
+            continue
+        if skip and not remove:
+            pick += 1
+
     if ( all_teams and all_rounds):
         print
-
-exit
 
