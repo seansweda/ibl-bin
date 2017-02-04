@@ -5,7 +5,7 @@
 use strict;
 
 use CGI;
-use CGI::Pretty;
+# use CGI::Pretty;
 $CGI::POST_MAX=1024 * 100;  # max 100K posts
 $CGI::DISABLE_UPLOADS = 1;  # no uploads
 
