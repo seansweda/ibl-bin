@@ -4,6 +4,7 @@
 # -c: card info
 # -d: defensive ratings
 # -r: baserunning
+# -t: ob + tb totals
 # -a: active roster
 # -i: inactive roster
 # -n: number of players
@@ -51,6 +52,22 @@ def cardtop(p, type):
     else:
         return ( p[21], p[22], p[23], p[24], '.', p[33], p[34], p[35], p[36] )
 
+def cardtot(p, type):
+    # pitcher
+    if type == 1:
+        return ( p[24], p[25], p[26], p[23], str( int(p[25]) + int(p[26]) ),
+                '.',
+                p[36], p[37], p[38], p[35], str( int(p[37]) + int(p[38]) ),
+                '.',
+                str( int(p[25]) + int(p[26]) + int(p[37]) + int(p[38]) ) )
+    # batter
+    else:
+        return ( p[21], p[22], p[23], p[24], str( int(p[22]) + int(p[23]) ),
+                '.',
+                p[33], p[34], p[35], p[36], str( int(p[34]) + int(p[35]) ),
+                '.',
+                str( int(p[22]) + int(p[23]) + int(p[34]) + int(p[35]) ) )
+
 def poslist(p, max):
     defense = ''
     index = 0
@@ -95,6 +112,7 @@ do_inactive = True
 do_card = False
 do_def = False
 do_br = False
+do_tot = False
 do_find = False
 count = False
 eol = ''
@@ -110,7 +128,7 @@ db = DB.connect()
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'BPaipAcdrLnf')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'BPaipAcdrtLnf')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -138,6 +156,8 @@ for (opt, arg) in opts:
         do_def = True
     elif opt == '-r':
         do_br = True
+    elif opt == '-t':
+        do_tot = True
     elif opt == '-L':
         eol = ''
     elif opt == '-n':
@@ -214,11 +234,18 @@ for arg in args:
             if status == 1 and do_active or status > 1 and do_inactive:
                 print "%s %-3s %-15s" % ( star(status, throws), mlb, name ),
                 if do_card and (mlb, name) in p_cards:
-                    for num in cardtop(p_cards[(mlb,name)], type):
-                        if num.isdigit():
-                            print "%3s" % num,
-                        else:
-                            print "%s" % num,
+                    if do_tot:
+                        for num in cardtot(p_cards[(mlb,name)], type):
+                            if num.isdigit():
+                                print "%3s" % num,
+                            else:
+                                print "%s" % num,
+                    else:
+                        for num in cardtop(p_cards[(mlb,name)], type):
+                            if num.isdigit():
+                                print "%3s" % num,
+                            else:
+                                print "%s" % num,
                     if (mlb, name) in p_def:
                         print ".", pitfat(p_fat[(mlb,name)]),
                 elif not (do_card or do_def):
@@ -237,11 +264,18 @@ for arg in args:
             if status == 1 and do_active or status > 1 and do_inactive:
                 print "%s %-3s %-15s" % ( star(status, bats), mlb, name ),
                 if do_card and (mlb, name) in b_cards:
-                    for num in cardtop(b_cards[(mlb,name)], type):
-                        if num.isdigit():
-                            print "%3s" % num,
-                        else:
-                            print "%s" % num,
+                    if do_tot:
+                        for num in cardtot(b_cards[(mlb,name)], type):
+                            if num.isdigit():
+                                print "%3s" % num,
+                            else:
+                                print "%s" % num,
+                    else:
+                        for num in cardtop(b_cards[(mlb,name)], type):
+                            if num.isdigit():
+                                print "%3s" % num,
+                            else:
+                                print "%s" % num,
                     if (mlb, name) in b_def:
                         if do_br:
                             print ".",
