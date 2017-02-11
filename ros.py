@@ -52,21 +52,28 @@ def cardtop(p, type):
     else:
         return ( p[21], p[22], p[23], p[24], '.', p[33], p[34], p[35], p[36] )
 
-def cardtot(p, type):
+def cardsum(p, type):
     # pitcher
     if type == 1:
         return ( p[24], p[25], p[26], p[23], str( int(p[25]) + int(p[26]) ),
                 '.',
                 p[36], p[37], p[38], p[35], str( int(p[37]) + int(p[38]) ),
-                '.',
-                str( int(p[25]) + int(p[26]) + int(p[37]) + int(p[38]) ) )
+                '.' )
     # batter
     else:
         return ( p[21], p[22], p[23], p[24], str( int(p[22]) + int(p[23]) ),
                 '.',
                 p[33], p[34], p[35], p[36], str( int(p[34]) + int(p[35]) ),
-                '.',
-                str( int(p[22]) + int(p[23]) + int(p[34]) + int(p[35]) ) )
+                '.' )
+
+def cardtot(p, type):
+    # pitcher
+    if type == 1:
+        return ( str( int(p[25]) + int(p[26]) + int(p[37]) + int(p[38]) ) )
+
+    # batter
+    else:
+        return ( str( int(p[22]) + int(p[23]) + int(p[34]) + int(p[35]) ) )
 
 def poslist(p, max):
     defense = ''
@@ -188,9 +195,9 @@ if do_card or do_def:
     p_def = p_hash( cardpath() + '/pitrat.txt' )
     p_fat = p_hash( cardpath() + '/bfp.txt' )
 
-rows, cols = subprocess.check_output(['stty', 'size']).split()
-rows = int(rows)
-cols = int(cols)
+maxR, maxC = subprocess.check_output(['stty', 'size']).split()
+maxR = int(maxR)
+maxC = int(maxC)
 
 last = -1
 for arg in args:
@@ -208,6 +215,7 @@ for arg in args:
     cursor.execute(sqlbase, (team,))
     for tigname, how, status, type, bats, throws in cursor.fetchall():
         mlb, name = p_split( trim(tigname) )
+        cols = 0
         if type > last:
             if do_find:
                 header = ''
@@ -233,24 +241,34 @@ for arg in args:
                 uncarded += 1
             if status == 1 and do_active or status > 1 and do_inactive:
                 print "%s %-3s %-15s" % ( star(status, throws), mlb, name ),
+                cols += 23
                 if do_card and (mlb, name) in p_cards:
                     if do_tot:
-                        for num in cardtot(p_cards[(mlb,name)], type):
+                        for num in cardsum(p_cards[(mlb,name)], type):
                             if num.isdigit():
                                 print "%3s" % num,
+                                cols += 4
                             else:
                                 print "%s" % num,
+                                cols += len(num) + 1
+                        print "%4s" % cardtot(p_cards[(mlb,name)], type),
+                        cols += 5
                     else:
                         for num in cardtop(p_cards[(mlb,name)], type):
                             if num.isdigit():
                                 print "%3s" % num,
+                                cols += 4
                             else:
                                 print "%s" % num,
+                                cols += len(num) + 1
                     if (mlb, name) in p_def:
                         print ".", pitfat(p_fat[(mlb,name)]),
+                        cols += 19
+                    if cols + 25 < maxC and (mlb, name) in p_def:
+                        print " %-24s" % ( pitrat(p_def[(mlb,name)]) ),
                 elif not (do_card or do_def):
                     print " %-40s" % ( trim(how) ),
-                elif do_def and (mlb, name) in p_def:
+                elif (cols + 24 < maxC or do_def) and (mlb, name) in p_def:
                     print "%-24s" % ( pitrat(p_def[(mlb,name)]) ),
                     print ". ",pitfat(p_fat[(mlb,name)]),
                 print
@@ -263,35 +281,42 @@ for arg in args:
                 uncarded += 1
             if status == 1 and do_active or status > 1 and do_inactive:
                 print "%s %-3s %-15s" % ( star(status, bats), mlb, name ),
+                cols += 23
                 if do_card and (mlb, name) in b_cards:
                     if do_tot:
-                        for num in cardtot(b_cards[(mlb,name)], type):
+                        for num in cardsum(b_cards[(mlb,name)], type):
                             if num.isdigit():
                                 print "%3s" % num,
+                                cols += 4
                             else:
                                 print "%s" % num,
+                                cols += len(num) + 1
+                        print "%4s" % cardtot(b_cards[(mlb,name)], type),
+                        cols += 5
                     else:
                         for num in cardtop(b_cards[(mlb,name)], type):
                             if num.isdigit():
                                 print "%3s" % num,
+                                cols += 4
                             else:
                                 print "%s" % num,
+                                cols += len(num) + 1
                     if (mlb, name) in b_def:
                         if do_br:
                             print ".",
                             print brun( b_run[(mlb,name)] ), ".",
-                            print poslist( b_def[(mlb,name)][2:], cols - 66 ),
+                            cols += 11
                         else:
                             print ".",
-                            print poslist( b_def[(mlb,name)][2:], cols - 55 ),
+                            cols += 2
+                        print poslist( b_def[(mlb,name)][2:], maxC - cols ),
                 elif not (do_card or do_def):
                     print " %-40s" % ( trim(how) ),
                 elif do_def and (mlb, name) in b_def:
                     if do_br:
                         print brun( b_run[(mlb,name)] ), ".",
-                        print poslist( b_def[(mlb,name)][2:], cols - 32 ),
-                    else:
-                        print poslist( b_def[(mlb,name)][2:], cols - 21 ),
+                        cols += 11
+                    print poslist( b_def[(mlb,name)][2:], maxC - cols ),
                 print
     if count and b_num and p_num:
         print "%s: %2s players (%2s pitchers, %2s batters, %s uncarded)" % \
