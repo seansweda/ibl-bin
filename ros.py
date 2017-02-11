@@ -44,17 +44,17 @@ def star(val, string):
         if val == 1: return ' '
         else : return '*'
 
-def cardtop(p, type):
+def cardtop(p, kind):
     # pitcher
-    if type == 1:
+    if kind == 1:
         return ( p[24], p[25], p[26], p[23], '.', p[36], p[37], p[38], p[35] )
     # batter
     else:
         return ( p[21], p[22], p[23], p[24], '.', p[33], p[34], p[35], p[36] )
 
-def cardsum(p, type):
+def cardsum(p, kind):
     # pitcher
-    if type == 1:
+    if kind == 1:
         return ( p[24], p[25], p[26], p[23], str( int(p[25]) + int(p[26]) ),
                 '.',
                 p[36], p[37], p[38], p[35], str( int(p[37]) + int(p[38]) ),
@@ -66,9 +66,9 @@ def cardsum(p, type):
                 p[33], p[34], p[35], p[36], str( int(p[34]) + int(p[35]) ),
                 '.' )
 
-def cardtot(p, type):
+def cardtot(p, kind):
     # pitcher
-    if type == 1:
+    if kind == 1:
         return ( str( int(p[25]) + int(p[26]) + int(p[37]) + int(p[38]) ) )
 
     # batter
@@ -213,26 +213,26 @@ for arg in args:
 
     team = arg.upper()
     cursor.execute(sqlbase, (team,))
-    for tigname, how, status, type, bats, throws in cursor.fetchall():
+    for tigname, how, status, kind, bats, throws in cursor.fetchall():
         mlb, name = p_split( trim(tigname) )
         cols = 0
-        if type > last:
+        if kind > last:
             if do_find:
                 header = ''
             else:
                 header = team + " "
-            if type == 0 and do_picks:
+            if kind == 0 and do_picks:
                 print header + 'PICKS'
-            elif type == 1 and do_bat and do_pit:
+            elif kind == 1 and do_bat and do_pit:
                 print header + 'PITCHERS'
-            elif type == 2 and do_bat and do_pit:
+            elif kind == 2 and do_bat and do_pit:
                 if p_num > 0:
                     print
                 print header + 'BATTERS'
-            last = type
-        if type == 0 and do_picks:
+            last = kind
+        if kind == 0 and do_picks:
             print "%-15s %-40s" % ( trim(tigname), trim(how) )
-        if type == 1 and do_pit:
+        if kind == 1 and do_pit:
             p_num += 1
             if status == 1:
                 active += 1
@@ -244,17 +244,17 @@ for arg in args:
                 cols += 23
                 if do_card and (mlb, name) in p_cards:
                     if do_tot:
-                        for num in cardsum(p_cards[(mlb,name)], type):
+                        for num in cardsum(p_cards[(mlb,name)], kind):
                             if num.isdigit():
                                 print "%3s" % num,
                                 cols += 4
                             else:
                                 print "%s" % num,
                                 cols += len(num) + 1
-                        print "%4s" % cardtot(p_cards[(mlb,name)], type),
+                        print "%4s" % cardtot(p_cards[(mlb,name)], kind),
                         cols += 5
                     else:
-                        for num in cardtop(p_cards[(mlb,name)], type):
+                        for num in cardtop(p_cards[(mlb,name)], kind):
                             if num.isdigit():
                                 print "%3s" % num,
                                 cols += 4
@@ -272,7 +272,7 @@ for arg in args:
                     print "%-24s" % ( pitrat(p_def[(mlb,name)]) ),
                     print ". ",pitfat(p_fat[(mlb,name)]),
                 print
-        if type == 2 and do_bat:
+        if kind == 2 and do_bat:
             b_num += 1
             if status == 1:
                 active += 1
@@ -284,17 +284,17 @@ for arg in args:
                 cols += 23
                 if do_card and (mlb, name) in b_cards:
                     if do_tot:
-                        for num in cardsum(b_cards[(mlb,name)], type):
+                        for num in cardsum(b_cards[(mlb,name)], kind):
                             if num.isdigit():
                                 print "%3s" % num,
                                 cols += 4
                             else:
                                 print "%s" % num,
                                 cols += len(num) + 1
-                        print "%4s" % cardtot(b_cards[(mlb,name)], type),
+                        print "%4s" % cardtot(b_cards[(mlb,name)], kind),
                         cols += 5
                     else:
-                        for num in cardtop(b_cards[(mlb,name)], type):
+                        for num in cardtop(b_cards[(mlb,name)], kind):
                             if num.isdigit():
                                 print "%3s" % num,
                                 cols += 4
