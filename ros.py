@@ -5,6 +5,7 @@
 # -d: defensive ratings
 # -r: baserunning
 # -t: ob + tb totals
+# -w: wOBA totals
 # -a: active roster
 # -i: inactive roster
 # -n: number of players
@@ -52,28 +53,100 @@ def cardtop(p, kind):
     else:
         return ( p[21], p[22], p[23], p[24], '.', p[33], p[34], p[35], p[36] )
 
-def cardsum(p, kind):
+def power( rating ):
+    if rating == "Ex":
+        return 0.5
+    elif rating == "Vg":
+        return 0.4
+    elif rating == "Av":
+        return 0.3
+    elif rating == "Fr":
+        return 0.2
+    else:
+        return 0.1
+
+def wOBA(p, kind, side):
+    # wOBA consts
+    wBB = 0.70
+    w1B = 0.90
+    w2B = 1.25
+    w3B = 1.60
+    wHR = 2.00
+
+    # cardengine consts.h
+    DF = 50
+    IFR1B = 0.4306
+    IFR2B = 0.0694
+    OFR1B = 0.1121
+    OFR2B = 0.3879
+
     # pitcher
     if kind == 1:
-        return ( p[24], p[25], p[26], p[23], str( int(p[25]) + int(p[26]) ),
-                '.',
-                p[36], p[37], p[38], p[35], str( int(p[37]) + int(p[38]) ),
-                '.' )
+        if side == 0:
+            index = 16
+        else:
+            index = 28
+
+        woba = 0
+        woba += int(p[index]) * w1B
+        woba += int(p[index + 1]) * w2B
+        woba += int(p[index + 2]) * power('Av') * wHR
+        woba += int(p[index + 3]) * wBB
+        woba += int(p[index + 4]) * wBB
+        woba += int(p[index + 5]) * IFR1B * w1B
+        woba += int(p[index + 5]) * IFR2B * w2B
+        woba += int(p[index + 6]) * OFR1B * w1B
+        woba += int(p[index + 6]) * OFR2B * w2B
+
     # batter
     else:
-        return ( p[21], p[22], p[23], p[24], str( int(p[22]) + int(p[23]) ),
-                '.',
-                p[33], p[34], p[35], p[36], str( int(p[34]) + int(p[35]) ),
-                '.' )
+        if side == 0:
+            index = 14
+        else:
+            index = 26
 
-def cardtot(p, kind):
+        woba = 0
+        woba += int(p[index]) * w1B
+        woba += int(p[index + 1]) * w2B
+        woba += int(p[index + 2]) * w3B
+        DF_hr = DF * power( p[index + 10] )
+        woba += ( int(p[index + 3]) + DF_hr ) * wHR
+        woba += int(p[index + 4]) * wBB
+        woba += int(p[index + 5]) * wBB
+
+    return int(woba + 100.5)
+
+def cardval(p, kind, calc):
     # pitcher
     if kind == 1:
-        return ( str( int(p[25]) + int(p[26]) + int(p[37]) + int(p[38]) ) )
+        if calc == do_tot:
+            sum_vL = int(p[25]) + int(p[26])
+            sum_vR = int(p[37]) + int(p[38])
+        else:
+            sum_vL = wOBA(p, kind, 0)
+            sum_vR = wOBA(p, kind, 1)
+
+        mean = (sum_vL + sum_vR) / 2.0
+        harm = 2 * sum_vL * sum_vR / float(sum_vL + sum_vR)
+        val = int(mean + abs(mean - harm) + 0.5)
+
+        return ( p[24], p[25], p[26], p[23], str(sum_vL), '.',
+                p[36], p[37], p[38], p[35], str(sum_vR), '.', str(val) )
 
     # batter
     else:
-        return ( str( int(p[22]) + int(p[23]) + int(p[34]) + int(p[35]) ) )
+        if calc == do_tot:
+            sum_vL = int(p[22]) + int(p[23])
+            sum_vR = int(p[34]) + int(p[35])
+        else:
+            sum_vL = wOBA(p, kind, 0)
+            sum_vR = wOBA(p, kind, 1)
+
+        harm = 2 * sum_vL * sum_vR / float(sum_vL + sum_vR)
+        val = int(harm + 0.5)
+
+        return ( p[21], p[22], p[23], p[24], str(sum_vL), '.',
+                p[33], p[34], p[35], p[36], str(sum_vR), '.', str(val) )
 
 def poslist(p, max):
     defense = ''
@@ -119,10 +192,12 @@ do_inactive = True
 do_card = False
 do_def = False
 do_br = False
-do_tot = False
 do_find = False
 count = False
 eol = ''
+do_val = 0
+do_tot = 1
+do_wOBA = 2
 
 # teams table
 # status: 1 = active, 2 = inactive, 3 = uncarded
@@ -135,7 +210,7 @@ db = DB.connect()
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'BPaipAcdrtLnf')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPfpaincdrtwL')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -164,7 +239,9 @@ for (opt, arg) in opts:
     elif opt == '-r':
         do_br = True
     elif opt == '-t':
-        do_tot = True
+        do_val = do_tot
+    elif opt == '-w':
+        do_val = do_wOBA
     elif opt == '-L':
         eol = ''
     elif opt == '-n':
@@ -243,16 +320,14 @@ for arg in args:
                 print "%s %-3s %-15s" % ( star(status, throws), mlb, name ),
                 cols += 23
                 if do_card and (mlb, name) in p_cards:
-                    if do_tot:
-                        for num in cardsum(p_cards[(mlb,name)], kind):
+                    if do_val:
+                        for num in cardval(p_cards[(mlb,name)], kind, do_val):
                             if num.isdigit():
                                 print "%3s" % num,
                                 cols += 4
                             else:
                                 print "%s" % num,
                                 cols += len(num) + 1
-                        print "%4s" % cardtot(p_cards[(mlb,name)], kind),
-                        cols += 5
                     else:
                         for num in cardtop(p_cards[(mlb,name)], kind):
                             if num.isdigit():
@@ -283,16 +358,14 @@ for arg in args:
                 print "%s %-3s %-15s" % ( star(status, bats), mlb, name ),
                 cols += 23
                 if do_card and (mlb, name) in b_cards:
-                    if do_tot:
-                        for num in cardsum(b_cards[(mlb,name)], kind):
+                    if do_val:
+                        for num in cardval(b_cards[(mlb,name)], kind, do_val):
                             if num.isdigit():
                                 print "%3s" % num,
                                 cols += 4
                             else:
                                 print "%s" % num,
                                 cols += len(num) + 1
-                        print "%4s" % cardtot(b_cards[(mlb,name)], kind),
-                        cols += 5
                     else:
                         for num in cardtop(b_cards[(mlb,name)], kind):
                             if num.isdigit():
