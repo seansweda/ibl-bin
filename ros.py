@@ -25,7 +25,7 @@ import psycopg2
 
 import DB
 
-from card import p_split, p_hash, cardpath, batters, pitchers
+from card import p_split, p_hash, cardpath, batters, pitchers, wOBA
 
 def usage():
     print "usage: %s " % sys.argv[0]
@@ -52,69 +52,6 @@ def cardtop(p, kind):
     # batter
     else:
         return ( p[21], p[22], p[23], p[24], '.', p[33], p[34], p[35], p[36] )
-
-def power( rating ):
-    if rating == "Ex":
-        return 0.5
-    elif rating == "Vg":
-        return 0.4
-    elif rating == "Av":
-        return 0.3
-    elif rating == "Fr":
-        return 0.2
-    else:
-        return 0.1
-
-def wOBA(p, kind, side):
-    # wOBA consts
-    wBB = 0.70
-    w1B = 0.90
-    w2B = 1.25
-    w3B = 1.60
-    wHR = 2.00
-
-    # cardengine consts.h
-    DF = 50
-    IFR1B = 0.4306
-    IFR2B = 0.0694
-    OFR1B = 0.1121
-    OFR2B = 0.3879
-
-    # pitcher
-    if kind == 1:
-        if side == 0:
-            index = 16
-        else:
-            index = 28
-
-        woba = 0
-        woba += int(p[index]) * w1B
-        woba += int(p[index + 1]) * w2B
-        woba += int(p[index + 2]) * power('Av') * wHR
-        woba += int(p[index + 3]) * wBB
-        woba += int(p[index + 4]) * wBB
-        woba += int(p[index + 5]) * IFR1B * w1B
-        woba += int(p[index + 5]) * IFR2B * w2B
-        woba += int(p[index + 6]) * OFR1B * w1B
-        woba += int(p[index + 6]) * OFR2B * w2B
-
-    # batter
-    else:
-        if side == 0:
-            index = 14
-        else:
-            index = 26
-
-        woba = 0
-        woba += int(p[index]) * w1B
-        woba += int(p[index + 1]) * w2B
-        woba += int(p[index + 2]) * w3B
-        DF_hr = DF * power( p[index + 10] )
-        woba += ( int(p[index + 3]) + DF_hr ) * wHR
-        woba += int(p[index + 4]) * wBB
-        woba += int(p[index + 5]) * wBB
-
-    return int(woba + 100.5)
 
 def cardval(p, kind, calc):
     # pitcher
