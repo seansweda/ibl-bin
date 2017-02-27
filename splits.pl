@@ -15,10 +15,10 @@ sub regrate {
     my $pa = shift;
     if ( $pa > 750 ) {
 	return( 0 );
-    } elsif ( $pa > 6 ) {
+    } elsif ( $pa > 24 ) {
 	return ( .75 - .75 / 750 * $pa );
     } else {
-	return ( .99 - .04 * $pa );
+	return ( 1.00 - 0.01 * $pa );
     }
 }
 
