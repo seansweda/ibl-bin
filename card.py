@@ -70,13 +70,13 @@ def p_split(p_str, lower=False):
 def batprint(p):
     print "%-3s %-15s vL %4s%4s%4s%4s%4s%4s%4s  .%4i .%4s%4s%4s %3s" % \
         ( p[0], p[1], p[14], p[15], p[16], p[17], p[18], p[19], p[20], wOBA(p, 0, 0), p[21], p[22], p[23], p[24], )
-    print "%-3s %-15s vL %4s%4s%4s%4s%4s%4s%4s  .%4i .%4s%4s%4s %3s" % \
+    print "%-3s %-15s vR %4s%4s%4s%4s%4s%4s%4s  .%4i .%4s%4s%4s %3s" % \
         ( p[0], p[1], p[26], p[27], p[28], p[29], p[30], p[31], p[32], wOBA(p, 0, 1), p[33], p[34], p[35], p[36], )
 
 def pitprint(p):
     print "%-3s %-15s vL %4s%4s%4s%4s%4s%4s%4s%4s  .%4i .%4s%4s%4s" % \
         ( p[0], p[1], p[16], p[17], p[18], p[19], p[20], p[21], p[22], p[23], wOBA(p, 1, 0), p[24], p[25], p[26] )
-    print "%-3s %-15s vL %4s%4s%4s%4s%4s%4s%4s%4s  .%4i .%4s%4s%4s" % \
+    print "%-3s %-15s vR %4s%4s%4s%4s%4s%4s%4s%4s  .%4i .%4s%4s%4s" % \
         ( p[0], p[1],  p[28], p[29], p[30], p[31], p[32], p[33], p[34], p[35], wOBA(p, 1, 1), p[36], p[37], p[38] )
 
 def wOBA(p, kind, side):
