@@ -188,48 +188,48 @@ def g_usage( name, role, g ):
     U_133 = int ( mlb_U * u133 )
     U_133 -= ibl_U
 
-    u75 = []
-    u133 = []
+    g75 = []
+    g133 = []
     if role == pitcher:
         fat_SP = BFP[name][0]
         if fat_SP > 0:
-            u75.append( U_75 / fat_SP )
-            u75.append( U_75 / 24.0 )
-            u133.append( U_133 / fat_SP )
-            u133.append( U_133 / 24.0 )
+            g75.append( U_75 / fat_SP )
+            g75.append( U_75 / 24.0 )
+            g133.append( U_133 / fat_SP )
+            g133.append( U_133 / 24.0 )
         else:
-            u75 += [ 0, 0 ]
-            u133 += [ 0, 0 ]
+            g75 += [ 0, 0 ]
+            g133 += [ 0, 0 ]
         fat_RP = BFP[name][1]
         if fat_RP > 0:
-            u75.append( U_75 / fat_RP )
-            u133.append( U_133 / fat_RP )
+            g75.append( U_75 / fat_RP )
+            g133.append( U_133 / fat_RP )
         else:
-            u75.append( 0 )
-            u133.append( 0 )
+            g75.append( 0 )
+            g133.append( 0 )
         rest1 = BFP[name][2][1]
         if rest1 > 0:
-            u75.append( U_75 / rest1 )
-            u133.append( U_133 / rest1 )
+            g75.append( U_75 / rest1 )
+            g133.append( U_133 / rest1 )
         else:
-            u75.append( 0 )
-            u133.append( 0 )
+            g75.append( 0 )
+            g133.append( 0 )
 
     elif role == batter:
         for p in range(2,6):
-            u75.append( U_75 / float(p) )
+            g75.append( U_75 / float(p) )
         for p in range(2,6):
-            u133.append( U_133 / float(p) )
+            g133.append( U_133 / float(p) )
 
     output = "%-18s" % injreport.space(name)
     output += "%4i " % U_75
-    u75.reverse()
-    while len(u75):
-        output += " %5.0f" % round( u75.pop(), 0 )
+    g75.reverse()
+    while len(g75):
+        output += " %5.0f" % round( g75.pop(), 0 )
     output += "   %4i" % U_133
-    u133.reverse()
-    while len(u133):
-        output += " %5i" % int( u133.pop() )
+    g133.reverse()
+    while len(g133):
+        output += " %5i" % int( g133.pop() )
 
     return output
 
