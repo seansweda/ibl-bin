@@ -46,7 +46,7 @@ def main():
     db = DB.connect()
     cursor = db.cursor()
 
-    week = 0
+    week = 1
     if len(sys.argv) > 1:
         week = int(sys.argv[1])
     elif is_cgi and form.has_key('week'):
@@ -55,9 +55,10 @@ def main():
         # no user input so we'll find latest week with reported results
         cursor.execute("select week, count(*) from games\
                 group by week order by week desc limit 1;");
-        (week, num) = cursor.fetchone()
-        # and use first week afterward
-        week += 1
+        if cursor.rowcount > 0:
+            (week, num) = cursor.fetchone()
+            # and use first week afterward
+            week += 1
 
     starts = {}
     startsdb.main( starts, module=True )
