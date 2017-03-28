@@ -120,7 +120,7 @@ def main():
                     home_score < away_score then 1\
                     when away_team_id = f.id and\
                     away_score < home_score then 1 else 0 end) as l\
-                    from games g, franchises f where week <= (%s)\
+                    from games g, divisions f where week <= (%s)\
                     and (home_team_id = f.id or away_team_id = f.id)\
                     group by nickname;", (w,) )
             standings = { line[0]: float(line[1])/(float(line[1])+float(line[2])) for line in cursor.fetchall() }

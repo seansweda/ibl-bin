@@ -111,7 +111,7 @@ sub iblcode {
 sub gamescode {
     my $team = shift;
     @s = $dbh->selectrow_array("
-	    select id from franchises where nickname = '$team';
+	    select fcode from $teamdb where ibl = '$team';
 	    ");
     return $s[0];
 }
