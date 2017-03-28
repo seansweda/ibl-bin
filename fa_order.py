@@ -59,7 +59,7 @@ def main():
         if status[team][results] != week:
             return 1
         # boxes must be no more than 1 week behind
-        if status[team][boxes] < week - 1:
+        if week > 1 and status[team][boxes] < week - 1:
             return 1
         #  return 0, team has nothing outstanding
         return 0
@@ -131,12 +131,14 @@ def main():
             #print fa
 
     status = {}
+    for ibl in fa:
+        status[ibl] = {}
+
     sql = "select ibl, sum(status) as box\
             from %s s, %s t where week <= %i and home = code\
             group by ibl;" %  ( DB.sched, DB.teams, int(week) - 1 )
     cursor.execute(sql)
     for ibl, box in cursor.fetchall():
-        status[ibl] = {}
         status[ibl][boxes] = box
 
     sql = "select ibl, sum(scores) as results\
