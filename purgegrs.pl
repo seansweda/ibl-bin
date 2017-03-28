@@ -95,6 +95,10 @@ if ( $week && $home && $away ) {
 	week = $week and home = '$home' and away = '$away';
 	");
     $dbh->do("
+	delete from $usagedb where
+	week = $week and home = '$home' and away = '$away';
+	");
+    $dbh->do("
 	delete from $extradb where
 	week = $week and home = '$home' and away = '$away';
 	");

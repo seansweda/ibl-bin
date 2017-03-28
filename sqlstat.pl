@@ -205,6 +205,10 @@ sub undostats {
 	week = $week and home = '$home' and away = '$away';
 	");
     $dbh->do("
+	delete from $usagedb where
+	week = $week and home = '$home' and away = '$away';
+	");
+    $dbh->do("
 	delete from $extradb where
 	week = $week and home = '$home' and away = '$away';
 	");
@@ -829,18 +833,19 @@ while (<DATA>) {
 		else {
 		    $g = -1;
 		}
-		if ( defined($starts[13]) ) {
-		    $pl *= -1;
-		}
-		else {
-		    $pl = 0;
-		}
-		if ( defined($starts[14]) ) {
-		    $pr *= -1;
-		}
-		else {
-		    $pr = 0;
-		}
+		## no longer tracking PA limits in startsdb
+		#if ( defined($starts[13]) ) {
+		#    $pl *= -1;
+		#}
+		#else {
+		#    $pl = 0;
+		#}
+		#if ( defined($starts[14]) ) {
+		#    $pr *= -1;
+		#}
+		#else {
+		#    $pr = 0;
+		#}
 
 		$dbh->do("
 		    insert into $batdb
@@ -848,7 +853,11 @@ while (<DATA>) {
 		    ");
 		$dbh->do("
 		    insert into $startsdb
-		    values ( '$starts[0]', '$starts[1]', $g, 0, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, $pl, $pr, $week, '$home', '$away' );
+		    values ( '$starts[0]', '$starts[1]', $g, 0, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, 0, 0, $week, '$home', '$away' );
+		    ");
+		$dbh->do("
+		    insert into $usagedb
+		    values ( $week, '$home', '$away', '$ibl', '$starts[0]', '$starts[1]', $pl, $pr, 0 );
 		    ");
 	    }
 
@@ -945,7 +954,7 @@ while (<DATA>) {
 		last;
 	    }
 	    else {
-		( $dec, $ibl, $mlb, $name, $ip, $h, $r, $er, $bb, $k, $hr ) = @line;
+		( $dec, $ibl, $mlb, $name, $ip, $h, $r, $er, $bb, $k, $hr, $bf ) = @line;
 		if ( $updates && $team ne $ibl ) {
 		    print "line $lines team mismatch: $team != $ibl\n";
 		    $fatalerr++;
@@ -999,6 +1008,10 @@ while (<DATA>) {
 		    $dbh->do("
 			insert into $startsdb
 			values ( '$starts[0]', '$starts[1]', -1, $pgs * -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, $week, '$home', '$away' );
+			");
+		    $dbh->do("
+			insert into $usagedb
+			values ( $week, '$home', '$away', '$ibl', '$starts[0]', '$starts[1]', 0, 0, $bf );
 			");
 		}
 	    }
