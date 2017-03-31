@@ -84,9 +84,10 @@ def main():
     sql_ros = "select trim(tig_name) from teams \
             where ibl_team = (%s) and item_type != 0 and status = 1;"
 
-    if is_cgi:
-        print "<pre>"
-    print "WEEK %-2s                            #  1  2  3  4  5  6  7  8  9" % week
+    if not do_json:
+        if is_cgi:
+            print "<pre>"
+        print "WEEK %-2s                            #  1  2  3  4  5  6  7  8  9" % week
 
     cursor.execute("select distinct(ibl_team) from teams \
                             where ibl_team != 'FA' order by ibl_team;")
@@ -119,24 +120,34 @@ def main():
                 if starts[player][pos] > 0:
                     legal[pos] += 1
 
-        print ibl,
-        print "total %s," % sum(ros.values()),
-        print "active %s," % ros[active],
-
-        print "starts (",
-        for pos in range(10):
-            print "%2s" % legal[pos],
-        print ")",
-
         if sum(ros.values()) <= 35 \
                 and ( ros[active] <= 25 or ros[active] <= 35 and week >= 24 ) \
                 and legal[1] >= 4 \
                 and len( filter( lambda z: z >= 2, legal[2:] ) ) == 8:
-            print "LEGAL"
+            status = "LEGAL"
         else:
-            print "ILLEGAL"
+            status = "ILLEGAL"
 
-    if is_cgi:
+        if do_json:
+            print json.dumps({
+                'ibl': ibl,
+                'total': sum(ros.values()),
+                'active': ros[active],
+                'starts': legal,
+                'status': status
+                })
+        else:
+            print ibl,
+            print "total %s," % sum(ros.values()),
+            print "active %s," % ros[active],
+
+            print "starts (",
+            for pos in range(10):
+                print "%2s" % legal[pos],
+            print ")",
+            print status
+
+    if is_cgi and not is_json:
         print "</pre></body></html>"
 
 if __name__ == "__main__":
