@@ -25,12 +25,16 @@ def dumpenv(form):
 
 def main():
     do_json = False
+    do_header = True
     is_cgi = False
+
     if 'GATEWAY_INTERFACE' in os.environ:
         import cgi
         #import cgitb; cgitb.enable()
         form = cgi.FieldStorage()
         is_cgi = True
+        if form.has_key('noheader'):
+            do_header = False
         if form.has_key('json'):
             import json
             do_json = True
@@ -40,7 +44,8 @@ def main():
             do_json = False
             print "Content-Type: text/html"
             print
-            print "<html><head><title>Legal Roster check</title></head><body>"
+            if do_header:
+                print "<html><head><title>Legal Roster check</title></head><body>"
             #dumpenv(form)
 
     db = DB.connect()
@@ -147,8 +152,11 @@ def main():
             print ")",
             print status
 
-    if is_cgi and not is_json:
-        print "</pre></body></html>"
+    if not do_json:
+        if is_cgi:
+            print "</pre>"
+            if do_header:
+                print "</body></html>"
 
 if __name__ == "__main__":
     main()
