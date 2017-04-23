@@ -111,18 +111,19 @@ def main():
     standings = {}
     if week >= 3:
         for w in range(2, week):
-            cursor.execute( "select nickname,\
-                    sum(case when home_team_id = f.id and\
+            sql = "select ibl,\
+                    sum(case when home_team_id = fcode and\
                     home_score > away_score then 1\
-                    when away_team_id = f.id and\
+                    when away_team_id = fcode and\
                     away_score > home_score then 1 else 0 end) as w,\
-                    sum(case when home_team_id = f.id and\
+                    sum(case when home_team_id = fcode and\
                     home_score < away_score then 1\
-                    when away_team_id = f.id and\
+                    when away_team_id = fcode and\
                     away_score < home_score then 1 else 0 end) as l\
-                    from games g, divisions f where week <= (%s)\
-                    and (home_team_id = f.id or away_team_id = f.id)\
-                    group by nickname;", (w,) )
+                    from games, %s where week <= (%s)\
+                    and (home_team_id = fcode or away_team_id = fcode )\
+                    group by ibl;" % ( DB.teams, w )
+            cursor.execute(sql)
             standings = { line[0]: float(line[1])/(float(line[1])+float(line[2])) for line in cursor.fetchall() }
 
             #print w, standings
