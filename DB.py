@@ -12,6 +12,7 @@ teams  = 'teams2017'
 sched  = 'sched2017'
 extra  = 'extra2017'
 inj    = 'inj2017'
+usage  = 'usage2017'
 
 
 def bin_dir():
