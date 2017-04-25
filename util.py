@@ -39,14 +39,14 @@ def power( rating ):
 def vsL(p, kind):
 # pitcher
     if kind == 1:
-        return( [ int(p[24]), int(p[25]), int(p[26]) ] )
+        return( [ int(p[24]), int(p[25]), int(p[26]), int(p[18]) ] )
     else:
         return( [ int(p[21]), int(p[22]), int(p[23]), power(p[24]) ] )
 
 def vsR(p, kind):
 # pitcher
     if kind == 1:
-        return( [ int(p[36]), int(p[37]), int(p[38]) ] )
+        return( [ int(p[36]), int(p[37]), int(p[38]), int(p[30]) ] )
     else:
         return( [ int(p[33]), int(p[34]), int(p[35]), power(p[36]) ] )
 
@@ -79,45 +79,91 @@ for (opt, arg) in opts:
 b_cards = p_hash( cardpath() + '/' + batters )
 p_cards = p_hash( cardpath() + '/' + pitchers )
 
-for arg in args:
-    totL = []
-    totR = []
-    for d in range(0,6):
-        totL.append( 0.0 )
-        totR.append( 0.0 )
+if do_bat:
+    print "BATTERS"
+    for arg in args:
+        totL = []
+        totR = []
+        for d in range(0,6):
+            totL.append( 0.0 )
+            totR.append( 0.0 )
 
-    team = arg.upper()
-    sql = "select trim(mlb) as mlb, trim(name) as name, sum(vl), sum(vr)\
-            from %s where ibl = '%s' and bf = 0\
-            group by mlb, name;" % ( DB.usage, team )
-    cursor.execute(sql)
-    for mlb, name, paL, paR in cursor.fetchall():
-        if (mlb, name) in b_cards:
-            vl = vsL(b_cards[mlb, name], 2)
-            vr = vsR(b_cards[mlb, name], 2)
-            #print mlb, name, paL, vl
-            #print mlb, name, paR, vr
-            totL[0] += paL
-            totR[0] += paR
-            for d in 1, 2, 3, 4:
-                totL[d] += vl[d - 1] * paL
-                totR[d] += vr[d - 1] * paR
-            totL[5] += wOBA(b_cards[mlb, name], 2, 0) * paL
-            totR[5] += wOBA(b_cards[mlb, name], 2, 1) * paR
+        team = arg.upper()
+        sql = "select trim(mlb) as mlb, trim(name) as name, sum(vl), sum(vr)\
+                from %s where ibl = '%s' and bf = 0\
+                group by mlb, name;" % ( DB.usage, team )
+        cursor.execute(sql)
+        for mlb, name, paL, paR in cursor.fetchall():
+            if (mlb, name) in b_cards:
+                vl = vsL(b_cards[mlb, name], 2)
+                vr = vsR(b_cards[mlb, name], 2)
+                #print mlb, name, paL, vl
+                #print mlb, name, paR, vr
+                totL[0] += paL
+                totR[0] += paR
+                for d in 1, 2, 3, 4:
+                    totL[d] += vl[d - 1] * paL
+                    totR[d] += vr[d - 1] * paR
+                totL[5] += wOBA(b_cards[mlb, name], 2, 0) * paL
+                totR[5] += wOBA(b_cards[mlb, name], 2, 1) * paR
 
-    #print totL, totR
-    print "%s" % ( team ),
-    for d in 1, 2, 3:
-        print " %5.1f" % ( totL[d] / totL[0] ),
-    print " %4.3f" % ( totL[4] / totL[0] ),
-    print " %d" % ( totL[5] / totL[0] + 0.5 ),
-    print ".",
-    for d in 1, 2, 3:
-        print " %5.1f" % ( totR[d] / totR[0] ),
-    print " %4.3f" % ( totR[4] / totR[0] ),
-    print " %d" % ( totR[5] / totR[0] + 0.5 ),
-    print ".",
-    print "%+5.1f" % ( totL[5] / totL[0] - totR[5] / totR[0] )
+        #print totL, totR
+        print "%s" % ( team ),
+        for d in 1, 2, 3:
+            print " %5.1f" % ( totL[d] / totL[0] ),
+        print " %4.3f" % ( totL[4] / totL[0] ),
+        print " %d" % ( totL[5] / totL[0] + 0.5 ),
+        print ".",
+        for d in 1, 2, 3:
+            print " %5.1f" % ( totR[d] / totR[0] ),
+        print " %4.3f" % ( totR[4] / totR[0] ),
+        print " %d" % ( totR[5] / totR[0] + 0.5 ),
+        print ".",
+        print "%+5.1f" % ( totL[5] / totL[0] - totR[5] / totR[0] )
+
+if do_pit:
+    if do_bat:
+        print
+    print "PITCHERS"
+    for arg in args:
+        totL = []
+        totR = []
+        for d in range(0,6):
+            totL.append( 0.0 )
+            totR.append( 0.0 )
+
+        team = arg.upper()
+        sql = "select trim(mlb) as mlb, trim(name) as name, sum(bf)\
+                from %s where ibl = '%s' and bf > 0\
+                group by mlb, name;" % ( DB.usage, team )
+        cursor.execute(sql)
+        for mlb, name, bf in cursor.fetchall():
+            if (mlb, name) in p_cards:
+                vl = vsL(p_cards[mlb, name], 1)
+                vr = vsR(p_cards[mlb, name], 1)
+                #print mlb, name, bf, vl
+                #print mlb, name, bf, vr
+                totL[0] += bf
+                totR[0] += bf
+                for d in 1, 2, 3, 4:
+                    totL[d] += vl[d - 1] * bf
+                    totR[d] += vr[d - 1] * bf
+                totL[5] += wOBA(p_cards[mlb, name], 1, 0) * bf
+                totR[5] += wOBA(p_cards[mlb, name], 1, 1) * bf
+
+        #print totL, totR
+        print "%s" % ( team ),
+        for d in 1, 2, 3, 4:
+            print " %5.1f" % ( totL[d] / totL[0] ),
+        #print " %4.3f" % ( totL[4] / totL[0] ),
+        print " %d" % ( totL[5] / totL[0] + 0.5 ),
+        print ".",
+        for d in 1, 2, 3, 4:
+            print " %5.1f" % ( totR[d] / totR[0] ),
+        #print " %4.3f" % ( totR[4] / totR[0] ),
+        print " %d" % ( totR[5] / totR[0] + 0.5 ),
+        print ".",
+        print "%+5.1f" % ( totL[5] / totL[0] - totR[5] / totR[0] )
 
 db.close()
 
