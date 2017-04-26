@@ -57,9 +57,10 @@ cursor = db.cursor()
 do_bat = True
 do_pit = True
 do_tot = False
+do_opp = False
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'ABP')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPo')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -69,6 +70,8 @@ for (opt, arg) in opts:
         do_pit = False
     elif opt == '-P':
         do_bat = False
+    elif opt == '-o':
+        do_opp = True
     elif opt == '-A':
         do_tot = True
         cursor.execute("select distinct(ibl_team) from teams \
@@ -97,7 +100,12 @@ if do_bat:
             teamR.append( 0.0 )
 
         team = arg.upper()
-        sql = "select trim(mlb) as mlb, trim(name) as name, sum(vl), sum(vr)\
+        if do_opp:
+            sql = "select trim(mlb), trim(name), sum(vl), sum(vr) from %s\
+                where (home = '%s' or away = '%s') and ibl != '%s' and bf = 0\
+                group by mlb, name;" % ( DB.usage, team, team, team )
+        else:
+            sql = "select trim(mlb), trim(name), sum(vl), sum(vr)\
                 from %s where ibl = '%s' and bf = 0\
                 group by mlb, name;" % ( DB.usage, team )
         cursor.execute(sql)
@@ -166,7 +174,12 @@ if do_pit:
             teamR.append( 0.0 )
 
         team = arg.upper()
-        sql = "select trim(mlb) as mlb, trim(name) as name, sum(bf)\
+        if do_opp:
+            sql = "select trim(mlb), trim(name), sum(bf) from %s\
+                where (home = '%s' or away = '%s') and ibl != '%s' and bf > 0\
+                group by mlb, name;" % ( DB.usage, team, team, team )
+        else:
+            sql = "select trim(mlb), trim(name), sum(bf)\
                 from %s where ibl = '%s' and bf > 0\
                 group by mlb, name;" % ( DB.usage, team )
         cursor.execute(sql)
