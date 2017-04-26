@@ -50,10 +50,40 @@ def vsR(p, kind):
     else:
         return( [ int(p[33]), int(p[34]), int(p[35]), power(p[36]) ] )
 
+def bdump( team, stat ):
+    print "%s" % ( team ),
+    for d in 1, 2, 3:
+        print " %5.1f" % ( stat['vL'][d] / stat['vL'][0] ),
+    print " %4.3f" % ( stat['vL'][4] / stat['vL'][0] ),
+    print " %d" % ( stat['vL'][5] / stat['vL'][0] + 0.5 ),
+    print ".",
+    for d in 1, 2, 3:
+        print " %5.1f" % ( stat['vR'][d] / stat['vR'][0] ),
+    print " %4.3f" % ( stat['vR'][4] / stat['vR'][0] ),
+    print " %d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ),
+    print ".",
+    print "%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
+            stat['vR'][5] / stat['vR'][0] )
+
+def pdump( team, stat ):
+    print "%s" % ( team ),
+    for d in 1, 2, 3, 4:
+        print " %5.1f" % ( stat['vL'][d] / stat['vL'][0] ),
+    print " %d" % ( stat['vL'][5] / stat['vL'][0] + 0.5 ),
+    print ".",
+    for d in 1, 2, 3, 4:
+        print " %5.1f" % ( stat['vR'][d] / stat['vR'][0] ),
+    print " %d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ),
+    print ".",
+    print "%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
+            stat['vR'][5] / stat['vR'][0] )
+
 db = DB.connect()
 cursor = db.cursor()
 
 # globals
+ibl = {}
+tot = {}
 do_bat = True
 do_pit = True
 do_tot = False
@@ -86,20 +116,23 @@ p_cards = p_hash( cardpath() + '/' + pitchers )
 
 if do_bat:
     print "BATTERS"
-    totL = []
-    totR = []
+
+    tot['vL'] = []
+    tot['vR'] = []
     for d in range(0,6):
-        totL.append( 0.0 )
-        totR.append( 0.0 )
+        tot['vL'].append( 0.0 )
+        tot['vR'].append( 0.0 )
 
     for arg in args:
-        teamL = []
-        teamR = []
-        for d in range(0,6):
-            teamL.append( 0.0 )
-            teamR.append( 0.0 )
-
         team = arg.upper()
+
+        ibl[team] = {}
+        ibl[team]['vL'] = []
+        ibl[team]['vR'] = []
+        for d in range(0,6):
+            ibl[team]['vL'].append( 0.0 )
+            ibl[team]['vR'].append( 0.0 )
+
         if do_opp:
             sql = "select trim(mlb), trim(name), sum(vl), sum(vr) from %s\
                 where (home = '%s' or away = '%s') and ibl != '%s' and bf = 0\
@@ -115,65 +148,45 @@ if do_bat:
                 vr = vsR(b_cards[mlb, name], 2)
                 #print mlb, name, paL, vl
                 #print mlb, name, paR, vr
-                teamL[0] += paL
-                teamR[0] += paR
+                ibl[team]['vL'][0] += paL
+                ibl[team]['vR'][0] += paR
                 for d in 1, 2, 3, 4:
-                    teamL[d] += vl[d - 1] * paL
-                    teamR[d] += vr[d - 1] * paR
-                teamL[5] += wOBA(b_cards[mlb, name], 2, 0) * paL
-                teamR[5] += wOBA(b_cards[mlb, name], 2, 1) * paR
-
-        #print teamL, teamR
-        print "%s" % ( team ),
-        for d in 1, 2, 3:
-            print " %5.1f" % ( teamL[d] / teamL[0] ),
-        print " %4.3f" % ( teamL[4] / teamL[0] ),
-        print " %d" % ( teamL[5] / teamL[0] + 0.5 ),
-        print ".",
-        for d in 1, 2, 3:
-            print " %5.1f" % ( teamR[d] / teamR[0] ),
-        print " %4.3f" % ( teamR[4] / teamR[0] ),
-        print " %d" % ( teamR[5] / teamR[0] + 0.5 ),
-        print ".",
-        print "%+5.1f" % ( teamL[5] / teamL[0] - teamR[5] / teamR[0] )
+                    ibl[team]['vL'][d] += vl[d - 1] * paL
+                    ibl[team]['vR'][d] += vr[d - 1] * paR
+                ibl[team]['vL'][5] += wOBA(b_cards[mlb, name], 2, 0) * paL
+                ibl[team]['vR'][5] += wOBA(b_cards[mlb, name], 2, 1) * paR
 
         for d in range(0,6):
-            totL[d] += teamL[d]
-            totR[d] += teamR[d]
+            tot['vL'][d] += ibl[team]['vL'][d]
+            tot['vR'][d] += ibl[team]['vR'][d]
     #end arg loop
 
+    for t in sorted(ibl):
+        bdump( t, ibl[t] )
     if do_tot:
-        print "---",
-        for d in 1, 2, 3:
-            print " %5.1f" % ( totL[d] / totL[0] ),
-        print " %4.3f" % ( totL[4] / totL[0] ),
-        print " %d" % ( totL[5] / totL[0] + 0.5 ),
-        print ".",
-        for d in 1, 2, 3:
-            print " %5.1f" % ( totR[d] / totR[0] ),
-        print " %4.3f" % ( totR[4] / totR[0] ),
-        print " %d" % ( totR[5] / totR[0] + 0.5 ),
-        print ".",
-        print "%+5.1f" % ( totL[5] / totL[0] - totR[5] / totR[0] )
+        bdump( '---', tot )
 
 if do_pit:
     if do_bat:
         print
     print "PITCHERS"
-    totL = []
-    totR = []
+
+    tot['vL'] = []
+    tot['vR'] = []
     for d in range(0,6):
-        totL.append( 0.0 )
-        totR.append( 0.0 )
+        tot['vL'].append( 0.0 )
+        tot['vR'].append( 0.0 )
 
     for arg in args:
-        teamL = []
-        teamR = []
-        for d in range(0,6):
-            teamL.append( 0.0 )
-            teamR.append( 0.0 )
-
         team = arg.upper()
+
+        ibl[team] = {}
+        ibl[team]['vL'] = []
+        ibl[team]['vR'] = []
+        for d in range(0,6):
+            ibl[team]['vL'].append( 0.0 )
+            ibl[team]['vR'].append( 0.0 )
+
         if do_opp:
             sql = "select trim(mlb), trim(name), sum(bf) from %s\
                 where (home = '%s' or away = '%s') and ibl != '%s' and bf > 0\
@@ -189,42 +202,24 @@ if do_pit:
                 vr = vsR(p_cards[mlb, name], 1)
                 #print mlb, name, bf, vl
                 #print mlb, name, bf, vr
-                teamL[0] += bf
-                teamR[0] += bf
+                ibl[team]['vL'][0] += bf
+                ibl[team]['vR'][0] += bf
                 for d in 1, 2, 3, 4:
-                    teamL[d] += vl[d - 1] * bf
-                    teamR[d] += vr[d - 1] * bf
-                teamL[5] += wOBA(p_cards[mlb, name], 1, 0) * bf
-                teamR[5] += wOBA(p_cards[mlb, name], 1, 1) * bf
+                    ibl[team]['vL'][d] += vl[d - 1] * bf
+                    ibl[team]['vR'][d] += vr[d - 1] * bf
+                ibl[team]['vL'][5] += wOBA(p_cards[mlb, name], 1, 0) * bf
+                ibl[team]['vR'][5] += wOBA(p_cards[mlb, name], 1, 1) * bf
 
         #print teamL, teamR
-        print "%s" % ( team ),
-        for d in 1, 2, 3, 4:
-            print " %5.1f" % ( teamL[d] / teamL[0] ),
-        print " %d" % ( teamL[5] / teamL[0] + 0.5 ),
-        print ".",
-        for d in 1, 2, 3, 4:
-            print " %5.1f" % ( teamR[d] / teamR[0] ),
-        print " %d" % ( teamR[5] / teamR[0] + 0.5 ),
-        print ".",
-        print "%+5.1f" % ( teamL[5] / teamL[0] - teamR[5] / teamR[0] )
-
         for d in range(0,6):
-            totL[d] += teamL[d]
-            totR[d] += teamR[d]
+            tot['vL'][d] += ibl[team]['vL'][d]
+            tot['vR'][d] += ibl[team]['vR'][d]
     #end arg loop
 
+    for t in sorted(ibl):
+        pdump( t, ibl[t] )
     if do_tot:
-        print "---",
-        for d in 1, 2, 3, 4:
-            print " %5.1f" % ( totL[d] / totL[0] ),
-        print " %d" % ( totL[5] / totL[0] + 0.5 ),
-        print ".",
-        for d in 1, 2, 3, 4:
-            print " %5.1f" % ( totR[d] / totR[0] ),
-        print " %d" % ( totR[5] / totR[0] + 0.5 ),
-        print ".",
-        print "%+5.1f" % ( totL[5] / totL[0] - totR[5] / totR[0] )
+        pdump( '---', tot )
 
 db.close()
 
