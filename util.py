@@ -4,6 +4,7 @@
 # -B: batters only
 # -P: batters only
 # -A: all teams
+# -p: platoon differential
 
 import sys
 import getopt
@@ -50,7 +51,7 @@ def vsR(p, kind):
     else:
         return( [ int(p[33]), int(p[34]), int(p[35]), power(p[36]) ] )
 
-def bdump( team, stat ):
+def bdump( team, stat, opt ):
     print "%s" % ( team ),
     for d in 1, 2, 3:
         print " %5.1f" % ( stat['vL'][d] / stat['vL'][0] ),
@@ -62,10 +63,16 @@ def bdump( team, stat ):
     print " %4.3f" % ( stat['vR'][4] / stat['vR'][0] ),
     print " %d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ),
     print ".",
-    print "%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
-            stat['vR'][5] / stat['vR'][0] )
+    if opt == platoon:
+        # platoon differential
+        print "%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
+                stat['vR'][5] / stat['vR'][0] )
+    else:
+        # overall = woba weighted average
+        print " %d" % ( (stat['vL'][5] + stat['vR'][5]) /
+                (stat['vL'][0] + stat['vR'][0]) + 0.5 )
 
-def pdump( team, stat ):
+def pdump( team, stat, opt ):
     print "%s" % ( team ),
     for d in 1, 2, 3, 4:
         print " %5.1f" % ( stat['vL'][d] / stat['vL'][0] ),
@@ -75,8 +82,17 @@ def pdump( team, stat ):
         print " %5.1f" % ( stat['vR'][d] / stat['vR'][0] ),
     print " %d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ),
     print ".",
-    print "%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
-            stat['vR'][5] / stat['vR'][0] )
+    if opt == platoon:
+        # platoon differential
+        print "%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
+                stat['vR'][5] / stat['vR'][0] )
+    else:
+        # overall = woba modified harmonic mean
+        vL = stat['vL'][5] / stat['vL'][0]
+        vR = stat['vR'][5] / stat['vR'][0]
+        mean = ( vL + vR ) / 2.0
+        harm = 2.0 * vL * vR / ( vL + vR )
+        print " %d" % ( mean + abs(mean - harm) + 0.5 )
 
 db = DB.connect()
 cursor = db.cursor()
@@ -88,9 +104,12 @@ do_bat = True
 do_pit = True
 do_tot = False
 do_opp = False
+overall = 1
+platoon = 2
+display = overall
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPo')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPop')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -102,6 +121,8 @@ for (opt, arg) in opts:
         do_bat = False
     elif opt == '-o':
         do_opp = True
+    elif opt == '-p':
+        display = platoon
     elif opt == '-A':
         do_tot = True
         cursor.execute("select distinct(ibl_team) from teams \
@@ -115,7 +136,8 @@ b_cards = p_hash( cardpath() + '/' + batters )
 p_cards = p_hash( cardpath() + '/' + pitchers )
 
 if do_bat:
-    print "BATTERS"
+    if do_pit:
+        print "BATTERS"
 
     tot['vL'] = []
     tot['vR'] = []
@@ -162,14 +184,14 @@ if do_bat:
     #end arg loop
 
     for t in sorted(ibl):
-        bdump( t, ibl[t] )
+        bdump( t, ibl[t], display )
     if do_tot:
-        bdump( '---', tot )
+        bdump( '---', tot, display )
 
 if do_pit:
     if do_bat:
         print
-    print "PITCHERS"
+        print "PITCHERS"
 
     tot['vL'] = []
     tot['vR'] = []
@@ -217,9 +239,9 @@ if do_pit:
     #end arg loop
 
     for t in sorted(ibl):
-        pdump( t, ibl[t] )
+        pdump( t, ibl[t], display )
     if do_tot:
-        pdump( '---', tot )
+        pdump( '---', tot, display )
 
 db.close()
 
