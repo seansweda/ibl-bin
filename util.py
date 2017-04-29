@@ -5,6 +5,7 @@
 # -P: batters only
 # -A: all teams
 # -p: platoon differential
+# -v: vs average
 
 import sys
 import getopt
@@ -63,14 +64,17 @@ def bdump( team, stat, opt ):
     print " %4.3f" % ( stat['vR'][4] / stat['vR'][0] ),
     print " %d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ),
     print ".",
-    if opt == platoon:
+    if opt == 0:
+        print "%5.1f" % ( 0.0 )
+    elif opt == overall:
+        print " %3d" % ( stat['avg'] + 0.5 )
+    elif opt == platoon:
         # platoon differential
         print "%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
                 stat['vR'][5] / stat['vR'][0] )
     else:
-        # overall = woba weighted average
-        print " %d" % ( (stat['vL'][5] + stat['vR'][5]) /
-                (stat['vL'][0] + stat['vR'][0]) + 0.5 )
+        # vs average
+        print "%+5.1f" % ( stat['avg'] - opt )
 
 def pdump( team, stat, opt ):
     print "%s" % ( team ),
@@ -82,17 +86,17 @@ def pdump( team, stat, opt ):
         print " %5.1f" % ( stat['vR'][d] / stat['vR'][0] ),
     print " %d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ),
     print ".",
-    if opt == platoon:
+    if opt == 0:
+        print "%5.1f" % ( 0.0 )
+    elif opt == overall:
+        print " %3d" % ( stat['avg'] + 0.5 )
+    elif opt == platoon:
         # platoon differential
         print "%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
                 stat['vR'][5] / stat['vR'][0] )
     else:
-        # overall = woba modified harmonic mean
-        vL = stat['vL'][5] / stat['vL'][0]
-        vR = stat['vR'][5] / stat['vR'][0]
-        mean = ( vL + vR ) / 2.0
-        harm = 2.0 * vL * vR / ( vL + vR )
-        print " %d" % ( mean + abs(mean - harm) + 0.5 )
+        # vs average
+        print "%+5.1f" % ( opt - stat['avg'] )
 
 db = DB.connect()
 cursor = db.cursor()
@@ -106,10 +110,11 @@ do_tot = False
 do_opp = False
 overall = 1
 platoon = 2
+avg = 3
 display = overall
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPop')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPopv')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -123,6 +128,8 @@ for (opt, arg) in opts:
         do_opp = True
     elif opt == '-p':
         display = platoon
+    elif opt == '-v':
+        display = avg
     elif opt == '-A':
         do_tot = True
         cursor.execute("select distinct(ibl_team) from teams \
@@ -178,15 +185,28 @@ if do_bat:
                 ibl[team]['vL'][5] += wOBA(b_cards[mlb, name], 2, 0) * paL
                 ibl[team]['vR'][5] += wOBA(b_cards[mlb, name], 2, 1) * paR
 
+        # woba weighted average
+        ibl[team]['avg'] = ( ibl[team]['vL'][5] + ibl[team]['vR'][5] ) /\
+                ( ibl[team]['vL'][0] + ibl[team]['vR'][0] )
+
         for d in range(0,6):
             tot['vL'][d] += ibl[team]['vL'][d]
             tot['vR'][d] += ibl[team]['vR'][d]
+        # woba weighted average
+        tot['avg'] = ( tot['vL'][5] + tot['vR'][5] ) /\
+                ( tot['vL'][0] + tot['vR'][0] )
     #end arg loop
 
     for t in sorted(ibl):
-        bdump( t, ibl[t], display )
+        if display == avg:
+            bdump( t, ibl[t], tot['avg'] )
+        else:
+            bdump( t, ibl[t], display )
     if do_tot:
-        bdump( '---', tot, display )
+        if display == avg:
+            bdump( '---', tot, 0 )
+        else:
+            bdump( '---', tot, display )
 
 if do_pit:
     if do_bat:
@@ -232,16 +252,34 @@ if do_pit:
                 ibl[team]['vL'][5] += wOBA(p_cards[mlb, name], 1, 0) * bf
                 ibl[team]['vR'][5] += wOBA(p_cards[mlb, name], 1, 1) * bf
 
-        #print teamL, teamR
+        # woba modified harmonic mean
+        wL = ibl[team]['vL'][5] / ibl[team]['vL'][0]
+        wR = ibl[team]['vR'][5] / ibl[team]['vR'][0]
+        mean = ( wL + wR ) / 2.0
+        harm = 2.0 * wL * wR / ( wL + wR )
+        ibl[team]['avg'] = mean + abs(mean - harm)
+
         for d in range(0,6):
             tot['vL'][d] += ibl[team]['vL'][d]
             tot['vR'][d] += ibl[team]['vR'][d]
+        # woba modified harmonic mean
+        wL = tot['vL'][5] / tot['vL'][0]
+        wR = tot['vR'][5] / tot['vR'][0]
+        mean = ( wL + wR ) / 2.0
+        harm = 2.0 * wL * wR / ( wL + wR )
+        tot['avg'] = mean + abs(mean - harm)
     #end arg loop
 
     for t in sorted(ibl):
-        pdump( t, ibl[t], display )
+        if display == avg:
+            pdump( t, ibl[t], tot['avg'] )
+        else:
+            pdump( t, ibl[t], display )
     if do_tot:
-        pdump( '---', tot, display )
+        if display == avg:
+            pdump( '---', tot, 0 )
+        else:
+            pdump( '---', tot, display )
 
 db.close()
 
