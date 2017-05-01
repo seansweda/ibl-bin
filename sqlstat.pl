@@ -271,6 +271,7 @@ while (<DATA>) {
 		print "WEEK $week\n";
 	    }
 	    else {
+		print ">> ", $_;
 		print "line $lines WEEK format error: $week\n";
 		$fatalerr++;
 		$week = '';
@@ -284,6 +285,7 @@ while (<DATA>) {
 	    $home = (split)[1];
 	    $home =~ tr/a-z/A-Z/;
 	    if ( iblck($home) ) {
+		print ">> ", $_;
 		print "line $lines invalid IBL team designation: $home\n";
 		$fatalerr++;
 		$home = '';
@@ -302,6 +304,7 @@ while (<DATA>) {
 	    $away = (split)[1];
 	    $away =~ tr/a-z/A-Z/;
 	    if ( iblck($away) ) {
+		print ">> ", $_;
 		print "line $lines invalid IBL team designation: $away\n";
 		$fatalerr++;
 		$away = '';
@@ -404,6 +407,7 @@ while (<DATA>) {
 		    last;
 		}
 		elsif ( $#line < $ICOLS ) {
+		    print ">> ", $_;
 		    print "line $lines INJURIES format error\n";
 		    $fatalerr++;
 		    last;
@@ -436,6 +440,7 @@ while (<DATA>) {
 			# "adj": no injury credit
 			$tcode = 3;
 		    } else {
+			print ">> ", $_;
 			print "line $lines \"$type\" not valid injury code\n";
 			$fatalerr++;
 		    }
@@ -443,10 +448,12 @@ while (<DATA>) {
 		    @starts = find( $mlb, $name, $lines);
 
 		    if ( $day !~ /^\d+$/ || $day < 1 ) {
+			print ">> ", $_;
 			print "line $lines \"$day\" not valid day\n";
 			$fatalerr++;
 		    }
 		    elsif ( $inj !~ /^\d+$/ ) {
+			print ">> ", $_;
 			print "line $lines \"$inj\" not valid injury days\n";
 			$fatalerr++;
 		    }
@@ -478,6 +485,7 @@ while (<DATA>) {
 		}
 
 		if ( iblck($ibl) ) {
+		    print ">> ", $_;
 		    print "line $lines invalid IBL team designation: $ibl\n";
 		    $fatalerr++;
 		}
@@ -515,6 +523,7 @@ while (<DATA>) {
 		last;
 	    }
 	    elsif ( $#line < $SCOLS ) {
+		print ">> ", $_;
 		print "line $lines STARTS format error\n";
 		$fatalerr++;
 		last;
@@ -627,6 +636,7 @@ while (<DATA>) {
 	    }
 
 	    if ( iblck($ibl) ) {
+		print ">> ", $_;
 		print "line $lines invalid IBL team designation: $ibl\n";
 		$fatalerr++;
 	    }
@@ -658,6 +668,7 @@ while (<DATA>) {
 	    $redo = 0;
 	}
 	if ( iblck($team) ) {
+	    print ">> ", $_;
 	    print "line $lines invalid IBL team designation: $team\n";
 	    $fatalerr++;
 	}
@@ -692,10 +703,12 @@ while (<DATA>) {
 	    else {
 		( $slot, $pos, $ibl, $mlb, $name, $ab, $r, $h, $bi, $d, $t, $hr, $sb, $cs, $bb, $k, $pl, $pr ) = @line;
 		if ( $updates && $team ne $ibl ) {
+		    print ">> ", $_;
 		    print "line $lines team mismatch: $team != $ibl\n";
 		    $fatalerr++;
 		}
 		if ( $updates && $ibl ne $home && $ibl ne $away ) {
+		    print ">> ", $_;
 		    print "line $lines team mismatch: $team != ($home/$away)\n";
 		    $fatalerr++;
 		}
@@ -938,6 +951,7 @@ while (<DATA>) {
 	    $fatalerr++;
 	}
 	if ( iblck($team) ) {
+	    print ">> ", $_;
 	    print "line $lines invalid IBL team designation: $team\n";
 	    $fatalerr++;
 	}
@@ -956,10 +970,12 @@ while (<DATA>) {
 	    else {
 		( $dec, $ibl, $mlb, $name, $ip, $h, $r, $er, $bb, $k, $hr, $bf ) = @line;
 		if ( $updates && $team ne $ibl ) {
+		    print ">> ", $_;
 		    print "line $lines team mismatch: $team != $ibl\n";
 		    $fatalerr++;
 		}
 		if ( $updates && $ibl ne $home && $ibl ne $away ) {
+		    print ">> ", $_;
 		    print "line $lines team mismatch: $team != ($home/$away)\n";
 		    $fatalerr++;
 		}
