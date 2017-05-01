@@ -457,6 +457,11 @@ while (<DATA>) {
 			print "line $lines \"$inj\" not valid injury days\n";
 			$fatalerr++;
 		    }
+		    elsif ( $inj == 0 && ($day < 4 || $type !~ /^[iI]/) ) {
+			print ">> ", $_;
+			print "line $lines \"$inj\" days only valid for injury that starts the following week\n";
+			$fatalerr++;
+		    }
 		    elsif ( @starts ) {
 			$mlb = $starts[0];
 			$mlb =~ s/\s+$//;
