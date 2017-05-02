@@ -1,14 +1,53 @@
 #!/usr/bin/python
+#
+# flags
+# -A: average card
+# -b: batter card
+# -p: pitcher card
+# -g: grep mode (default)
+# -h: hash mode
 
 import os
 import sys
+import yaml
 import subprocess
 import re
 import getopt
 import time
 
+import DB
+
 batters = "d1.genbat"
 pitchers = "d1.genpit"
+
+try:
+    f = open( DB.bin_dir() + '/data/avgcard.yml', 'rU' )
+except IOError, err:
+    print str(err)
+    sys.exit(1)
+
+y = yaml.safe_load(f)
+
+# wOBA consts
+wBB = y['wBB']
+w1B = y['w1B']
+w2B = y['w2B']
+w3B = y['w3B']
+wHR = y['wHR']
+
+# cardengine consts.h
+IFR1B = y['IFR1B']
+IFR2B = y['IFR2B']
+OFR1B = y['OFR1B']
+OFR2B = y['OFR2B']
+PARK1B = y['PARK1B']
+PARK2B = y['PARK2B']
+PARK3B = y['PARK3B']
+WILD1B = y['WILD1B']
+WILD2B = y['WILD2B']
+WILD3B = y['WILD3B']
+WILDBB = y['WILDBB']
+WILDHB = y['WILDHB']
 
 def usage():
     print "usage: %s { -b | -p } ( -g | -h ) player(s)" % sys.argv[0]
@@ -79,33 +118,52 @@ def pitprint(p):
     print "%-3s %-15s vR %4s%4s%4s%4s%4s%4s%4s%4s  .%4i .%4s%4s%4s" % \
         ( p[0], p[1],  p[28], p[29], p[30], p[31], p[32], p[33], p[34], p[35], wOBA(p, 1, 1), p[36], p[37], p[38] )
 
+def power( rating ):
+    if rating == "Ex":
+        return 0.5
+    elif rating == "Vg":
+        return 0.4
+    elif rating == "Av":
+        return 0.3
+    elif rating == "Fr":
+        return 0.2
+    else:
+        return 0.1
+
+def bat_wOBA():
+    card = y['batcard']
+    woba = 0
+    woba += card[0] * w1B
+    woba += card[1] * w2B
+    woba += card[2] * w3B
+    woba += card[3] * wHR
+    woba += card[4] * wBB
+    woba += card[5] * wBB
+    woba += (PARK1B + WILD1B) * w1B
+    woba += (PARK2B + WILD2B) * w2B
+    woba += (PARK3B + WILD3B) * w3B
+    woba += (WILDBB + WILDHB) * wBB
+    return woba
+
+def pit_wOBA( pwr ):
+    card = y['pitcard']
+    woba = 0
+    woba += card[0] * w1B
+    woba += card[1] * w2B
+    woba += card[2] * power(pwr) * wHR
+    woba += card[3] * wBB
+    woba += card[4] * wBB
+    woba += card[5] * IFR1B * w1B
+    woba += card[5] * IFR2B * w2B
+    woba += card[6] * OFR1B * w1B
+    woba += card[6] * OFR2B * w2B
+    woba += (PARK1B + WILD1B) * w1B
+    woba += (PARK2B + WILD2B) * w2B
+    woba += (PARK3B + WILD3B) * w3B
+    woba += (WILDBB + WILDHB) * wBB
+    return woba
+
 def wOBA(p, kind, side):
-    # wOBA consts
-    wBB = 0.70
-    w1B = 0.90
-    w2B = 1.25
-    w3B = 1.60
-    wHR = 2.00
-
-    # cardengine consts.h
-    DF = 50
-    IFR1B = 0.4306
-    IFR2B = 0.0694
-    OFR1B = 0.1121
-    OFR2B = 0.3879
-
-    def power( rating ):
-        if rating == "Ex":
-            return 0.5
-        elif rating == "Vg":
-            return 0.4
-        elif rating == "Av":
-            return 0.3
-        elif rating == "Fr":
-            return 0.2
-        else:
-            return 0.1
-
     # pitcher
     if kind == 1:
         if side == 0:
@@ -123,6 +181,7 @@ def wOBA(p, kind, side):
         woba += int(p[index + 5]) * IFR2B * w2B
         woba += int(p[index + 6]) * OFR1B * w1B
         woba += int(p[index + 6]) * OFR2B * w2B
+        return int(woba + bat_wOBA() + 0.5)
 
     # batter
     else:
@@ -135,12 +194,57 @@ def wOBA(p, kind, side):
         woba += int(p[index]) * w1B
         woba += int(p[index + 1]) * w2B
         woba += int(p[index + 2]) * w3B
-        DF_hr = DF * power( p[index + 10] )
-        woba += ( int(p[index + 3]) + DF_hr ) * wHR
+        woba += int(p[index + 3]) * wHR
         woba += int(p[index + 4]) * wBB
         woba += int(p[index + 5]) * wBB
+        return int(woba + pit_wOBA( p[index + 10] ) + 0.5)
 
-    return int(woba + 100.5)
+def avgcard():
+    b_cards = p_hash( cardpath() + '/' + batters )
+    p_cards = p_hash( cardpath() + '/' + pitchers )
+
+    bat = []
+    for d in range(0,7):
+        bat.append(0.0)
+
+    for c in sorted( b_cards ):
+        for index in 14, 26:
+            if c[0] != 'Player':
+                bat[6] += float(b_cards[c][index + 11])
+                for d in range(0,6):
+                    bat[d] += ( float(b_cards[c][index + d]) *
+                            float(b_cards[c][index + 11]) )
+
+    print "         1B     2B     3B     HR     HB     BB"
+    print "BAT: ",
+    for d in range(0,6):
+        bat[d] /= bat[6]
+    for d in range(0,6):
+        print "%5.1f " % ( bat[d] ),
+    print "%5.1f " % ( bat[6] )
+    print yaml.dump( bat, default_flow_style=False )
+
+    pit = []
+    for d in range(0,8):
+        pit.append(0.0)
+
+    for c in sorted( p_cards ):
+        for index in 16, 28:
+            if c[0] != 'Player':
+                pit[7] += float(p_cards[c][index + 11])
+                for d in range(0,7):
+                    pit[d] += ( float(p_cards[c][index + d]) *
+                            float(p_cards[c][index + 11]) )
+
+    print "         1B     2B     DF     HB     BB    IFR    OFR"
+    print "PIT: ",
+    for d in range(0,7):
+        pit[d] /= pit[7]
+    for d in range(0,7):
+        print "%5.1f " % ( pit[d] ),
+    print "%5.1f " % ( pit[7] )
+    print yaml.dump( pit, default_flow_style=False )
+    sys.exit(0)
 
 def main():
     global batters, pitchers, grepcmd
@@ -151,7 +255,7 @@ def main():
     datadir = cardpath()
 
     try:
-        (opts, args) = getopt.getopt(sys.argv[1:], 'pbghwd:')
+        (opts, args) = getopt.getopt(sys.argv[1:], 'Apbghwd:')
     except getopt.GetoptError, err:
         print str(err)
         usage()
@@ -172,6 +276,8 @@ def main():
             grepmode = 0
         elif opt == '-w':
             grepcmd.append('-w')
+        elif opt == '-A':
+            avgcard()
         else:
             print "bad option:", opt
             usage()
