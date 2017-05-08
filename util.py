@@ -98,6 +98,34 @@ def pdump( team, stat, opt ):
         # vs average
         print "%+5.1f" % ( opt - stat['avg'] )
 
+def b_total( team, mlb, name ):
+    if (mlb, name) in b_cards:
+        vl = vsL(b_cards[mlb, name], 2)
+        vr = vsR(b_cards[mlb, name], 2)
+        #print mlb, name, paL, vl
+        #print mlb, name, paR, vr
+        ibl[team]['vL'][0] += paL
+        ibl[team]['vR'][0] += paR
+        for d in 1, 2, 3, 4:
+            ibl[team]['vL'][d] += vl[d - 1] * paL
+            ibl[team]['vR'][d] += vr[d - 1] * paR
+        ibl[team]['vL'][5] += wOBA(b_cards[mlb, name], 2, 0) * paL
+        ibl[team]['vR'][5] += wOBA(b_cards[mlb, name], 2, 1) * paR
+
+def p_total( team, mlb, name ):
+    if (mlb, name) in p_cards:
+        vl = vsL(p_cards[mlb, name], 1)
+        vr = vsR(p_cards[mlb, name], 1)
+        #print mlb, name, bf, vl
+        #print mlb, name, bf, vr
+        ibl[team]['vL'][0] += bf
+        ibl[team]['vR'][0] += bf
+        for d in 1, 2, 3, 4:
+            ibl[team]['vL'][d] += vl[d - 1] * bf
+            ibl[team]['vR'][d] += vr[d - 1] * bf
+        ibl[team]['vL'][5] += wOBA(p_cards[mlb, name], 1, 0) * bf
+        ibl[team]['vR'][5] += wOBA(p_cards[mlb, name], 1, 1) * bf
+
 db = DB.connect()
 cursor = db.cursor()
 
@@ -172,18 +200,7 @@ if do_bat:
                 group by mlb, name;" % ( DB.usage, team )
         cursor.execute(sql)
         for mlb, name, paL, paR in cursor.fetchall():
-            if (mlb, name) in b_cards:
-                vl = vsL(b_cards[mlb, name], 2)
-                vr = vsR(b_cards[mlb, name], 2)
-                #print mlb, name, paL, vl
-                #print mlb, name, paR, vr
-                ibl[team]['vL'][0] += paL
-                ibl[team]['vR'][0] += paR
-                for d in 1, 2, 3, 4:
-                    ibl[team]['vL'][d] += vl[d - 1] * paL
-                    ibl[team]['vR'][d] += vr[d - 1] * paR
-                ibl[team]['vL'][5] += wOBA(b_cards[mlb, name], 2, 0) * paL
-                ibl[team]['vR'][5] += wOBA(b_cards[mlb, name], 2, 1) * paR
+            b_total( team, mlb, name )
 
         # woba weighted average
         ibl[team]['avg'] = ( ibl[team]['vL'][5] + ibl[team]['vR'][5] ) /\
@@ -239,18 +256,7 @@ if do_pit:
                 group by mlb, name;" % ( DB.usage, team )
         cursor.execute(sql)
         for mlb, name, bf in cursor.fetchall():
-            if (mlb, name) in p_cards:
-                vl = vsL(p_cards[mlb, name], 1)
-                vr = vsR(p_cards[mlb, name], 1)
-                #print mlb, name, bf, vl
-                #print mlb, name, bf, vr
-                ibl[team]['vL'][0] += bf
-                ibl[team]['vR'][0] += bf
-                for d in 1, 2, 3, 4:
-                    ibl[team]['vL'][d] += vl[d - 1] * bf
-                    ibl[team]['vR'][d] += vr[d - 1] * bf
-                ibl[team]['vL'][5] += wOBA(p_cards[mlb, name], 1, 0) * bf
-                ibl[team]['vR'][5] += wOBA(p_cards[mlb, name], 1, 1) * bf
+            p_total( team, mlb, name )
 
         # woba modified harmonic mean
         wL = ibl[team]['vL'][5] / ibl[team]['vL'][0]
