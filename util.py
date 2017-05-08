@@ -6,6 +6,8 @@
 # -A: all teams
 # -p: platoon differential
 # -v: vs average
+# -s: start week
+# -e: end week
 
 import sys
 import getopt
@@ -18,7 +20,6 @@ from card import p_split, p_hash, cardpath, batters, pitchers, wOBA
 def usage():
     print "usage: %s [-ABP] <team>" % sys.argv[0]
     sys.exit(1)
-
 
 def trim(string):
     if string and len(string) > 0:
@@ -52,51 +53,85 @@ def vsR(p, kind):
     else:
         return( [ int(p[33]), int(p[34]), int(p[35]), power(p[36]) ] )
 
+def zero( stat ):
+    stat['vL'] = []
+    stat['vR'] = []
+    for d in range(0,6):
+        stat['vL'].append( 0.0 )
+        stat['vR'].append( 0.0 )
+
+def b_avg( stat ):
+    # woba weighted average (for offense)
+    return( ( stat['vL'][5] + stat['vR'][5] ) / \
+            ( stat['vL'][0] + stat['vR'][0] ) )
+
+def p_avg( stat ):
+    # woba modified harmonic mean (for pitching)
+    wL = stat['vL'][5] / stat['vL'][0]
+    wR = stat['vR'][5] / stat['vR'][0]
+    mean = ( wL + wR ) / 2.0
+    harm = 2.0 * wL * wR / ( wL + wR )
+    return( mean + abs(mean - harm) )
+
 def bdump( team, stat, opt ):
-    print "%s" % ( team ),
-    for d in 1, 2, 3:
-        print " %5.1f" % ( stat['vL'][d] / stat['vL'][0] ),
-    print " %4.3f" % ( stat['vL'][4] / stat['vL'][0] ),
-    print " %d" % ( stat['vL'][5] / stat['vL'][0] + 0.5 ),
-    print ".",
-    for d in 1, 2, 3:
-        print " %5.1f" % ( stat['vR'][d] / stat['vR'][0] ),
-    print " %4.3f" % ( stat['vR'][4] / stat['vR'][0] ),
-    print " %d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ),
-    print ".",
-    if opt == 0:
-        print "%5.1f" % ( 0.0 )
-    elif opt == overall:
-        print " %3d" % ( stat['avg'] + 0.5 )
-    elif opt == platoon:
-        # platoon differential
-        print "%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
-                stat['vR'][5] / stat['vR'][0] )
-    else:
-        # vs average
-        print "%+5.1f" % ( stat['avg'] - opt )
+    if stat['vL'][0] > 0 or stat['vR'][0] > 0:
+        if stat['vL'][0] == 0:
+            stat['vL'][0] += 1
+        if stat['vR'][0] == 0:
+            stat['vR'][0] += 1
+
+        stat['avg'] = b_avg( stat )
+        print "%s" % ( team ),
+        for d in 1, 2, 3:
+            print " %5.1f" % ( stat['vL'][d] / stat['vL'][0] ),
+        print " %4.3f" % ( stat['vL'][4] / stat['vL'][0] ),
+        print " %3d" % ( stat['vL'][5] / stat['vL'][0] + 0.5 ),
+        print ".",
+        for d in 1, 2, 3:
+            print " %5.1f" % ( stat['vR'][d] / stat['vR'][0] ),
+        print " %4.3f" % ( stat['vR'][4] / stat['vR'][0] ),
+        print " %3d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ),
+        print ".",
+        if opt == 0:
+            print "%5.1f" % ( 0.0 )
+        elif opt == overall:
+            print " %3d" % ( stat['avg'] + 0.5 )
+        elif opt == platoon:
+            # platoon differential
+            print "%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
+                    stat['vR'][5] / stat['vR'][0] )
+        else:
+            # vs average
+            print "%+5.1f" % ( stat['avg'] - opt )
 
 def pdump( team, stat, opt ):
-    print "%s" % ( team ),
-    for d in 1, 2, 3, 4:
-        print " %5.1f" % ( stat['vL'][d] / stat['vL'][0] ),
-    print " %d" % ( stat['vL'][5] / stat['vL'][0] + 0.5 ),
-    print ".",
-    for d in 1, 2, 3, 4:
-        print " %5.1f" % ( stat['vR'][d] / stat['vR'][0] ),
-    print " %d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ),
-    print ".",
-    if opt == 0:
-        print "%5.1f" % ( 0.0 )
-    elif opt == overall:
-        print " %3d" % ( stat['avg'] + 0.5 )
-    elif opt == platoon:
-        # platoon differential
-        print "%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
-                stat['vR'][5] / stat['vR'][0] )
-    else:
-        # vs average
-        print "%+5.1f" % ( opt - stat['avg'] )
+    if stat['vL'][0] > 0 or stat['vR'][0] > 0:
+        if stat['vL'][0] == 0:
+            stat['vL'][0] += 1
+        if stat['vR'][0] == 0:
+            stat['vR'][0] += 1
+
+        stat['avg'] = p_avg( stat )
+        print "%s" % ( team ),
+        for d in 1, 2, 3, 4:
+            print " %5.1f" % ( stat['vL'][d] / stat['vL'][0] ),
+        print " %3d" % ( stat['vL'][5] / stat['vL'][0] + 0.5 ),
+        print ".",
+        for d in 1, 2, 3, 4:
+            print " %5.1f" % ( stat['vR'][d] / stat['vR'][0] ),
+        print " %3d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ),
+        print ".",
+        if opt == 0:
+            print "%5.1f" % ( 0.0 )
+        elif opt == overall:
+            print " %3d" % ( stat['avg'] + 0.5 )
+        elif opt == platoon:
+            # platoon differential
+            print "%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
+                    stat['vR'][5] / stat['vR'][0] )
+        else:
+            # vs average
+            print "%+5.1f" % ( opt - stat['avg'] )
 
 def b_total( team, mlb, name ):
     if (mlb, name) in b_cards:
@@ -136,13 +171,18 @@ do_bat = True
 do_pit = True
 do_tot = False
 do_opp = False
+do_weekly = False
 overall = 1
 platoon = 2
 avg = 3
 display = overall
+start = 1
+end = 27
+s_arg = ''
+e_arg = ''
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPopv')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPopvws:e:')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -158,6 +198,12 @@ for (opt, arg) in opts:
         display = platoon
     elif opt == '-v':
         display = avg
+    elif opt == '-s':
+        s_arg = arg
+    elif opt == '-e':
+        e_arg = arg
+    elif opt == '-w':
+        do_weekly = True
     elif opt == '-A':
         do_tot = True
         cursor.execute("select distinct(ibl_team) from teams \
@@ -167,8 +213,19 @@ for (opt, arg) in opts:
         print "bad option:", opt
         usage()
 
+if s_arg and s_arg.isdigit():
+    start = int(s_arg)
+
+if e_arg and e_arg.isdigit():
+    end = int(e_arg)
+
+if do_weekly and ( s_arg or e_arg ):
+    usage()
+
 b_cards = p_hash( cardpath() + '/' + batters )
 p_cards = p_hash( cardpath() + '/' + pitchers )
+
+sql_weeks = "where week >= %d and week <= %d and " % ( start, end )
 
 if do_bat:
     if do_pit:
@@ -176,50 +233,46 @@ if do_bat:
 
     sql_select = "select trim(mlb), trim(name), sum(vl), sum(vr) from %s "\
             % ( DB.usage )
-
-    tot['vL'] = []
-    tot['vR'] = []
-    for d in range(0,6):
-        tot['vL'].append( 0.0 )
-        tot['vR'].append( 0.0 )
+    zero( tot )
 
     for arg in args:
         team = arg.upper()
 
         ibl[team] = {}
-        ibl[team]['vL'] = []
-        ibl[team]['vR'] = []
-        for d in range(0,6):
-            ibl[team]['vL'].append( 0.0 )
-            ibl[team]['vR'].append( 0.0 )
+        zero( ibl[team] )
 
+        if do_weekly:
+            sql = sql_select + sql_weeks + \
+                " week = (%s) and ibl = (%s) and bf = 0 group by mlb, name;"
+            for week in range(1,28):
+                cursor.execute(sql, (week, team, ) )
+                for mlb, name, paL, paR in cursor.fetchall():
+                    b_total( team, mlb, name )
+                bdump( team, ibl[team], overall )
+                zero( ibl[team] )
+            print
+            continue
         if do_opp:
-            sql = sql_select + \
-                "where (home = (%s) or away = (%s)) and ibl != (%s) and bf = 0\
+            sql = sql_select + sql_weeks + \
+                " (home = (%s) or away = (%s)) and ibl != (%s) and bf = 0\
                 group by mlb, name;"
             cursor.execute(sql, (team, team, team, ) )
         else:
-            sql = sql_select + \
-                "where ibl = (%s) and bf = 0 group by mlb, name;"
+            sql = sql_select + sql_weeks + \
+                " ibl = (%s) and bf = 0 group by mlb, name;"
             cursor.execute(sql, (team, ) )
 
         for mlb, name, paL, paR in cursor.fetchall():
             b_total( team, mlb, name )
 
-        # woba weighted average
-        ibl[team]['avg'] = ( ibl[team]['vL'][5] + ibl[team]['vR'][5] ) /\
-                ( ibl[team]['vL'][0] + ibl[team]['vR'][0] )
-
         for d in range(0,6):
             tot['vL'][d] += ibl[team]['vL'][d]
             tot['vR'][d] += ibl[team]['vR'][d]
-        # woba weighted average
-        tot['avg'] = ( tot['vL'][5] + tot['vR'][5] ) /\
-                ( tot['vL'][0] + tot['vR'][0] )
     #end arg loop
 
     for t in sorted(ibl):
         if display == avg:
+            tot['avg'] = b_avg( tot )
             bdump( t, ibl[t], tot['avg'] )
         else:
             bdump( t, ibl[t], display )
@@ -231,61 +284,52 @@ if do_bat:
 
 if do_pit:
     if do_bat:
-        print
+        if not do_weekly:
+            print
         print "PITCHERS"
 
     sql_select = "select trim(mlb), trim(name), sum(bf) from %s "\
             % ( DB.usage )
-
-    tot['vL'] = []
-    tot['vR'] = []
-    for d in range(0,6):
-        tot['vL'].append( 0.0 )
-        tot['vR'].append( 0.0 )
+    zero( tot )
 
     for arg in args:
         team = arg.upper()
 
         ibl[team] = {}
-        ibl[team]['vL'] = []
-        ibl[team]['vR'] = []
-        for d in range(0,6):
-            ibl[team]['vL'].append( 0.0 )
-            ibl[team]['vR'].append( 0.0 )
+        zero( ibl[team] )
 
+        if do_weekly:
+            sql = sql_select + sql_weeks + \
+                " week = (%s) and ibl = (%s) and bf > 0 group by mlb, name;"
+            for week in range(1,28):
+                cursor.execute(sql, (week, team, ) )
+                for mlb, name, bf in cursor.fetchall():
+                    p_total( team, mlb, name )
+                pdump( team, ibl[team], overall )
+                zero( ibl[team] )
+            print
+            continue
         if do_opp:
-            sql = sql_select + \
-                "where (home = (%s) or away = (%s)) and ibl != (%s) and bf > 0\
+            sql = sql_select + sql_weeks + \
+                " (home = (%s) or away = (%s)) and ibl != (%s) and bf > 0\
                 group by mlb, name;"
             cursor.execute(sql, (team, team, team, ) )
         else:
-            sql = sql_select + \
-                "where ibl = (%s) and bf > 0 group by mlb, name;"
+            sql = sql_select + sql_weeks + \
+                " ibl = (%s) and bf > 0 group by mlb, name;"
             cursor.execute(sql, (team, ) )
 
         for mlb, name, bf in cursor.fetchall():
             p_total( team, mlb, name )
 
-        # woba modified harmonic mean
-        wL = ibl[team]['vL'][5] / ibl[team]['vL'][0]
-        wR = ibl[team]['vR'][5] / ibl[team]['vR'][0]
-        mean = ( wL + wR ) / 2.0
-        harm = 2.0 * wL * wR / ( wL + wR )
-        ibl[team]['avg'] = mean + abs(mean - harm)
-
         for d in range(0,6):
             tot['vL'][d] += ibl[team]['vL'][d]
             tot['vR'][d] += ibl[team]['vR'][d]
-        # woba modified harmonic mean
-        wL = tot['vL'][5] / tot['vL'][0]
-        wR = tot['vR'][5] / tot['vR'][0]
-        mean = ( wL + wR ) / 2.0
-        harm = 2.0 * wL * wR / ( wL + wR )
-        tot['avg'] = mean + abs(mean - harm)
     #end arg loop
 
     for t in sorted(ibl):
         if display == avg:
+            tot['avg'] = p_avg( tot )
             pdump( t, ibl[t], tot['avg'] )
         else:
             pdump( t, ibl[t], display )
