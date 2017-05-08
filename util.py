@@ -174,6 +174,9 @@ if do_bat:
     if do_pit:
         print "BATTERS"
 
+    sql_select = "select trim(mlb), trim(name), sum(vl), sum(vr) from %s "\
+            % ( DB.usage )
+
     tot['vL'] = []
     tot['vR'] = []
     for d in range(0,6):
@@ -191,14 +194,15 @@ if do_bat:
             ibl[team]['vR'].append( 0.0 )
 
         if do_opp:
-            sql = "select trim(mlb), trim(name), sum(vl), sum(vr) from %s\
-                where (home = '%s' or away = '%s') and ibl != '%s' and bf = 0\
-                group by mlb, name;" % ( DB.usage, team, team, team )
+            sql = sql_select + \
+                "where (home = (%s) or away = (%s)) and ibl != (%s) and bf = 0\
+                group by mlb, name;"
+            cursor.execute(sql, (team, team, team, ) )
         else:
-            sql = "select trim(mlb), trim(name), sum(vl), sum(vr)\
-                from %s where ibl = '%s' and bf = 0\
-                group by mlb, name;" % ( DB.usage, team )
-        cursor.execute(sql)
+            sql = sql_select + \
+                "where ibl = (%s) and bf = 0 group by mlb, name;"
+            cursor.execute(sql, (team, ) )
+
         for mlb, name, paL, paR in cursor.fetchall():
             b_total( team, mlb, name )
 
@@ -230,6 +234,9 @@ if do_pit:
         print
         print "PITCHERS"
 
+    sql_select = "select trim(mlb), trim(name), sum(bf) from %s "\
+            % ( DB.usage )
+
     tot['vL'] = []
     tot['vR'] = []
     for d in range(0,6):
@@ -247,14 +254,15 @@ if do_pit:
             ibl[team]['vR'].append( 0.0 )
 
         if do_opp:
-            sql = "select trim(mlb), trim(name), sum(bf) from %s\
-                where (home = '%s' or away = '%s') and ibl != '%s' and bf > 0\
-                group by mlb, name;" % ( DB.usage, team, team, team )
+            sql = sql_select + \
+                "where (home = (%s) or away = (%s)) and ibl != (%s) and bf > 0\
+                group by mlb, name;"
+            cursor.execute(sql, (team, team, team, ) )
         else:
-            sql = "select trim(mlb), trim(name), sum(bf)\
-                from %s where ibl = '%s' and bf > 0\
-                group by mlb, name;" % ( DB.usage, team )
-        cursor.execute(sql)
+            sql = sql_select + \
+                "where ibl = (%s) and bf > 0 group by mlb, name;"
+            cursor.execute(sql, (team, ) )
+
         for mlb, name, bf in cursor.fetchall():
             p_total( team, mlb, name )
 
