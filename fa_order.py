@@ -55,12 +55,14 @@ def main():
         # teams under caretaker control are exempt from late penalty
         if team in y['exempt']:
             return 0
-        # results must be current
-        if status[team][results] != week:
-            return 1
-        # boxes must be no more than 1 week behind
-        if week > 1 and status[team][boxes] < week - 1:
-            return 1
+        # only check for late results after week 1
+        if week > 1:
+            # results or boxes must be current
+            if status[team][results] < week and status[team][boxes] < week:
+                return 1
+            # boxes must be no more than 1 week behind
+            if status[team][boxes] < week - 1:
+                return 1
         #  return 0, team has nothing outstanding
         return 0
 
@@ -137,7 +139,7 @@ def main():
 
     sql = "select ibl, sum(status) as box\
             from %s s, %s t where week <= %i and home = code\
-            group by ibl;" %  ( DB.sched, DB.teams, int(week) - 1 )
+            group by ibl;" %  ( DB.sched, DB.teams, int(week) )
     cursor.execute(sql)
     for ibl, box in cursor.fetchall():
         status[ibl][boxes] = box
