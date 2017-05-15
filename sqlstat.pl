@@ -286,7 +286,7 @@ while (<DATA>) {
 	    $home =~ tr/a-z/A-Z/;
 	    if ( iblck($home) ) {
 		print ">> ", $_;
-		print "line $lines invalid IBL team designation: $home\n";
+		print "line $lines invalid IBL team: $home\n";
 		$fatalerr++;
 		$home = '';
 	    }
@@ -305,7 +305,7 @@ while (<DATA>) {
 	    $away =~ tr/a-z/A-Z/;
 	    if ( iblck($away) ) {
 		print ">> ", $_;
-		print "line $lines invalid IBL team designation: $away\n";
+		print "line $lines invalid IBL team: $away\n";
 		$fatalerr++;
 		$away = '';
 	    }
@@ -317,69 +317,82 @@ while (<DATA>) {
 	}
     }
     elsif ( $keyword eq 'SCORES' ) {
-	printf "\nSCORES\n";
+	print "\nSCORES\n";
 	$line1 = <DATA>;
 	chomp $line1; 
 	$lines++;
 	@scores1 = split(/\s+/, $line1);
-	if ( iblck( $scores1[0] ) == 0 ) {
+	if ( $#scores1 == -1 ) {
+	    print "line $lines bad formatting, blank line immediately after SCORES\n";
+	    $fatalerr++;
+	}
+	else {
 	    $line2 = <DATA>;
 	    chomp $line2;
 	    $lines++;
 	    @scores2 = split(/\s+/, $line2);
-	}
-	if ( iblck( $scores2[0] ) == 0 ) {
-	    $scores = -1;
-	    $sched = schedck( $week, $home, $away, 'scores' );
-	    if ( $sched == -1 ) {
-		print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
+	    if ( iblck( $scores1[0] ) ) {
+		print "line $lines invalid IBL team: $scores1[0]\n";
 		$fatalerr++;
 	    }
-	    elsif ( $sched == 2 ) {
-		print "$away @ $home not valid matchup for week $week\n";
+	    elsif ( iblck( $scores2[0] ) ) {
+		print "line $lines invalid IBL team: $scores2[0]\n";
 		$fatalerr++;
-	    } 
-	    elsif ( $sched == 1 && !$redo ) {
-		print "week $week, $away @ $home scores already submitted (use REDO)\n";
-		$scores = -1;
 	    }
-	    # valid matchup
 	    else {
-	    	$scores1[0] =~ tr/a-z/A-Z/;
-	    	$scores2[0] =~ tr/a-z/A-Z/;
-	    	if ( $home eq $scores2[0] && $away eq $scores1[0] ) {
-		    if ( $#scores1 == $#scores2 ) {
-			if ( $line1 =~ /^[A-Z]{3}[\s,0-9]+$/ && 
-				$line2 =~ /^[A-Z]{3}[\s,0-9]+$/ ) {
-			    shift @scores1;
-			    shift @scores2;
-			    $scores = 1;
-			    if ( $sched == 1 && $redo ) {
-				undoscores();
+		$sched = schedck( $week, $home, $away, 'scores' );
+		if ( $sched == -1 ) {
+		    print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
+		    $fatalerr++;
+		}
+		elsif ( $sched == 2 ) {
+		    print "$away @ $home not valid matchup for week $week\n";
+		    $fatalerr++;
+		}
+		elsif ( $sched == 1 && !$redo ) {
+		    print "week $week, $away @ $home scores already submitted (use REDO)\n";
+		}
+		# valid matchup
+		else {
+		    $scores1[0] =~ tr/a-z/A-Z/;
+		    $scores2[0] =~ tr/a-z/A-Z/;
+		    if ( $home eq $scores2[0] && $away eq $scores1[0] ) {
+			if ( $#scores1 == $#scores2 ) {
+			    if ( $line1 =~ /^[A-Z]{3}[\s,0-9]+$/ &&
+				    $line2 =~ /^[A-Z]{3}[\s,0-9]+$/ ) {
+				shift @scores1;
+				shift @scores2;
+				$scores = 1;
+				if ( $sched == 1 && $redo ) {
+				    undoscores();
+				}
+				print "$line1\n";
+				print "$line2\n";
+			    } else {
+				print ">> $line1\n";
+				print ">> $line2\n";
+				print "expecting scores, got non-numeric values\n";
+				$fatalerr++;
 			    }
-			    print "$line1\n";
-			    print "$line2\n";
 			} else {
-			    print "expecting scores, got non-numeric character(s)\n";
+			    print ">> $line1\n";
+			    print ">> $line2\n";
+			    print "mis-matched number of scores\n";
+			    $fatalerr++;
 			}
 		    } else {
-			print "mis-matched number of scores\n";
+			print ">> $line1\n";
+			print ">> $line2\n";
+			print "mis-matched SCORES and HOME/AWAY teams\n";
+			$fatalerr++;
 		    }
-		} else {
-		    print "mis-matched SCORES and HOME/AWAY teams (home team must be last)\n";
 		}
 	    }
-	    print "\n";
-	}
-	if ( $#scores1 == -1 ) {
-	    print "line $lines bad formatting, blank line immediately after SCORES\n";
-	    $scores = -1;
-	    $fatalerr++;
 	}
     }
     # END SCORES
     elsif ( $keyword eq 'INJURIES' ) {
-	print "INJURIES\n";
+	print "\nINJURIES\n";
 	$sched = schedck( $week, $home, $away, 'inj' );
 	if ( $sched == -1 ) {
 	    print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
@@ -491,7 +504,7 @@ while (<DATA>) {
 
 		if ( iblck($ibl) ) {
 		    print ">> ", $_;
-		    print "line $lines invalid IBL team designation: $ibl\n";
+		    print "line $lines invalid IBL team: $ibl\n";
 		    $fatalerr++;
 		}
 		if ( $updates && !$fatalerr ) {
@@ -515,7 +528,7 @@ while (<DATA>) {
     }
     # END INJURIES
     elsif ( $keyword eq 'STARTS' ) {
-	print "STARTS\n";
+	print "\nSTARTS\n";
 	if ( $updates && !($week && $home && $away) ) {
 	    print "line $lines missing or invalid WEEK/HOME/AWAY info, cannot update\n";
 	    $fatalerr++;
@@ -642,7 +655,7 @@ while (<DATA>) {
 
 	    if ( iblck($ibl) ) {
 		print ">> ", $_;
-		print "line $lines invalid IBL team designation: $ibl\n";
+		print "line $lines invalid IBL team: $ibl\n";
 		$fatalerr++;
 	    }
 	    if ( $updates && !$fatalerr ) {
@@ -655,7 +668,7 @@ while (<DATA>) {
     }
     # END STARTS
     elsif ( $keyword eq 'BATTERS' && !$team ) {
-	print "line $lines BATTERS missing IBL team designation\n";
+	print "line $lines BATTERS missing IBL team\n";
 	$fatalerr++;
 	$batters++;
     }
@@ -674,7 +687,7 @@ while (<DATA>) {
 	}
 	if ( iblck($team) ) {
 	    print ">> ", $_;
-	    print "line $lines invalid IBL team designation: $team\n";
+	    print "line $lines invalid IBL team: $team\n";
 	    $fatalerr++;
 	}
 	@prev = split;
@@ -944,7 +957,7 @@ while (<DATA>) {
     }
     # END BATTERS
     elsif ( $keyword eq 'PITCHERS' && !$team ) {
-	print "line $lines PITCHERS missing IBL team designation\n";
+	print "line $lines PITCHERS missing IBL team\n";
 	$fatalerr++;
 	$pitchers++;
     }
@@ -957,7 +970,7 @@ while (<DATA>) {
 	}
 	if ( iblck($team) ) {
 	    print ">> ", $_;
-	    print "line $lines invalid IBL team designation: $team\n";
+	    print "line $lines invalid IBL team: $team\n";
 	    $fatalerr++;
 	}
 	while (<DATA>) {
@@ -1161,7 +1174,7 @@ if ( $updates ) {
 
     if ( $fatalerr ) {
 	$dbh->rollback;
-	print "stats database not updated, boxscore needs correction ($fatalerr errors)\n";
+	print "databases not updated, GRS needs correction ($fatalerr errors)\n";
 	$dbh->disconnect;
 	exit 2;
     }
@@ -1209,11 +1222,6 @@ if ( $updates ) {
 	    $dbh->commit;
 	    $dbh->disconnect;
 	    exit 0;
-	} elsif ( $scores == -1 ) {
-	    $dbh->rollback;
-	    print "scores database not updated, boxscore needs correction\n";
-	    $dbh->disconnect;
-	    exit 2;
 	}
     }
 }
