@@ -1225,16 +1225,17 @@ if ( $updates ) {
 	}
     }
 }
-
-$dbh->disconnect;
-
-if ( $fatalerr ) {
-    exit 2;
-}
-elsif ( $softerr ) {
-    exit 1;
-}
 else {
-    exit 0;
+    # no update
+    $dbh->rollback;
+    $dbh->disconnect;
+    if ( $fatalerr ) {
+	exit 2;
+    }
+    elsif ( $softerr ) {
+	exit 1;
+    }
+    else {
+	exit 0;
+    }
 }
-
