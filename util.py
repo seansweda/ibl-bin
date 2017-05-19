@@ -127,8 +127,8 @@ def pdump( team, stat, opt ):
             print " %3d" % ( stat['avg'] + 0.5 )
         elif opt == platoon:
             # platoon differential
-            print "%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
-                    stat['vR'][5] / stat['vR'][0] )
+            print "%+5.1f" % ( stat['vR'][5] / stat['vR'][0] -
+                    stat['vL'][5] / stat['vL'][0] )
         else:
             # vs average
             print "%+5.1f" % ( opt - stat['avg'] )
