@@ -721,13 +721,13 @@ while (<DATA>) {
 	    else {
 		( $slot, $pos, $ibl, $mlb, $name, $ab, $r, $h, $bi, $d, $t, $hr, $sb, $cs, $bb, $k, $pl, $pr ) = @line;
 		if ( $updates && $team ne $ibl ) {
-		    print ">> ", $_;
 		    print "line $lines team mismatch: $team != $ibl\n";
 		    $fatalerr++;
 		}
 		if ( $updates && $ibl ne $home && $ibl ne $away ) {
-		    print ">> ", $_;
-		    print "line $lines team mismatch: $team != ($home/$away)\n";
+		    if ( $home && $away ) {
+			print "line $lines team mismatch: $team != ($home/$away)\n";
+		    }
 		    $fatalerr++;
 		}
 		@starts = find( $mlb, $name, $lines);
@@ -988,13 +988,13 @@ while (<DATA>) {
 	    else {
 		( $dec, $ibl, $mlb, $name, $ip, $h, $r, $er, $bb, $k, $hr, $bf ) = @line;
 		if ( $updates && $team ne $ibl ) {
-		    print ">> ", $_;
 		    print "line $lines team mismatch: $team != $ibl\n";
 		    $fatalerr++;
 		}
 		if ( $updates && $ibl ne $home && $ibl ne $away ) {
-		    print ">> ", $_;
-		    print "line $lines team mismatch: $team != ($home/$away)\n";
+		    if ( $home && $away ) {
+			print "line $lines team mismatch: $team != ($home/$away)\n";
+		    }
 		    $fatalerr++;
 		}
 		@starts = find( $mlb, $name, $lines);
