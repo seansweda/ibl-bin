@@ -49,6 +49,8 @@ WILD3B = y['WILD3B']
 WILDBB = y['WILDBB']
 WILDHB = y['WILDHB']
 
+avg_pwr = "Av"
+
 def usage():
     print "usage: %s { -b | -p } ( -g | -h ) player(s)" % sys.argv[0]
     sys.exit(1)
@@ -123,12 +125,17 @@ def power( rating ):
         return 0.5
     elif rating == "Vg":
         return 0.4
-    elif rating == "Av":
-        return 0.3
     elif rating == "Fr":
         return 0.2
-    else:
+    elif rating == "Pr":
         return 0.1
+    else:
+        try:
+            float(rating)
+        except ValueError:
+            return 0.3
+
+        return float(rating)
 
 def bat_wOBA():
     card = y['batcard']
@@ -164,6 +171,7 @@ def pit_wOBA( pwr ):
     return woba
 
 def wOBA(p, kind, side):
+    global avg_pwr
     # pitcher
     if kind == 1:
         if side == 0:
@@ -174,7 +182,7 @@ def wOBA(p, kind, side):
         woba = 0
         woba += int(p[index]) * w1B
         woba += int(p[index + 1]) * w2B
-        woba += int(p[index + 2]) * power('Av') * wHR
+        woba += int(p[index + 2]) * power(avg_pwr) * wHR
         woba += int(p[index + 3]) * wBB
         woba += int(p[index + 4]) * wBB
         woba += int(p[index + 5]) * IFR1B * w1B
@@ -247,7 +255,7 @@ def avgcard():
     sys.exit(0)
 
 def main():
-    global batters, pitchers, grepcmd
+    global batters, pitchers, grepcmd, avg_pwr
     bat = 0
     pit = 0
     grepmode = 1    # default
@@ -255,7 +263,7 @@ def main():
     datadir = cardpath()
 
     try:
-        (opts, args) = getopt.getopt(sys.argv[1:], 'Apbghwd:')
+        (opts, args) = getopt.getopt(sys.argv[1:], 'Apbghwd:P:')
     except getopt.GetoptError, err:
         print str(err)
         usage()
@@ -278,6 +286,8 @@ def main():
             grepcmd.append('-w')
         elif opt == '-A':
             avgcard()
+        elif opt == '-P':
+            avg_pwr = arg
         else:
             print "bad option:", opt
             usage()
