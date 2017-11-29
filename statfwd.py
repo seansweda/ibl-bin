@@ -60,17 +60,23 @@ if week and home and away:
             where week = %i and home = '%s';"\
             % ( DB.sched, int(week) + 1, code[home] )
     cursor.execute(sql)
-    ( s, c ) = cursor.fetchone()
-    if not s:
-        h_next = team[c]
+    try:
+        ( s, c ) = cursor.fetchone()
+        if not s:
+            h_next = team[c]
+    except:
+        pass
 
     sql = "select scores, home from %s \
             where week = %i and away = '%s';"\
             % ( DB.sched, int(week) + 1, code[away] )
     cursor.execute(sql)
-    ( s, c ) = cursor.fetchone()
-    if not s:
-        a_next = team[c]
+    try:
+        ( s, c ) = cursor.fetchone()
+        if not s:
+            a_next = team[c]
+    except:
+        pass
 
     if debug:
         print "WEEK %s" % week
