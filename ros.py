@@ -14,6 +14,7 @@
 # -B: batters only
 # -P: batters only
 # -A: all teams
+# -O: old rosters
 # -L: page breaks 
 
 import os
@@ -135,19 +136,13 @@ eol = ''
 do_val = 0
 do_tot = 1
 do_wOBA = 2
-
-# teams table
-# status: 1 = active, 2 = inactive, 3 = uncarded
-# item_type: 0 = pick, 1 = pitcher, 2 = batter
-sqlbase = "select t.tig_name, comments, status, item_type, bats, throws\
-        from teams t left outer join players p on (t.tig_name = p.tig_name)\
-        where ibl_team = (%s) order by item_type, tig_name;"
+rosters = 'teams'
 
 db = DB.connect()
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPfpaincdrtwL')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABOPfpaincdrtwL')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -157,6 +152,8 @@ for (opt, arg) in opts:
         do_pit = False
     elif opt == '-P':
         do_bat = False
+    elif opt == '-O':
+        rosters = 'teams_old'
     elif opt == '-a':
         do_inactive = False
     elif opt == '-i':
@@ -185,11 +182,6 @@ for (opt, arg) in opts:
         count = True
     elif opt == '-f':
         do_find = True
-        sqlbase = "select t.tig_name, rpad(ibl_team, 3, ' ') || ' - ' ||\
-                case when comments is not null then comments else '' end,\
-                status, item_type, bats, throws from teams t\
-                left outer join players p on (t.tig_name = p.tig_name)\
-                where t.tig_name ~* (%s) order by item_type, tig_name;"
     else:
         print "bad option:", opt
         usage()
@@ -200,6 +192,22 @@ if not do_bat and not do_pit and not do_picks:
 if not do_active and not do_inactive:
     print "may only choose one of -a | -i"
     usage()
+
+# teams table
+# status: 1 = active, 2 = inactive, 3 = uncarded
+# item_type: 0 = pick, 1 = pitcher, 2 = batter
+if do_find:
+    sqlbase = "select t.tig_name, rpad(ibl_team, 3, ' ') || ' - ' ||\
+            case when comments is not null then comments else '' end,\
+            status, item_type, bats, throws from %s t\
+            left outer join players p on (t.tig_name = p.tig_name) "\
+            % rosters;
+    sqlbase += "where t.tig_name ~* (%s) order by item_type, tig_name;"
+else:
+    sqlbase = "select t.tig_name, comments, status, item_type, bats, throws\
+            from %s t left outer join players p on (t.tig_name = p.tig_name) "\
+            % rosters;
+    sqlbase += "where ibl_team = (%s) order by item_type, tig_name;"
 
 if do_card or do_def:
     b_cards = p_hash( cardpath() + '/' + batters )
