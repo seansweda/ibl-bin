@@ -2,6 +2,7 @@
 # flags
 # -y: year
 # -r: round
+# -L: last round
 # -t: team
 # -s: skip unusable picks
 # -S: skip & remove unusable picks
@@ -23,7 +24,7 @@ db = DB.connect()
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'sSt:r:y:')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'L:sSt:r:y:')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -47,6 +48,7 @@ skip = 0
 remove = 0
 all_teams = 1
 all_rounds = 1
+last_round = 10
 
 for (opt, arg) in opts:
     if opt == '-y':
@@ -59,6 +61,8 @@ for (opt, arg) in opts:
     elif opt == '-t':
         all_teams = 0
         do_team = arg.upper()
+    elif opt == '-L':
+        last_round = int(arg)
     elif opt == '-r':
         all_rounds = 0
         do_round = int(arg)
@@ -83,7 +87,7 @@ cursor.execute( "select ibl_team, trim(tig_name) from teams where item_type = 0 
 for ibl, pk in cursor.fetchall():
     picks[ pk.split()[0] ] = ibl
 
-for rnd in xrange(1,16):
+for rnd in xrange( 1, last_round + 1 ):
     pick = 1
     for slot in xrange(1,25):
         original = order1[ slot - 1 ] if rnd % 2 == 1 else order2[ slot - 1 ]
@@ -109,4 +113,9 @@ for rnd in xrange(1,16):
 
     if ( all_teams and all_rounds):
         print
+
+if skip:
+    for team in sorted(roster):
+        if roster[team] < 35:
+            print "\t%s: %i" % (team, 35 - roster[team])
 
