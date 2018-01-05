@@ -137,6 +137,7 @@ do_val = 0
 do_tot = 1
 do_wOBA = 2
 rosters = 'teams'
+players = 'players'
 
 db = DB.connect()
 cursor = db.cursor()
@@ -154,6 +155,7 @@ for (opt, arg) in opts:
         do_bat = False
     elif opt == '-O':
         rosters = 'teams_old'
+        players = 'players_old'
     elif opt == '-a':
         do_inactive = False
     elif opt == '-i':
@@ -200,13 +202,13 @@ if do_find:
     sqlbase = "select t.tig_name, rpad(ibl_team, 3, ' ') || ' - ' ||\
             case when comments is not null then comments else '' end,\
             status, item_type, bats, throws from %s t\
-            left outer join players p on (t.tig_name = p.tig_name) "\
-            % rosters;
+            left outer join %s p on (t.tig_name = p.tig_name) "\
+            % ( rosters, players );
     sqlbase += "where t.tig_name ~* (%s) order by item_type, tig_name;"
 else:
     sqlbase = "select t.tig_name, comments, status, item_type, bats, throws\
-            from %s t left outer join players p on (t.tig_name = p.tig_name) "\
-            % rosters;
+            from %s t left outer join %s p on (t.tig_name = p.tig_name) "\
+            % ( rosters, players );
     sqlbase += "where ibl_team = (%s) order by item_type, tig_name;"
 
 if do_card or do_def:
