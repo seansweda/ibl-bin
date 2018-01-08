@@ -136,7 +136,7 @@ eol = ''
 do_val = 0
 do_tot = 1
 do_wOBA = 2
-rosters = 'teams'
+rosters = 'rosters'
 players = 'players'
 
 db = DB.connect()
@@ -165,7 +165,7 @@ for (opt, arg) in opts:
         do_pit = False
         do_bat = False
     elif opt == '-A':
-        cursor.execute("select distinct(ibl_team) from teams \
+        cursor.execute("select distinct(ibl_team) from rosters \
                 where ibl_team != 'FA';")
         args += [ row[0] for row in sorted(cursor.fetchall()) ]
     elif opt == '-c':

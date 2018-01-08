@@ -67,7 +67,7 @@ for (opt, arg) in opts:
         all_rounds = 0
         do_round = int(arg)
 
-sqlbase = "select ibl_team from teams where item_type=0 and tig_name = (%s);"
+sqlbase = "select ibl_team from rosters where item_type=0 and tig_name = (%s);"
 
 order1 = y['tier0'] + y['tier1'] + y['tier2'] + y['tier3']
 y['tier0'].reverse()
@@ -79,11 +79,11 @@ order2 = y['tier0'] + y['tier1'] + y['tier2'] + y['tier3']
 roster = {}
 picks = {}
 
-cursor.execute( "select ibl_team, count(*) from teams where item_type > 0 group by ibl_team;" )
+cursor.execute( "select ibl_team, count(*) from rosters where item_type > 0 group by ibl_team;" )
 for ibl, count in cursor.fetchall():
     roster[ibl] = count
 
-cursor.execute( "select ibl_team, trim(tig_name) from teams where item_type = 0 and trim(tig_name) ~ '.(%s).$'" % year[-2:] )
+cursor.execute( "select ibl_team, trim(tig_name) from rosters where item_type = 0 and trim(tig_name) ~ '.(%s).$'" % year[-2:] )
 for ibl, pk in cursor.fetchall():
     picks[ pk.split()[0] ] = ibl
 

@@ -397,7 +397,7 @@ def main():
         else:
             print "PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
 
-        sql = "select ibl_team, tig_name from teams where item_type = %s" % pitcher
+        sql = "select ibl_team, tig_name from rosters where item_type = %s" % pitcher
         sql += sql_team
         sql += " order by tig_name;"
         cursor.execute(sql)
@@ -427,7 +427,7 @@ def main():
         else:
             print "BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
 
-        sql = "select ibl_team, tig_name from teams where item_type = %s" % batter
+        sql = "select ibl_team, tig_name from rosters where item_type = %s" % batter
         sql += sql_team
         sql += " order by tig_name;"
         cursor.execute(sql)

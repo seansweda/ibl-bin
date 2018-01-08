@@ -91,7 +91,7 @@ def main( starts = {}, module = False, report_week = 27 ):
                 for spc in range(0, do_active):
                     sys.stdout.write(' ')
                 print "MLB Name            GP  SP   C  1B  2B  3B  SS  LF  CF  RF INJ"
-            sql = "select tig_name, status from teams where ibl_team = '%s' \
+            sql = "select tig_name, status from rosters where ibl_team = '%s' \
                     and item_type > 0 order by item_type, tig_name;" \
                     % team.upper()
             cursor.execute(sql)

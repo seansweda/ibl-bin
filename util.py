@@ -206,7 +206,7 @@ for (opt, arg) in opts:
         do_weekly = True
     elif opt == '-A':
         do_tot = True
-        cursor.execute("select distinct(ibl_team) from teams \
+        cursor.execute("select distinct(ibl_team) from rosters \
                 where ibl_team != 'FA';")
         args += [ row[0] for row in sorted(cursor.fetchall()) ]
     else:

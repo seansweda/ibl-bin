@@ -83,10 +83,10 @@ def main():
                 return False
         return True
 
-    sql_count = "select status, count(*) from teams \
+    sql_count = "select status, count(*) from rosters \
             where ibl_team = (%s) and item_type != 0 \
             group by status;"
-    sql_ros = "select trim(tig_name) from teams \
+    sql_ros = "select trim(tig_name) from rosters \
             where ibl_team = (%s) and item_type != 0 and status = 1;"
 
     if not do_json:
@@ -94,7 +94,7 @@ def main():
             print "<pre>"
         print "WEEK %-2s                            #  1  2  3  4  5  6  7  8  9" % week
 
-    cursor.execute("select distinct(ibl_team) from teams \
+    cursor.execute("select distinct(ibl_team) from rosters \
                             where ibl_team != 'FA' order by ibl_team;")
     for (ibl, ) in cursor.fetchall():
         ros = {}
