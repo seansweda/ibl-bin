@@ -196,18 +196,19 @@ if not do_active and not do_inactive:
     usage()
 
 # teams table
-# status: 1 = active, 2 = inactive, 3 = uncarded
+# status: 1 = active, 2 = inactive
 # item_type: 0 = pick, 1 = pitcher, 2 = batter
 if do_find:
     sqlbase = "select t.tig_name, rpad(ibl_team, 3, ' ') || ' - ' ||\
             case when comments is not null then comments else '' end,\
-            status, item_type, bats, throws from %s t\
+            status, item_type, uncarded, bats, throws from %s t\
             left outer join %s p on (t.tig_name = p.tig_name) "\
             % ( rosters, players );
     sqlbase += "where t.tig_name ~* (%s) order by item_type, tig_name;"
 else:
-    sqlbase = "select t.tig_name, comments, status, item_type, bats, throws\
-            from %s t left outer join %s p on (t.tig_name = p.tig_name) "\
+    sqlbase = "select t.tig_name, comments, status, item_type, uncarded,\
+            bats, throws from %s t\
+            left outer join %s p on (t.tig_name = p.tig_name) "\
             % ( rosters, players );
     sqlbase += "where ibl_team = (%s) order by item_type, tig_name;"
 
@@ -223,6 +224,11 @@ maxR, maxC = subprocess.check_output(['stty', 'size']).split()
 maxR = int(maxR)
 maxC = int(maxC)
 
+# current UC designation
+sql = "select max(uncarded) from %s;" % rosters
+cursor.execute(sql)
+( UCyy, ) = cursor.fetchone()
+
 last = -1
 for arg in args:
     if last > 0:
@@ -237,7 +243,7 @@ for arg in args:
 
     team = arg.upper()
     cursor.execute(sqlbase, (team,))
-    for tigname, how, status, kind, bats, throws in cursor.fetchall():
+    for tigname, how, status, kind, uc, bats, throws in cursor.fetchall():
         mlb, name = p_split( trim(tigname) )
         cols = 0
         if kind > last:
@@ -258,11 +264,11 @@ for arg in args:
             print "%-15s %-40s" % ( trim(tigname), trim(how) )
         if kind == 1 and do_pit:
             p_num += 1
+            if uc == UCyy:
+                uncarded += 1
             if status == 1:
                 active += 1
                 p_act += 1
-            elif status == 3:
-                uncarded += 1
             if status == 1 and do_active or status > 1 and do_inactive:
                 print "%s %-3s %-15s" % ( star(status, throws), mlb, name ),
                 cols += 23
@@ -289,18 +295,20 @@ for arg in args:
                     if cols + 25 < maxC and (mlb, name) in p_def:
                         print " %-24s" % ( pitrat(p_def[(mlb,name)]) ),
                 elif not (do_card or do_def):
-                    print " %-40s" % ( trim(how) ),
+                    print " %-20s" % ( trim(how) ),
+                    if uc > 0:
+                        print " [UC%s]" % uc,
                 elif (cols + 24 < maxC or do_def) and (mlb, name) in p_def:
                     print "%-24s" % ( pitrat(p_def[(mlb,name)]) ),
                     print ". ",pitfat(p_fat[(mlb,name)]),
                 print
         if kind == 2 and do_bat:
             b_num += 1
+            if uc == UCyy:
+                uncarded += 1
             if status == 1:
                 active += 1
                 b_act += 1
-            elif status == 3:
-                uncarded += 1
             if status == 1 and do_active or status > 1 and do_inactive:
                 print "%s %-3s %-15s" % ( star(status, bats), mlb, name ),
                 cols += 23
@@ -331,7 +339,9 @@ for arg in args:
                             cols += 2
                         print poslist( b_def[(mlb,name)][2:], maxC - cols ),
                 elif not (do_card or do_def):
-                    print " %-40s" % ( trim(how) ),
+                    print " %-20s" % ( trim(how) ),
+                    if uc > 0:
+                        print " [UC%s]" % uc,
                 elif do_def and (mlb, name) in b_def:
                     if do_br:
                         print brun( b_run[(mlb,name)] ), ".",
