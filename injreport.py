@@ -209,7 +209,7 @@ def main( player = {}, module = False, report_week = 0 ):
 
     sql = "select week, home, away, day, type, ibl, ibl_team, \
              i.tig_name, length, dtd, description from %s i \
-             left outer join teams t on i.tig_name = t.tig_name\
+             left outer join rosters t on i.tig_name = t.tig_name\
              order by ibl_team, i.tig_name, week;" % DB.inj
     cursor.execute(sql)
     for injury in cursor.fetchall():
