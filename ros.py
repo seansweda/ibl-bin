@@ -154,7 +154,7 @@ for (opt, arg) in opts:
     elif opt == '-P':
         do_bat = False
     elif opt == '-O':
-        rosters = 'teams_old'
+        rosters = 'rosters_old'
         players = 'players_old'
     elif opt == '-a':
         do_inactive = False
