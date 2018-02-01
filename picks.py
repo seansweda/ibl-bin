@@ -49,6 +49,7 @@ remove = 0
 all_teams = 1
 all_rounds = 1
 last_round = 10
+do_round = 1
 
 for (opt, arg) in opts:
     if opt == '-y':
@@ -66,6 +67,9 @@ for (opt, arg) in opts:
     elif opt == '-r':
         all_rounds = 0
         do_round = int(arg)
+
+if not all_rounds:
+    last_round = do_round
 
 sqlbase = "select ibl_team from rosters where item_type=0 and tig_name = (%s);"
 
@@ -87,7 +91,7 @@ cursor.execute( "select ibl_team, trim(tig_name) from rosters where item_type = 
 for ibl, pk in cursor.fetchall():
     picks[ pk.split()[0] ] = ibl
 
-for rnd in xrange( 1, last_round + 1 ):
+for rnd in xrange( do_round, last_round + 1 ):
     pick = 1
     for slot in xrange(1,25):
         original = order1[ slot - 1 ] if rnd % 2 == 1 else order2[ slot - 1 ]
