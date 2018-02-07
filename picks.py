@@ -91,7 +91,7 @@ cursor.execute( "select ibl_team, trim(tig_name) from rosters where item_type = 
 for ibl, pk in cursor.fetchall():
     picks[ pk.split()[0] ] = ibl
 
-for rnd in xrange( do_round, last_round + 1 ):
+for rnd in xrange( 1, last_round + 1 ):
     pick = 1
     for slot in xrange(1,25):
         original = order1[ slot - 1 ] if rnd % 2 == 1 else order2[ slot - 1 ]
