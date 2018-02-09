@@ -49,7 +49,7 @@ remove = 0
 all_teams = 1
 all_rounds = 1
 last_round = 10
-do_round = 1
+do_round = 0
 
 for (opt, arg) in opts:
     if opt == '-y':
@@ -118,7 +118,7 @@ for rnd in xrange( 1, last_round + 1 ):
     if ( all_teams and all_rounds):
         print
 
-if skip:
+if skip and not do_round:
     for team in sorted(roster):
         if roster[team] < 35:
             print "\t%s: %i" % (team, 35 - roster[team])
