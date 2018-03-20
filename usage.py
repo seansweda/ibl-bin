@@ -2,7 +2,7 @@
 # -t <team>: usage for specific team
 # -g: per game output
 # -r: rates output
-# -a: calculate 133 per Almanac (1.33)
+# -a: calculate usage per old rules (Almanac)
 # -B: batters only
 # -P: pitchers only
 # -A: rostered players only
@@ -26,8 +26,6 @@ IBL_G = {}
 
 pitcher = 1
 batter = 2
-
-u133 = 4.0 / 3.0
 
 def usage():
     print "usage: %s [-t team]" % sys.argv[0]
@@ -297,6 +295,7 @@ def main():
     do_o = False
     do_bat = True
     do_pit = True
+    almanac = 0
 
     if is_cgi:
         if form.has_key('team'):
@@ -318,25 +317,36 @@ def main():
             elif opt == '-o':
                 do_o = True
             elif opt == '-a':
-                global u133
-                u133 = 1.33
+                almanac = 1
 
     if len( do_team ) > 0 and len( sql_team ) == 0:
         sql_team = " and ibl_team = '%s'" % do_team
 
-    mlb_file = cardpath() + '/' + 'usage.txt'
-    if not os.path.isfile(mlb_file):
-        print mlb_file + " not found"
-        sys.exit(1)
+    global u133
+    if almanac:
+        u133 = 1.33
+        mlb_file = cardpath() + '/' + 'usage.txt'
+        if not os.path.isfile(mlb_file):
+            print mlb_file + " not found"
+            sys.exit(1)
+        with open( mlb_file, 'rU' ) as s:
+            for line in csv.reader(s):
+                MLB[line[0].rstrip()] = float(line[1])
+    else:
+        u133 = 4.0 / 3.0
+        for filename in 'usage_bf.txt', 'usage_pa.txt':
+            mlb_file = cardpath() + '/' + filename
+            if not os.path.isfile(mlb_file):
+                print mlb_file + " not found"
+                sys.exit(1)
+            with open( mlb_file, 'rU' ) as s:
+                for line in csv.reader(s):
+                    MLB[line[0].rstrip()] = float(line[1])
     
     bfp_file = cardpath() + '/' + 'bfp.txt'
     if not os.path.isfile(bfp_file):
         print bfp_file + " not found"
         sys.exit(1)
-
-    with open( mlb_file, 'rU' ) as s:
-        for line in csv.reader(s):
-            MLB[line[0].rstrip()] = float(line[1])
 
     with open( bfp_file, 'rU' ) as s:
         for line in csv.reader(s):
@@ -361,15 +371,23 @@ def main():
 
     injreport.main( INJ, module=True )
 
-    sql = "select mlb, name, sum(ab + bb)\
-            from %s group by mlb, name order by mlb, name;" % DB.bat
+    if almanac:
+        sql = "select mlb, name, sum(ab + bb)\
+                from %s group by mlb, name order by mlb, name;" % DB.bat
+    else:
+        sql = "select mlb, name, sum(vl + vr)\
+                from %s group by mlb, name order by mlb, name;" % DB.usage
     cursor.execute(sql)
     for mlb, name, u in cursor.fetchall():
         tig_name = mlb.rstrip() + " " + name.rstrip()
         IBL_B[tig_name] = float(u)
 
-    sql = "select mlb, name, sum(ip + h + bb)\
+    if almanac:
+        sql = "select mlb, name, sum(ip + h + bb)\
             from %s group by mlb, name order by mlb, name;" % DB.pit
+    else:
+        sql = "select mlb, name, sum(bf)\
+            from %s group by mlb, name order by mlb, name;" % DB.usage
     cursor.execute(sql)
     for mlb, name, u in cursor.fetchall():
         tig_name = mlb.rstrip() + " " + name.rstrip()
