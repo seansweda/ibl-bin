@@ -262,7 +262,9 @@ def std_usage( name, role, g ):
 
     output = "%-18s %4.0f %4.0f %4i %4i %7.1f %7.1f %7.1f %6.1f%% %6.1f%%" %\
             ( injreport.space(name), mlb_U, ibl_U, inj, credit, \
-            U_75 - ibl_U - credit, U_133 - ibl_U, U_150 - ibl_U, rate, injrate )
+            round( U_75 - ibl_U - credit, 1 ), \
+            int( (U_133 - ibl_U) * 10 ) / 10.0, \
+            int( (U_150 - ibl_U) * 10 ) / 10.0, rate, injrate )
     return output
 
 def main():
