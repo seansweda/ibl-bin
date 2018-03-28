@@ -302,6 +302,10 @@ def main():
     if is_cgi:
         if form.has_key('team'):
             do_team = form.getfirst('team').upper()
+        if form.has_key('batters'):
+            do_pit = False
+        if form.has_key('pitchers'):
+            do_bat = False
     else:
         for (opt, arg) in opts:
             if opt == '-t':
