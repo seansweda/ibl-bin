@@ -55,12 +55,11 @@ def main():
         # teams under caretaker control are exempt from late penalty
         if team in y['exempt']:
             return 0
-        # only check for late results after week 1
+        # results or boxes must be current
+        if status[team][results] < week and status[team][boxes] < week:
+            return 1
+        # boxes must be no more than 1 week behind
         if week > 1:
-            # results or boxes must be current
-            if status[team][results] < week and status[team][boxes] < week:
-                return 1
-            # boxes must be no more than 1 week behind
             if status[team][boxes] < week - 1:
                 return 1
         #  return 0, team has nothing outstanding
