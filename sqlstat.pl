@@ -405,7 +405,6 @@ while (<DATA>) {
 	}
 	# valid matchup
 	else {
-	    $injuries = 1;
 	    if ( $sched > 0 && $redo ) {
 		undoinj();
 	    }
@@ -417,6 +416,9 @@ while (<DATA>) {
 		$lines++;
 		@line = split;
 		if ( $#line == -1 ) {
+		    if ( !$injuries ) {
+			print "line $lines blank line after INJURIES, nothing reported\n";
+		    }
 		    last;
 		}
 		elsif ( $#line < $ICOLS ) {
@@ -426,6 +428,7 @@ while (<DATA>) {
 		    last;
 		}
 		else {
+		    $injuries++;
 		    $day = shift @line;
 		    $type = shift @line;
 		    $ibl = shift @line;
