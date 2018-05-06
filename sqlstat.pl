@@ -350,7 +350,7 @@ while (<DATA>) {
 		    $fatalerr++;
 		}
 		elsif ( $sched == 1 && !$redo ) {
-		    print "week $week, $away @ $home scores already submitted (use REDO)\n";
+		    print "week $week, $away @ $home scores already submitted (use REDO to replace)\n";
 		}
 		# valid matchup
 		else {
@@ -401,7 +401,7 @@ while (<DATA>) {
 	    print "$away @ $home not valid matchup for week $week\n";
 	    $fatalerr++;
 	} elsif ( $sched == 1 && !$redo) {
-	    print "week $week, $away @ $home injuries already submitted (use REDO)\n";
+	    print "week $week, $away @ $home injuries already submitted (use REDO to replace)\n";
 	}
 	# valid matchup
 	else {
@@ -1136,10 +1136,17 @@ if ( $updates && !$fatalerr ) {
 }
 
 if ( !$batters && !$pitchers && !$injuries && !$scores ) {
-    $dbh->rollback;
-    $dbh->disconnect;
-    # not stats/scores
-    exit 3;
+    if ( $home || $away ) {
+	# teams are set but no scores/stats, error
+	print "no SCORES or STATS in GRS\n";
+	$fatalerr++;
+    }
+    else {
+	# not a GRS
+	$dbh->rollback;
+	$dbh->disconnect;
+	exit 3;
+    }
 }
 if ( $wins != $losses ) {
     print "WINS & LOSSES not equal\n";
@@ -1170,7 +1177,7 @@ if ( $updates ) {
 	    print "$away @ $home not valid matchup for week $week\n";
 	    $fatalerr++;
 	} elsif ( $sched == 1 ) {
-	    print "week $week, $away @ $home stats already submitted (use REDO)\n";
+	    print "week $week, $away @ $home stats already submitted (use REDO to replace)\n";
 	    $fatalerr++;
 	}
     }
