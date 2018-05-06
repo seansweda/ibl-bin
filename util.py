@@ -182,7 +182,7 @@ s_arg = ''
 e_arg = ''
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPopvws:e:')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPopvws:e:y:')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -204,6 +204,8 @@ for (opt, arg) in opts:
         e_arg = arg
     elif opt == '-w':
         do_weekly = True
+    elif opt == '-y':
+        DB.usage = 'usage' + arg
     elif opt == '-A':
         do_tot = True
         cursor.execute("select distinct(ibl_team) from rosters \
