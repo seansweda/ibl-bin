@@ -13,6 +13,7 @@
 # -f: find player
 # -B: batters only
 # -P: batters only
+# -H: no headers
 # -A: all teams
 # -O: old rosters
 # -L: page breaks 
@@ -124,6 +125,7 @@ def pitfat(p):
 # globals
 do_bat = True
 do_pit = True
+do_header = True
 do_picks = False
 do_active = True
 do_inactive = True
@@ -143,7 +145,7 @@ db = DB.connect()
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'ABOPfpaincdrtwL')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABHOPfpaincdrtwL')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -153,6 +155,8 @@ for (opt, arg) in opts:
         do_pit = False
     elif opt == '-P':
         do_bat = False
+    elif opt == '-H':
+        do_header = False
     elif opt == '-O':
         rosters = 'rosters_old'
         players = 'players_old'
@@ -251,11 +255,11 @@ for arg in args:
                 header = ''
             else:
                 header = team + " "
-            if kind == 0 and do_picks:
+            if kind == 0 and do_picks and do_header:
                 print header + 'PICKS'
-            elif kind == 1 and do_bat and do_pit:
+            elif kind == 1 and do_pit and do_header:
                 print header + 'PITCHERS'
-            elif kind == 2 and do_bat and do_pit:
+            elif kind == 2 and do_bat and do_header:
                 if p_num > 0:
                     print
                 print header + 'BATTERS'
