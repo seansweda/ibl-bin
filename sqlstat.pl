@@ -27,6 +27,7 @@ $lines = 0;
 $week = 0;
 $home = '';
 $away = '';
+$spacer = 0;
 $redo = 0;
 $redone = 0;
 $updates = 0;
@@ -317,7 +318,11 @@ while (<DATA>) {
 	}
     }
     elsif ( $keyword eq 'SCORES' ) {
-	print "\nSCORES\n";
+	if ( !$spacer ) {
+	    print "\n";
+	    $spacer++;
+	}
+	print "SCORES\n";
 	$line1 = <DATA>;
 	chomp $line1; 
 	$lines++;
@@ -389,10 +394,15 @@ while (<DATA>) {
 		}
 	    }
 	}
+	print "\n";
     }
     # END SCORES
     elsif ( $keyword eq 'INJURIES' ) {
-	print "\nINJURIES\n";
+	if ( !$spacer ) {
+	    print "\n";
+	    $spacer++;
+	}
+	print "INJURIES\n";
 	$sched = schedck( $week, $home, $away, 'inj' );
 	if ( $sched == -1 ) {
 	    print "missing or invalid WEEK/HOME/AWAY info, cannot update\n";
@@ -528,10 +538,15 @@ while (<DATA>) {
 		}
 	    }
 	}
+	print "\n";
     }
     # END INJURIES
     elsif ( $keyword eq 'STARTS' ) {
-	print "\nSTARTS\n";
+	if ( !$spacer ) {
+	    print "\n";
+	    $spacer++;
+	}
+	print "STARTS\n";
 	if ( $updates && !($week && $home && $away) ) {
 	    print "line $lines missing or invalid WEEK/HOME/AWAY info, cannot update\n";
 	    $fatalerr++;
@@ -668,6 +683,7 @@ while (<DATA>) {
 		    ");
 	    }
 	}
+	print "\n";
     }
     # END STARTS
     elsif ( $keyword eq 'BATTERS' && !$team ) {
