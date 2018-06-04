@@ -186,13 +186,23 @@ def main( player = {}, module = False, report_week = 0 ):
     db = DB.connect()
     cursor = db.cursor()
 
+    # unset for actives only
+    do_all = 1
+
     if is_cgi:
         if form.has_key('week'):
             report_week = int(form.getfirst('week'))
+        if form.has_key('active'):
+            do_all = 0
     elif not module:
         for (opt, arg) in opts:
-            if opt == '-w':
+            if opt == '-a':
+                do_all = 0;
+            elif opt == '-w':
                 report_week = int(arg)
+            else:
+                print "bad option:", opt
+                usage()
 
     if report_week == 0:
     # no user supplied week, use latest week without all inj reported
@@ -207,16 +217,19 @@ def main( player = {}, module = False, report_week = 0 ):
     if is_cgi and not module:
         print "<table>"
 
-    sql = "select week, home, away, day, type, ibl, ibl_team, \
+    sql = "select week, home, away, day, type, ibl, ibl_team, status, \
              i.tig_name, length, dtd, description from %s i \
              left outer join rosters t on i.tig_name = t.tig_name\
              order by ibl_team, i.tig_name, week;" % DB.inj
     cursor.execute(sql)
     for injury in cursor.fetchall():
-        week, home, away, day, code, inj_team, ibl, name, length, failed, \
-                desc = injury
+        week, home, away, day, code, inj_team, ibl, active, \
+                name, length, failed, desc = injury
         ##print injury
         name = name.rstrip()
+
+        if active != 1:
+            active = 0
 
         if not player.has_key(name):
             player[name] = {}
@@ -385,11 +398,12 @@ def main( player = {}, module = False, report_week = 0 ):
                     if thru_week != week:
                         output += " week %i" % week
 
-            if is_cgi:
-                print '<tr><td>%s</td><td>"%s"</td></tr>' % \
-                        ( output + '.', desc )
-            else:
-                print '%-80s\t"%s"' % ( output + '.', desc )
+            if do_all or active:
+                if is_cgi:
+                    print '<tr><td>%s</td><td>"%s"</td></tr>' % \
+                            ( output + '.', desc )
+                else:
+                    print '%-80s\t"%s"' % ( output + '.', desc )
             # END if report_week
 
         # END injury loop
@@ -399,7 +413,7 @@ def main( player = {}, module = False, report_week = 0 ):
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'w:')
+        opts, args = getopt.getopt(sys.argv[1:], 'aw:')
     except getopt.GetoptError, err:
         print str(err)
         usage()
