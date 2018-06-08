@@ -221,7 +221,7 @@ if s_arg and s_arg.isdigit():
 if e_arg and e_arg.isdigit():
     end = int(e_arg)
 
-if do_weekly and ( s_arg or e_arg ):
+if do_weekly and ( s_arg or e_arg or do_opp or display == avg ):
     usage()
 
 b_cards = p_hash( cardpath() + '/' + batters )
@@ -250,7 +250,10 @@ if do_bat:
                 cursor.execute(sql, (week, team, ) )
                 for mlb, name, paL, paR in cursor.fetchall():
                     b_total( team, mlb, name )
-                bdump( team, ibl[team], overall )
+                if display == platoon:
+                    bdump( team, ibl[team], platoon )
+                else:
+                    bdump( team, ibl[team], overall )
                 zero( ibl[team] )
             print
             continue
@@ -307,7 +310,10 @@ if do_pit:
                 cursor.execute(sql, (week, team, ) )
                 for mlb, name, bf in cursor.fetchall():
                     p_total( team, mlb, name )
-                pdump( team, ibl[team], overall )
+                if display == platoon:
+                    pdump( team, ibl[team], platoon )
+                else:
+                    pdump( team, ibl[team], overall )
                 zero( ibl[team] )
             print
             continue
