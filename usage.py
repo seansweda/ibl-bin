@@ -190,34 +190,52 @@ def g_usage( name, role, g ):
     g133 = []
     if role == pitcher:
         fat_SP = BFP[name][0]
-        if fat_SP > 0:
-            g75.append( U_75 / fat_SP )
-            g75.append( U_75 / 24.0 )
-            g133.append( U_133 / fat_SP )
-            g133.append( U_133 / 24.0 )
-        else:
-            g75 += [ 0, 0 ]
-            g133 += [ 0, 0 ]
         fat_RP = BFP[name][1]
-        if fat_RP > 0:
-            g75.append( U_75 / fat_RP )
-            g133.append( U_133 / fat_RP )
-        else:
-            g75.append( 0 )
-            g133.append( 0 )
         rest1 = BFP[name][2][1]
-        if rest1 > 0:
-            g75.append( U_75 / rest1 )
-            g133.append( U_133 / rest1 )
+        if U_75 <= 0:
+            g75 += [ 0, 0, 0, 0 ]
         else:
-            g75.append( 0 )
-            g133.append( 0 )
+            if fat_SP > 0:
+                g75.append( U_75 / fat_SP )
+                g75.append( U_75 / 24.0 )
+            else:
+                g75 += [ 0, 0 ]
+            if fat_RP > 0:
+                g75.append( U_75 / fat_RP )
+            else:
+                g75.append( 0 )
+            if rest1 > 0:
+                g75.append( U_75 / rest1 )
+            else:
+                g75.append( 0 )
+        if U_133 <= 0:
+            g133 += [ 0, 0, 0, 0 ]
+        else:
+            if fat_SP > 0:
+                g133.append( U_133 / fat_SP )
+                g133.append( U_133 / 24.0 )
+            else:
+                g133 += [ 0, 0 ]
+            if fat_RP > 0:
+                g133.append( U_133 / fat_RP )
+            else:
+                g133.append( 0 )
+            if rest1 > 0:
+                g133.append( U_133 / rest1 )
+            else:
+                g133.append( 0 )
 
     elif role == batter:
-        for p in range(2,6):
-            g75.append( U_75 / float(p) )
-        for p in range(2,6):
-            g133.append( U_133 / float(p) )
+        if U_75 <= 0:
+            g75 += [ 0, 0, 0, 0 ]
+        else:
+            for p in range(2,6):
+                g75.append( U_75 / float(p) )
+        if U_133 <= 0:
+            g133 += [ 0, 0, 0, 0 ]
+        else:
+            for p in range(2,6):
+                g133.append( U_133 / float(p) )
 
     output = "%-18s" % injreport.space(name)
     output += "%4i " % U_75
