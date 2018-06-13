@@ -6,7 +6,7 @@ import psycopg2
 import yaml
 
 import DB
-import injreport
+import injreport as IR
 import startsdb
 
 # dump environment and parameters for testing
@@ -69,7 +69,7 @@ def main():
     startsdb.main( starts, module=True )
 
     inj = {}
-    injreport.main( inj, module=True )
+    IR.main( inj, module=True )
 
     # teams/status
     active = 1
@@ -78,7 +78,7 @@ def main():
 
     def ok( week ):
         for series in week.keys():
-            out = map( lambda z: z & ( 2 + 8 ),  week[series] )
+            out = map( lambda z: z & (IR.off + IR.inj + IR.sus), week[series] )
             if not filter( lambda y: y == 0, out ):
                 return False
         return True
