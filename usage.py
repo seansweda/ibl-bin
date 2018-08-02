@@ -88,7 +88,7 @@ def r_usage( name, role, g, do_o = False ):
             U_75 = int ( U_75 ) + 1
         U_75 -= ( ibl_U + credit )
 
-        U_133 = int ( mlb_U * u133 )
+        U_133 = int ( mlb_U * 4 / 3 )
         U_133 -= ibl_U
 
     if g == 0:
@@ -147,7 +147,7 @@ def g_usage( name, role, g, do_o = False ):
             U_75 = int ( U_75 ) + 1
         U_75 -= ( ibl_U + credit )
 
-        U_133 = int ( mlb_U * u133 )
+        U_133 = int ( mlb_U * 4 / 3 )
         U_133 -= ibl_U
 
     g75 = []
@@ -232,7 +232,7 @@ def std_usage( name, role, g ):
     credit = int( 1 + mlb_U / 162 ) * inj
 
     U_75 = mlb_U * 3 / 4
-    U_133 = mlb_U * u133
+    U_133 = mlb_U * 4 / 3
     U_150 = mlb_U * 3 / 2
 
     if g == 0:
@@ -279,7 +279,6 @@ def main():
     do_o = False
     do_bat = True
     do_pit = True
-    almanac = 0
 
     if is_cgi:
         if form.has_key('team'):
@@ -304,32 +303,18 @@ def main():
                 do_r = True
             elif opt == '-o':
                 do_o = True
-            elif opt == '-a':
-                almanac = 1
 
     if len( do_team ) > 0 and len( sql_team ) == 0:
         sql_team = " and ibl_team = '%s'" % do_team
 
-    global u133
-    if almanac:
-        u133 = 1.33
-        mlb_file = cardpath() + '/' + 'usage.txt'
+    for filename in 'usage_bf.txt', 'usage_pa.txt':
+        mlb_file = cardpath() + '/' + filename
         if not os.path.isfile(mlb_file):
             print mlb_file + " not found"
             sys.exit(1)
         with open( mlb_file, 'rU' ) as s:
             for line in csv.reader(s):
                 MLB[line[0].rstrip()] = float(line[1])
-    else:
-        u133 = 4.0 / 3.0
-        for filename in 'usage_bf.txt', 'usage_pa.txt':
-            mlb_file = cardpath() + '/' + filename
-            if not os.path.isfile(mlb_file):
-                print mlb_file + " not found"
-                sys.exit(1)
-            with open( mlb_file, 'rU' ) as s:
-                for line in csv.reader(s):
-                    MLB[line[0].rstrip()] = float(line[1])
     
     bfp_file = cardpath() + '/' + 'bfp.txt'
     if not os.path.isfile(bfp_file):
@@ -359,23 +344,15 @@ def main():
 
     injreport.main( INJ, module=True )
 
-    if almanac:
-        sql = "select mlb, name, sum(ab + bb)\
-                from %s group by mlb, name order by mlb, name;" % DB.bat
-    else:
-        sql = "select mlb, name, sum(vl + vr)\
-                from %s group by mlb, name order by mlb, name;" % DB.usage
+    sql = "select mlb, name, sum(vl + vr)\
+            from %s group by mlb, name order by mlb, name;" % DB.usage
     cursor.execute(sql)
     for mlb, name, u in cursor.fetchall():
         tig_name = mlb.rstrip() + " " + name.rstrip()
         IBL_B[tig_name] = float(u)
 
-    if almanac:
-        sql = "select mlb, name, sum(ip + h + bb)\
-            from %s group by mlb, name order by mlb, name;" % DB.pit
-    else:
-        sql = "select mlb, name, sum(bf)\
-            from %s group by mlb, name order by mlb, name;" % DB.usage
+    sql = "select mlb, name, sum(bf)\
+        from %s group by mlb, name order by mlb, name;" % DB.usage
     cursor.execute(sql)
     for mlb, name, u in cursor.fetchall():
         tig_name = mlb.rstrip() + " " + name.rstrip()
