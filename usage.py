@@ -58,7 +58,7 @@ def gp ( ibl ):
     else:
         return 0.0
 
-def r_usage( name, role, g ):
+def r_usage( name, role, g, do_o = False ):
     if role == pitcher:
         U = IBL_P
     elif role == batter:
@@ -76,13 +76,20 @@ def r_usage( name, role, g ):
         inj = injreport.injdays( INJ[name], 27 )
     credit = int( 1 + mlb_U / 162 ) * inj
 
-    U_75 = mlb_U * 3 / 4
-    if U_75 != int ( U_75 ):
-        U_75 = int ( U_75 ) + 1
-    U_75 -= ( ibl_U + credit )
+    if do_o:
+        U_75 = int ( mlb_U * 4 / 3 )
+        U_75 -= ibl_U
 
-    U_133 = int ( mlb_U * u133 )
-    U_133 -= ibl_U
+        U_133 = int( mlb_U * 3 / 2 )
+        U_133 -= ibl_U
+    else:
+        U_75 = mlb_U * 3 / 4
+        if U_75 != int ( U_75 ):
+            U_75 = int ( U_75 ) + 1
+        U_75 -= ( ibl_U + credit )
+
+        U_133 = int ( mlb_U * u133 )
+        U_133 -= ibl_U
 
     if g == 0:
         rate = 0
@@ -110,7 +117,7 @@ def r_usage( name, role, g ):
 
     return output
 
-def o_usage( name, role, g ):
+def g_usage( name, role, g, do_o = False ):
     if role == pitcher:
         U = IBL_P
     elif role == batter:
@@ -128,63 +135,20 @@ def o_usage( name, role, g ):
         inj = injreport.injdays( INJ[name], 27 )
     credit = int( 1 + mlb_U / 162 ) * inj
 
-    U_133 = int ( mlb_U * u133 )
-    U_133 -= ibl_U
+    if do_o:
+        U_75 = int ( mlb_U * 4 / 3 )
+        U_75 -= ibl_U
 
-    U_150 = int( mlb_U * 3 / 2 )
-    U_150 -= ibl_U
-
-    if g == 0:
-        rate = 0
-        injrate = 0
+        U_133 = int( mlb_U * 3 / 2 )
+        U_133 -= ibl_U
     else:
-        rate = ( ibl_U * 162 / g ) / mlb_U * 100
-        injrate = ( ibl_U * 162 / g + credit ) / mlb_U * 100
+        U_75 = mlb_U * 3 / 4
+        if U_75 != int ( U_75 ):
+            U_75 = int ( U_75 ) + 1
+        U_75 -= ( ibl_U + credit )
 
-    output = "%-18s" % injreport.space(name)
-    output += "%4i " % U_133
-    if g >= 162 or U_133 <= 0:
-        output += "%6s %6s" % ( '-', '-' )
-    else:
-        output += "%6.1f %6.1f" \
-            % ( U_133 / (162 - g), min( U_133 / (162.0 - g) * 6.0, U_133 ) )
-
-    output += "   %4i " % U_150
-    if g >= 162 or U_150 <= 0:
-        output += "%6s %6s" % ( '-', '-' )
-    else:
-        output += "%6.1f %6.1f" \
-            % ( U_150 / (162 - g), min( U_150 / (162.0 - g) * 6.0, U_150 ) )
-
-    output += "  %6.1f%% %6.1f%%" % ( rate, injrate )
-
-    return output
-
-def g_usage( name, role, g ):
-    if role == pitcher:
-        U = IBL_P
-    elif role == batter:
-        U = IBL_B
-    else:
-        return ''
-
-    ibl_U = 0
-    if U.has_key(name):
-        ibl_U = U[name]
-    mlb_U = MLB[name]
-
-    inj = 0
-    if INJ.has_key(name):
-        inj = injreport.injdays( INJ[name], 27 )
-    credit = int( 1 + mlb_U / 162 ) * inj
-
-    U_75 = mlb_U * 3 / 4
-    if U_75 != int ( U_75 ):
-        U_75 = int ( U_75 ) + 1
-    U_75 -= ( ibl_U + credit )
-
-    U_133 = int ( mlb_U * u133 )
-    U_133 -= ibl_U
+        U_133 = int ( mlb_U * u133 )
+        U_133 -= ibl_U
 
     g75 = []
     g133 = []
@@ -431,11 +395,15 @@ def main():
 
     if do_pit:
         if do_g:
-            print "PITCHERS           75%   SP/f SP/24  RP/f RP/1d   133%  SP/f SP/24  RP/f RP/1d"
+            if do_o:
+                print "PITCHERS          133%   SP/f SP/24  RP/f RP/1d   150%  SP/f SP/24  RP/f RP/1d"
+            else:
+                print "PITCHERS           75%   SP/f SP/24  RP/f RP/1d   133%  SP/f SP/24  RP/f RP/1d"
         elif do_r:
-            print "PITCHERS           75%  per/g  per/w   133%  per/g  per/w     RATE    +INJ"
-        elif do_o:
-            print "PITCHERS          133%  per/g  per/w   150%  per/g  per/w     RATE    +INJ"
+            if do_o:
+                print "PITCHERS          133%  per/g  per/w   150%  per/g  per/w     RATE    +INJ"
+            else:
+                print "PITCHERS           75%  per/g  per/w   133%  per/g  per/w     RATE    +INJ"
         else:
             print "PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
 
@@ -448,11 +416,9 @@ def main():
             ibl = ibl.rstrip()
             if MLB.has_key(tig_name):
                 if do_g:
-                    print g_usage( tig_name, pitcher, gp(ibl) )
+                    print g_usage( tig_name, pitcher, gp(ibl), do_o )
                 elif do_r:
-                    print r_usage( tig_name, pitcher, gp(ibl) )
-                elif do_o:
-                    print o_usage( tig_name, pitcher, gp(ibl) )
+                    print r_usage( tig_name, pitcher, gp(ibl), do_o )
                 else:
                     print std_usage( tig_name, pitcher, gp(ibl) )
 
@@ -461,11 +427,15 @@ def main():
 
     if do_bat:
         if do_g:
-            print "BATTERS            75%    2/g   3/g   4/g   5/g   133%   2/g   3/g   4/g   5/g"
+            if do_o:
+                print "BATTERS           133%    2/g   3/g   4/g   5/g   153%   2/g   3/g   4/g   5/g"
+            else:
+                print "BATTERS            75%    2/g   3/g   4/g   5/g   133%   2/g   3/g   4/g   5/g"
         elif do_r:
-            print "BATTERS            75%  per/g  per/w   133%  per/g  per/w     RATE    +INJ"
-        elif do_o:
-            print "BATTERS           133%  per/g  per/w   150%  per/g  per/w     RATE    +INJ"
+            if do_o:
+                print "BATTERS           133%  per/g  per/w   150%  per/g  per/w     RATE    +INJ"
+            else:
+                print "BATTERS            75%  per/g  per/w   133%  per/g  per/w     RATE    +INJ"
         else:
             print "BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
 
@@ -478,11 +448,9 @@ def main():
             ibl = ibl.rstrip()
             if MLB.has_key(tig_name):
                 if do_g:
-                    print g_usage( tig_name, batter, gp(ibl) )
+                    print g_usage( tig_name, batter, gp(ibl), do_o )
                 elif do_r:
-                    print r_usage( tig_name, batter, gp(ibl) )
-                elif do_o:
-                    print o_usage( tig_name, batter, gp(ibl) )
+                    print r_usage( tig_name, batter, gp(ibl), do_o )
                 else:
                     print std_usage( tig_name, batter, gp(ibl) )
 
