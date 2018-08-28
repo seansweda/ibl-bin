@@ -1,11 +1,18 @@
 #!/usr/bin/python
+# -w: week
+# -r: records only (no late penalties)
 
 import os
 import sys
+import getopt
 import psycopg2
 import yaml
 
 import DB
+
+def usage():
+    print "usage: %s [-w week]" % sys.argv[0]
+    sys.exit(1)
 
 # dump environment and parameters for testing
 # not really necessary, mostly for learning purposes
@@ -65,15 +72,21 @@ def main():
         #  return 0, team has nothing outstanding
         return 0
 
-    week = 0
-    if len(sys.argv) > 1:
-        # user inputs FA signing week (not results week), so subtract 1
-        week = int(sys.argv[1]) - 1
-    elif is_cgi and form.has_key('week'):
-        # user inputs FA signing week (not results week), so subtract 1
-        week = int(form.getfirst('week')) - 1
+    week = 1
+    check_late = True
+    if is_cgi and form.has_key('week'):
+        week = int(form.getfirst('week'))
     else:
-        # no user input so we'll find latest week with reported results
+        for ( opt, arg ) in opts:
+            if opt == '-w':
+                week = int(arg)
+            elif opt == '-r':
+                check_late = False
+    # user inputs FA signing week (not results week), so subtract 1
+    week -= 1
+
+    if week == 0:
+        # find latest week with reported results
         cursor.execute("select week, count(*) from games\
                 group by week order by week desc;");
         # need to have more than 2 series reported to set week
@@ -152,7 +165,7 @@ def main():
 
     #print status
     # sort teams who are up to date ahead of those who are not
-    if week > 0:
+    if week > 0 and check_late:
         fa.sort( key=late )
     #print fa
 
@@ -175,5 +188,11 @@ def main():
 
 
 if __name__ == "__main__":
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'rw:')
+    except getopt.GetoptError, err:
+        print str(err)
+        usage()
+
     main()
 
