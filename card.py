@@ -137,8 +137,7 @@ def power( rating ):
 
         return float(rating)
 
-def bat_wOBA():
-    card = y['batcard']
+def bat_wOBA( card = y['batcard'] ):
     woba = 0
     woba += card[0] * w1B
     woba += card[1] * w2B
@@ -152,8 +151,7 @@ def bat_wOBA():
     woba += (WILDBB + WILDHB) * wBB
     return woba
 
-def pit_wOBA( pwr ):
-    card = y['pitcard']
+def pit_wOBA( pwr, card = y['pitcard'] ):
     woba = 0
     woba += card[0] * w1B
     woba += card[1] * w2B
@@ -252,6 +250,15 @@ def avgcard():
         print "%5.1f " % ( pit[d] ),
     print "%5.1f " % ( pit[7] )
     print yaml.dump( pit, default_flow_style=False )
+
+    woba = bat_wOBA( bat ) + pit_wOBA( 'Av', pit )
+    # don't double-count park/wild
+    woba -= (PARK1B + WILD1B) * w1B
+    woba -= (PARK2B + WILD2B) * w2B
+    woba -= (PARK3B + WILD3B) * w3B
+    woba -= (WILDBB + WILDHB) * wBB
+    print "wOBA: %s (%s/%s)" % ( int(woba + 0.5), int(bat_wOBA( bat )),
+            int(pit_wOBA( 'Av', pit )) )
     sys.exit(0)
 
 def main():
