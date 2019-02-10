@@ -149,6 +149,7 @@ def bat_wOBA( card = y['batcard'] ):
     woba += (PARK2B + WILD2B) * w2B
     woba += (PARK3B + WILD3B) * w3B
     woba += (WILDBB + WILDHB) * wBB
+    woba /= 0.975
     return woba
 
 def pit_wOBA( pwr, card = y['pitcard'] ):
@@ -166,6 +167,7 @@ def pit_wOBA( pwr, card = y['pitcard'] ):
     woba += (PARK2B + WILD2B) * w2B
     woba += (PARK3B + WILD3B) * w3B
     woba += (WILDBB + WILDHB) * wBB
+    woba /= 0.975
     return woba
 
 def wOBA(p, kind, side):
@@ -187,6 +189,7 @@ def wOBA(p, kind, side):
         woba += int(p[index + 5]) * IFR2B * w2B
         woba += int(p[index + 6]) * OFR1B * w1B
         woba += int(p[index + 6]) * OFR2B * w2B
+        woba /= 0.975
         return int(woba + bat_wOBA() + 0.5)
 
     # batter
@@ -203,6 +206,7 @@ def wOBA(p, kind, side):
         woba += int(p[index + 3]) * wHR
         woba += int(p[index + 4]) * wBB
         woba += int(p[index + 5]) * wBB
+        woba /= 0.975
         return int(woba + pit_wOBA( p[index + 10] ) + 0.5)
 
 def avgcard():
@@ -253,10 +257,10 @@ def avgcard():
 
     woba = bat_wOBA( bat ) + pit_wOBA( 'Av', pit )
     # don't double-count park/wild
-    woba -= (PARK1B + WILD1B) * w1B
-    woba -= (PARK2B + WILD2B) * w2B
-    woba -= (PARK3B + WILD3B) * w3B
-    woba -= (WILDBB + WILDHB) * wBB
+    woba -= (PARK1B + WILD1B) * w1B / 0.975
+    woba -= (PARK2B + WILD2B) * w2B / 0.975
+    woba -= (PARK3B + WILD3B) * w3B / 0.975
+    woba -= (WILDBB + WILDHB) * wBB / 0.975
     print "wOBA: %s (%s/%s)" % ( int(woba + 0.5), int(bat_wOBA( bat )),
             int(pit_wOBA( 'Av', pit )) )
     sys.exit(0)
