@@ -18,8 +18,9 @@ import DB
 import injreport
 
 INJ = {}
-MLB = {}
 BFP = {}
+MLB_B = {}
+MLB_P = {}
 IBL_B = {}
 IBL_P = {}
 IBL_G = {}
@@ -61,15 +62,19 @@ def gp ( ibl ):
 def r_usage( name, role, g, do_o = False ):
     if role == pitcher:
         U = IBL_P
+        M = MLB_P
     elif role == batter:
         U = IBL_B
+        M = MLB_B
     else:
         return ''
 
     ibl_U = 0
+    mlb_U = 0
     if U.has_key(name):
         ibl_U = U[name]
-    mlb_U = MLB[name]
+    if M.has_key(name):
+        mlb_U = M[name]
 
     inj = 0
     if INJ.has_key(name):
@@ -120,15 +125,19 @@ def r_usage( name, role, g, do_o = False ):
 def g_usage( name, role, g, do_o = False ):
     if role == pitcher:
         U = IBL_P
+        M = MLB_P
     elif role == batter:
         U = IBL_B
+        M = MLB_B
     else:
         return ''
 
     ibl_U = 0
+    mlb_U = 0
     if U.has_key(name):
         ibl_U = U[name]
-    mlb_U = MLB[name]
+    if M.has_key(name):
+        mlb_U = M[name]
 
     inj = 0
     if INJ.has_key(name):
@@ -216,15 +225,19 @@ def g_usage( name, role, g, do_o = False ):
 def std_usage( name, role, g ):
     if role == pitcher:
         U = IBL_P
+        M = MLB_P
     elif role == batter:
         U = IBL_B
+        M = MLB_B
     else:
         return ''
 
     ibl_U = 0
+    mlb_U = 0
     if U.has_key(name):
         ibl_U = U[name]
-    mlb_U = MLB[name]
+    if M.has_key(name):
+        mlb_U = M[name]
 
     inj = 0
     if INJ.has_key(name):
@@ -307,15 +320,22 @@ def main():
     if len( do_team ) > 0 and len( sql_team ) == 0:
         sql_team = " and ibl_team = '%s'" % do_team
 
-    for filename in 'usage_bf.txt', 'usage_pa.txt':
-        mlb_file = cardpath() + '/' + filename
-        if not os.path.isfile(mlb_file):
-            print mlb_file + " not found"
-            sys.exit(1)
-        with open( mlb_file, 'rU' ) as s:
-            for line in csv.reader(s):
-                MLB[line[0].rstrip()] = float(line[1])
-    
+    mlb_file = cardpath() + '/usage_bf.txt'
+    if not os.path.isfile(mlb_file):
+        print mlb_file + " not found"
+        sys.exit(1)
+    with open( mlb_file, 'rU' ) as s:
+        for line in csv.reader(s):
+            MLB_P[line[0].rstrip()] = float(line[1])
+
+    mlb_file = cardpath() + '/usage_pa.txt'
+    if not os.path.isfile(mlb_file):
+        print mlb_file + " not found"
+        sys.exit(1)
+    with open( mlb_file, 'rU' ) as s:
+        for line in csv.reader(s):
+            MLB_B[line[0].rstrip()] = float(line[1])
+
     bfp_file = cardpath() + '/' + 'bfp.txt'
     if not os.path.isfile(bfp_file):
         print bfp_file + " not found"
@@ -384,14 +404,14 @@ def main():
         else:
             print "PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
 
-        sql = "select ibl_team, tig_name from rosters where item_type = %s" % pitcher
+        sql = "select ibl_team, r.tig_name from rosters r, players p where r.tig_name = p.tig_name and is_pitcher = 'Y'"
         sql += sql_team
         sql += " order by tig_name;"
         cursor.execute(sql)
         for ibl, tig_name, in cursor.fetchall():
             tig_name = tig_name.rstrip()
             ibl = ibl.rstrip()
-            if MLB.has_key(tig_name):
+            if MLB_P.has_key(tig_name):
                 if do_g:
                     print g_usage( tig_name, pitcher, gp(ibl), do_o )
                 elif do_r:
@@ -416,14 +436,14 @@ def main():
         else:
             print "BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
 
-        sql = "select ibl_team, tig_name from rosters where item_type = %s" % batter
+        sql = "select ibl_team, r.tig_name from rosters r, players p where r.tig_name = p.tig_name and is_batter = 'Y'"
         sql += sql_team
         sql += " order by tig_name;"
         cursor.execute(sql)
         for ibl, tig_name, in cursor.fetchall():
             tig_name = tig_name.rstrip()
             ibl = ibl.rstrip()
-            if MLB.has_key(tig_name):
+            if MLB_B.has_key(tig_name):
                 if do_g:
                     print g_usage( tig_name, batter, gp(ibl), do_o )
                 elif do_r:
