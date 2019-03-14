@@ -58,6 +58,21 @@ def gp ( ibl ):
     else:
         return 0.0
 
+def injdays ( name, role ):
+    if INJ.has_key(name):
+        if role == batter:
+            return injreport.injdays( INJ[name], 27 )
+        elif role == pitcher:
+            # two-way players use "arm" injury for pitching usage credit
+            if MLB_B.has_key(name):
+                return injreport.injdays( INJ[name], 27,
+                        injreport.arm + injreport.inj )
+            else:
+                return injreport.injdays( INJ[name], 27 )
+
+    # no match, return 0
+    return 0
+
 def r_usage( name, role, g, do_o = False ):
     if role == pitcher:
         U = IBL_P
@@ -75,9 +90,7 @@ def r_usage( name, role, g, do_o = False ):
     if M.has_key(name):
         mlb_U = M[name]
 
-    inj = 0
-    if INJ.has_key(name):
-        inj = injreport.injdays( INJ[name], 27 )
+    inj = injdays( name, role )
     credit = int( 1 + mlb_U / 162 ) * inj
 
     if do_o:
@@ -138,9 +151,7 @@ def g_usage( name, role, g, do_o = False ):
     if M.has_key(name):
         mlb_U = M[name]
 
-    inj = 0
-    if INJ.has_key(name):
-        inj = injreport.injdays( INJ[name], 27 )
+    inj = injdays( name, role )
     credit = int( 1 + mlb_U / 162 ) * inj
 
     if do_o:
@@ -238,9 +249,7 @@ def std_usage( name, role, g ):
     if M.has_key(name):
         mlb_U = M[name]
 
-    inj = 0
-    if INJ.has_key(name):
-        inj = injreport.injdays( INJ[name], 27 )
+    inj = injdays( name, role )
     credit = int( 1 + mlb_U / 162 ) * inj
 
     U_75 = mlb_U * 3 / 4
