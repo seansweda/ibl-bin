@@ -41,13 +41,13 @@ sus =  8
 adj = 16
 arm = 32
 
-def injdays( player, stop ):
+def injdays( player, stop, type = inj ):
     total = 0
     for week in player.keys():
         if week <= stop:
             for series in player[week].keys():
                 for x in player[week][series]:
-                    if ( x & (inj + sus)) > 0:
+                    if ( x & (type + sus)) > 0:
                         total += 1
     return total
 
