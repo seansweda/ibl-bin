@@ -25,6 +25,22 @@ def dumpenv(form):
     print "<p>"
     return
 
+# sql table injury codes
+injured = 0
+no_dtd = 1
+suspended = 2
+adjustment = 3
+arm_trouble = 4
+
+# display codes (bitwise)
+ok  =  0
+off =  1
+inj =  2
+dtd =  4
+sus =  8
+adj = 16
+arm = 32
+
 def injdays( player, stop ):
     total = 0
     for week in player.keys():
@@ -102,6 +118,12 @@ def update( days, code, length, day = 1 ):
                     days[x] += inj
                     length -= 1
                     served += 1
+        if code == arm_trouble:
+            if days[x] & arm == 0:
+                if length > 0:
+                    days[x] += arm
+                    length -= 1
+                    served += 1
         if code == suspended:
             if days[x] & (sus + off) == 0:
                 if length > 0:
@@ -119,7 +141,7 @@ def update( days, code, length, day = 1 ):
 
 def dcode( days ):
     output = "["
-    dc = { off:'off', inj:'inj', dtd:'dtd', sus:'sus', adj:'adj' }
+    dc = { off:'off', inj:'inj', dtd:'dtd', sus:'sus', adj:'adj', arm:'arm' }
     for x in days:
         if x == ok:
             output += "( OK  )"
@@ -138,6 +160,8 @@ def kind ( code ):
         return sus
     elif code == adjustment:
         return adj
+    elif code == arm_trouble:
+        return arm
     else:
         # default is injury
         return inj
@@ -147,20 +171,6 @@ def space ( tigname ):
         return tigname[0:2] + ' ' + tigname[2:]
     else:
         return tigname
-
-# sql table injury codes
-injured = 0
-no_dtd = 1
-suspended = 2
-adjustment = 3
-
-# display codes (bitwise)
-ok  =  0
-off =  1
-inj =  2
-dtd =  4
-sus =  8
-adj = 16
 
 def main( player = {}, module = False, report_week = 0 ):
     do_json = False
@@ -338,6 +348,8 @@ def main( player = {}, module = False, report_week = 0 ):
                 output += "suspended for %i game" % int(reported_length)
             elif code == adjustment:
                 output += "adjustment for %i day" % int(reported_length)
+            elif code == arm_trouble:
+                output += "cannot pitch for %i day" % int(reported_length)
             else:
                 # default is injury
                 output += "out for %i day" % int(reported_length)
