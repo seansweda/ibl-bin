@@ -2,7 +2,6 @@
 # -t <team>: usage for specific team
 # -g: per game output
 # -r: rates output
-# -a: calculate usage per old rules (Almanac)
 # -B: batters only
 # -P: pitchers only
 # -A: rostered players only
@@ -457,7 +456,7 @@ def main():
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 't:groaABP')
+        opts, args = getopt.getopt(sys.argv[1:], 't:groABP')
     except getopt.GetoptError, err:
         print str(err)
         usage()
