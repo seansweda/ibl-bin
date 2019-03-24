@@ -14,6 +14,7 @@ import getopt
 import time
 
 import DB
+from card import cardpath
 import injreport
 
 INJ = {}
@@ -30,13 +31,6 @@ batter = 2
 def usage():
     print "usage: %s [-t team]" % sys.argv[0]
     sys.exit(1)
-
-def cardpath():
-    if 'IBL_CARDPATH' in os.environ.keys():
-        cardpath = os.environ.get('IBL_CARDPATH')
-    else:
-        cardpath = "/home/iblgame/" + time.strftime("%Y") + "/build"
-    return cardpath
 
 # dump environment and parameters for testing
 # not really necessary, mostly for learning purposes
