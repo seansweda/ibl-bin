@@ -46,6 +46,23 @@ def dumpenv(form):
     print "<p>"
     return
 
+def mlb_usage( pit_U, bat_U ):
+    mlb_file = cardpath() + '/usage_bf.txt'
+    if not os.path.isfile(mlb_file):
+        print mlb_file + " not found"
+        sys.exit(1)
+    with open( mlb_file, 'rU' ) as s:
+        for line in csv.reader(s):
+            pit_U[line[0].rstrip()] = float(line[1])
+
+    mlb_file = cardpath() + '/usage_pa.txt'
+    if not os.path.isfile(mlb_file):
+        print mlb_file + " not found"
+        sys.exit(1)
+    with open( mlb_file, 'rU' ) as s:
+        for line in csv.reader(s):
+            bat_U[line[0].rstrip()] = float(line[1])
+
 def gp ( ibl ):
     if IBL_G.has_key(ibl) and IBL_G[ibl]:
         return float( IBL_G[ibl] )
@@ -322,21 +339,7 @@ def main():
     if len( do_team ) > 0 and len( sql_team ) == 0:
         sql_team = " and ibl_team = '%s'" % do_team
 
-    mlb_file = cardpath() + '/usage_bf.txt'
-    if not os.path.isfile(mlb_file):
-        print mlb_file + " not found"
-        sys.exit(1)
-    with open( mlb_file, 'rU' ) as s:
-        for line in csv.reader(s):
-            MLB_P[line[0].rstrip()] = float(line[1])
-
-    mlb_file = cardpath() + '/usage_pa.txt'
-    if not os.path.isfile(mlb_file):
-        print mlb_file + " not found"
-        sys.exit(1)
-    with open( mlb_file, 'rU' ) as s:
-        for line in csv.reader(s):
-            MLB_B[line[0].rstrip()] = float(line[1])
+    mlb_usage( MLB_P, MLB_B )
 
     bfp_file = cardpath() + '/' + 'bfp.txt'
     if not os.path.isfile(bfp_file):
