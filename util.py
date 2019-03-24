@@ -4,6 +4,7 @@
 # -B: batters only
 # -P: batters only
 # -A: all teams
+# -M: MLB usage
 # -p: platoon differential
 # -v: vs average
 # -s: start week
@@ -16,6 +17,7 @@ import psycopg2
 import DB
 
 from card import p_split, p_hash, cardpath, batters, pitchers, wOBA
+from usage import mlb_usage
 
 def usage():
     print "usage: %s [-ABP] <team>" % sys.argv[0]
@@ -167,11 +169,14 @@ cursor = db.cursor()
 # globals
 ibl = {}
 tot = {}
+MLB_B = {}
+MLB_P = {}
 do_bat = True
 do_pit = True
 do_tot = False
 do_opp = False
 do_weekly = False
+do_mlb = False
 overall = 1
 platoon = 2
 avg = 3
@@ -182,7 +187,7 @@ s_arg = ''
 e_arg = ''
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPopvws:e:y:')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPMopvws:e:y:')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -211,6 +216,9 @@ for (opt, arg) in opts:
         cursor.execute("select distinct(ibl_team) from rosters \
                 where ibl_team != 'FA';")
         args += [ row[0] for row in sorted(cursor.fetchall()) ]
+    elif opt == '-M':
+        do_mlb = True
+        mlb_usage( MLB_P, MLB_B )
     else:
         print "bad option:", opt
         usage()
@@ -222,6 +230,9 @@ if e_arg and e_arg.isdigit():
     end = int(e_arg)
 
 if do_weekly and ( s_arg or e_arg or do_opp or display == avg ):
+    usage()
+
+if do_mlb and ( do_weekly or do_opp ):
     usage()
 
 b_cards = p_hash( cardpath() + '/' + batters )
@@ -257,7 +268,11 @@ if do_bat:
                 zero( ibl[team] )
             print
             continue
-        if do_opp:
+        if do_mlb:
+            sql = "select trim(tig_name) from rosters where \
+                    ibl_team = (%s) and uncarded = 0 and item_type = 2;"
+            cursor.execute(sql, (team, ) )
+        elif do_opp:
             sql = sql_select + sql_weeks + \
                 " (home = (%s) or away = (%s)) and ibl != (%s) and bf = 0\
                 group by mlb, name;"
@@ -267,8 +282,15 @@ if do_bat:
                 " ibl = (%s) and bf = 0 group by mlb, name;"
             cursor.execute(sql, (team, ) )
 
-        for mlb, name, paL, paR in cursor.fetchall():
-            b_total( team, mlb, name )
+        if do_mlb:
+            for tig_name in cursor.fetchall():
+                tigname = tig_name[0]
+                mlb, name = tigname.split()
+                paL = paR = MLB_B[tigname]
+                b_total( team, mlb, name )
+        else:
+            for mlb, name, paL, paR in cursor.fetchall():
+                b_total( team, mlb, name )
 
         for d in range(0,6):
             tot['vL'][d] += ibl[team]['vL'][d]
@@ -317,7 +339,11 @@ if do_pit:
                 zero( ibl[team] )
             print
             continue
-        if do_opp:
+        if do_mlb:
+            sql = "select trim(tig_name) from rosters where \
+                    ibl_team = (%s) and uncarded = 0 and item_type = 1;"
+            cursor.execute(sql, (team, ) )
+        elif do_opp:
             sql = sql_select + sql_weeks + \
                 " (home = (%s) or away = (%s)) and ibl != (%s) and bf > 0\
                 group by mlb, name;"
@@ -327,8 +353,15 @@ if do_pit:
                 " ibl = (%s) and bf > 0 group by mlb, name;"
             cursor.execute(sql, (team, ) )
 
-        for mlb, name, bf in cursor.fetchall():
-            p_total( team, mlb, name )
+        if do_mlb:
+            for tig_name in cursor.fetchall():
+                tigname = tig_name[0]
+                mlb, name = tigname.split()
+                bf = MLB_P[tigname]
+                p_total( team, mlb, name )
+        else:
+            for mlb, name, bf in cursor.fetchall():
+                p_total( team, mlb, name )
 
         for d in range(0,6):
             tot['vL'][d] += ibl[team]['vL'][d]
