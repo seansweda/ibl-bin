@@ -19,6 +19,12 @@ import DB
 from card import p_split, p_hash, cardpath, batters, pitchers, wOBA
 from usage import mlb_usage
 
+# identifiers
+pit = 1
+bat = 2
+left = 0
+right = 1
+
 def usage():
     print "usage: %s [-ABP] <team>" % sys.argv[0]
     sys.exit(1)
@@ -135,10 +141,11 @@ def pdump( team, stat, opt ):
             # vs average
             print "%+5.1f" % ( opt - stat['avg'] )
 
+# batter array: pa, h, ob, tb, pwr, woba
 def b_total( team, mlb, name ):
     if (mlb, name) in b_cards:
-        vl = vsL(b_cards[mlb, name], 2)
-        vr = vsR(b_cards[mlb, name], 2)
+        vl = vsL(b_cards[mlb, name], bat)
+        vr = vsR(b_cards[mlb, name], bat)
         #print mlb, name, paL, vl
         #print mlb, name, paR, vr
         ibl[team]['vL'][0] += paL
@@ -146,13 +153,14 @@ def b_total( team, mlb, name ):
         for d in 1, 2, 3, 4:
             ibl[team]['vL'][d] += vl[d - 1] * paL
             ibl[team]['vR'][d] += vr[d - 1] * paR
-        ibl[team]['vL'][5] += wOBA(b_cards[mlb, name], 2, 0) * paL
-        ibl[team]['vR'][5] += wOBA(b_cards[mlb, name], 2, 1) * paR
+        ibl[team]['vL'][5] += wOBA(b_cards[mlb, name], bat, left) * paL
+        ibl[team]['vR'][5] += wOBA(b_cards[mlb, name], bat, right) * paR
 
+# pitcher array: bf, h, ob, tb, df, woba
 def p_total( team, mlb, name ):
     if (mlb, name) in p_cards:
-        vl = vsL(p_cards[mlb, name], 1)
-        vr = vsR(p_cards[mlb, name], 1)
+        vl = vsL(p_cards[mlb, name], pit)
+        vr = vsR(p_cards[mlb, name], pit)
         #print mlb, name, bf, vl
         #print mlb, name, bf, vr
         ibl[team]['vL'][0] += bf
@@ -160,8 +168,8 @@ def p_total( team, mlb, name ):
         for d in 1, 2, 3, 4:
             ibl[team]['vL'][d] += vl[d - 1] * bf
             ibl[team]['vR'][d] += vr[d - 1] * bf
-        ibl[team]['vL'][5] += wOBA(p_cards[mlb, name], 1, 0) * bf
-        ibl[team]['vR'][5] += wOBA(p_cards[mlb, name], 1, 1) * bf
+        ibl[team]['vL'][5] += wOBA(p_cards[mlb, name], pit, left) * bf
+        ibl[team]['vR'][5] += wOBA(p_cards[mlb, name], pit, right) * bf
 
 db = DB.connect()
 cursor = db.cursor()
