@@ -81,14 +81,26 @@ def p_avg( stat ):
     harm = 2.0 * wL * wR / ( wL + wR )
     return( mean + abs(mean - harm) )
 
-def bdump( team, stat, opt ):
+def bE_avg( stat ):
+    # batter woba estimated using generic 27/73 (vLHP/vRHP) split
+    wL = stat['vL'][5] / stat['vL'][0]
+    wR = stat['vR'][5] / stat['vR'][0]
+    return( wL * 0.27 + wR * 0.73 )
+
+def pE_avg( stat ):
+    # pitcher woba estimated using generic 43/57 (vLHB/vRHB) split
+    wL = stat['vL'][5] / stat['vL'][0]
+    wR = stat['vR'][5] / stat['vR'][0]
+    return( wL * 0.43 + wR * 0.57 )
+
+def bdump( team, stat, opt, afunc ):
     if stat['vL'][0] > 0 or stat['vR'][0] > 0:
         if stat['vL'][0] == 0:
             stat['vL'][0] += 1
         if stat['vR'][0] == 0:
             stat['vR'][0] += 1
 
-        stat['avg'] = b_avg( stat )
+        stat['avg'] = afunc( stat )
         print "%s" % ( team ),
         for d in 1, 2, 3:
             print " %5.1f" % ( stat['vL'][d] / stat['vL'][0] ),
@@ -112,14 +124,14 @@ def bdump( team, stat, opt ):
             # vs average
             print "%+5.1f" % ( stat['avg'] - opt )
 
-def pdump( team, stat, opt ):
+def pdump( team, stat, opt, afunc ):
     if stat['vL'][0] > 0 or stat['vR'][0] > 0:
         if stat['vL'][0] == 0:
             stat['vL'][0] += 1
         if stat['vR'][0] == 0:
             stat['vR'][0] += 1
 
-        stat['avg'] = p_avg( stat )
+        stat['avg'] = afunc( stat )
         print "%s" % ( team ),
         for d in 1, 2, 3, 4:
             print " %5.1f" % ( stat['vL'][d] / stat['vL'][0] ),
@@ -305,17 +317,22 @@ if do_bat:
             tot['vR'][d] += ibl[team]['vR'][d]
     #end arg loop
 
+    if do_mlb:
+        avg_B = bE_avg
+    else:
+        avg_B = b_avg
+
     for t in sorted(ibl):
         if display == avg:
-            tot['avg'] = b_avg( tot )
-            bdump( t, ibl[t], tot['avg'] )
+            tot['avg'] = avg_B( tot )
+            bdump( t, ibl[t], tot['avg'], avg_B )
         else:
-            bdump( t, ibl[t], display )
+            bdump( t, ibl[t], display, avg_B )
     if do_tot:
         if display == avg:
-            bdump( '---', tot, 0 )
+            bdump( '---', tot, 0, avg_B )
         else:
-            bdump( '---', tot, display )
+            bdump( '---', tot, display, avg_B )
 
 if do_pit:
     if do_bat:
@@ -376,17 +393,22 @@ if do_pit:
             tot['vR'][d] += ibl[team]['vR'][d]
     #end arg loop
 
+    if do_mlb:
+        avg_P = pE_avg
+    else:
+        avg_P = p_avg
+
     for t in sorted(ibl):
         if display == avg:
-            tot['avg'] = p_avg( tot )
-            pdump( t, ibl[t], tot['avg'] )
+            tot['avg'] = avg_P( tot )
+            pdump( t, ibl[t], tot['avg'], avg_P )
         else:
-            pdump( t, ibl[t], display )
+            pdump( t, ibl[t], display, avg_P )
     if do_tot:
         if display == avg:
-            pdump( '---', tot, 0 )
+            pdump( '---', tot, 0, avg_P )
         else:
-            pdump( '---', tot, display )
+            pdump( '---', tot, display, avg_P )
 
 db.close()
 
