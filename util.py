@@ -4,7 +4,7 @@
 # -B: batters only
 # -P: batters only
 # -A: all teams
-# -M: MLB usage
+# -M: MLB usage (-a for active only)
 # -p: platoon differential
 # -v: vs average
 # -s: start week
@@ -205,9 +205,10 @@ start = 1
 end = 27
 s_arg = ''
 e_arg = ''
+active = ''
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPMopvws:e:y:')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPMaopvws:e:y:')
 except getopt.GetoptError, err:
     print str(err)
     usage()
@@ -217,6 +218,8 @@ for (opt, arg) in opts:
         do_pit = False
     elif opt == '-P':
         do_bat = False
+    elif opt == '-a':
+        active = ' and status = 1'
     elif opt == '-o':
         do_opp = True
     elif opt == '-p':
@@ -290,8 +293,8 @@ if do_bat:
             continue
         if do_mlb:
             sql = "select trim(tig_name) from rosters where \
-                    ibl_team = (%s) and uncarded = 0 and item_type = 2;"
-            cursor.execute(sql, (team, ) )
+                    ibl_team = (%s) and uncarded = 0 and item_type = 2"
+            cursor.execute(sql + active, (team, ) )
         elif do_opp:
             sql = sql_select + sql_weeks + \
                 " (home = (%s) or away = (%s)) and ibl != (%s) and bf = 0\
@@ -366,8 +369,8 @@ if do_pit:
             continue
         if do_mlb:
             sql = "select trim(tig_name) from rosters where \
-                    ibl_team = (%s) and uncarded = 0 and item_type = 1;"
-            cursor.execute(sql, (team, ) )
+                    ibl_team = (%s) and uncarded = 0 and item_type = 1"
+            cursor.execute(sql + active, (team, ) )
         elif do_opp:
             sql = sql_select + sql_weeks + \
                 " (home = (%s) or away = (%s)) and ibl != (%s) and bf > 0\
