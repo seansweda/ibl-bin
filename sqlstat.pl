@@ -453,18 +453,21 @@ while (<DATA>) {
 		    }
 
 		    $tcode = -1;
-		    if ( $type =~ /^[iI]/ && length($type) >= 3 ) {
+		    if ( $type =~ /^inj/i ) {
 			# default: injury+DTD
 			$tcode = 0;
-		    } elsif ( $type =~ /^[oO]/ && length($type) >= 3 ) {
+		    } elsif ( $type =~ /^out/i ) {
 			# "out": fixed duration (no DTD)
 			$tcode = 1;
-		    } elsif ( $type =~ /^[sS]/ && length($type) >= 3 ) {
+		    } elsif ( $type =~ /^sus/i ) {
 			# "sus": suspension
 			$tcode = 2;
-		    } elsif ( $type =~ /^[aA]/ && length($type) >= 3 ) {
+		    } elsif ( $type =~ /^adj/i ) {
 			# "adj": no injury credit
 			$tcode = 3;
+		    } elsif ( $type =~ /^arm/i ) {
+			# "arm": pitching injury, two-way player
+			$tcode = 4;
 		    } else {
 			print ">> ", $_;
 			print "line $lines \"$type\" not valid injury code\n";
