@@ -271,6 +271,11 @@ if do_bat:
             % ( DB.usage )
     zero( tot )
 
+    if do_mlb:
+        avg_B = bE_avg
+    else:
+        avg_B = b_avg
+
     for arg in args:
         team = arg.upper()
 
@@ -285,9 +290,9 @@ if do_bat:
                 for mlb, name, paL, paR in cursor.fetchall():
                     b_total( team, mlb, name )
                 if display == platoon:
-                    bdump( team, ibl[team], platoon )
+                    bdump( team, ibl[team], platoon, avg_B )
                 else:
-                    bdump( team, ibl[team], overall )
+                    bdump( team, ibl[team], overall, avg_B )
                 zero( ibl[team] )
             print
             continue
@@ -320,11 +325,6 @@ if do_bat:
             tot['vR'][d] += ibl[team]['vR'][d]
     #end arg loop
 
-    if do_mlb:
-        avg_B = bE_avg
-    else:
-        avg_B = b_avg
-
     for t in sorted(ibl):
         if display == avg:
             tot['avg'] = avg_B( tot )
@@ -347,6 +347,11 @@ if do_pit:
             % ( DB.usage )
     zero( tot )
 
+    if do_mlb:
+        avg_P = pE_avg
+    else:
+        avg_P = p_avg
+
     for arg in args:
         team = arg.upper()
 
@@ -361,9 +366,9 @@ if do_pit:
                 for mlb, name, bf in cursor.fetchall():
                     p_total( team, mlb, name )
                 if display == platoon:
-                    pdump( team, ibl[team], platoon )
+                    pdump( team, ibl[team], platoon, avg_P )
                 else:
-                    pdump( team, ibl[team], overall )
+                    pdump( team, ibl[team], overall, avg_P )
                 zero( ibl[team] )
             print
             continue
@@ -395,11 +400,6 @@ if do_pit:
             tot['vL'][d] += ibl[team]['vL'][d]
             tot['vR'][d] += ibl[team]['vR'][d]
     #end arg loop
-
-    if do_mlb:
-        avg_P = pE_avg
-    else:
-        avg_P = p_avg
 
     for t in sorted(ibl):
         if display == avg:
