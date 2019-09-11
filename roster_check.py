@@ -76,6 +76,10 @@ def main():
     inactive = 2
     uncarded = 3
 
+    # item type
+    pitcher = 1
+    batter = 2
+
     def ok( week ):
         for series in week.keys():
             out = map( lambda z: z & (IR.off + IR.inj + IR.sus), week[series] )
@@ -86,13 +90,13 @@ def main():
     sql_count = "select status, count(*) from rosters \
             where ibl_team = (%s) and item_type != 0 \
             group by status;"
-    sql_ros = "select trim(tig_name) from rosters \
+    sql_ros = "select trim(tig_name), item_type from rosters \
             where ibl_team = (%s) and item_type != 0 and status = 1;"
 
     if not do_json:
         if is_cgi:
             print "<pre>"
-        print "WEEK %-2s                            #  1  2  3  4  5  6  7  8  9" % week
+        print "WEEK %-2s                                  #  1  2  3  4  5  6  7  8  9" % week
 
     cursor.execute("select distinct(ibl_team) from rosters \
                             where ibl_team != 'FA' order by ibl_team;")
@@ -106,9 +110,15 @@ def main():
         for pos in range(10):
             legal.append(0)
 
+        batters = 0
+        pitchers = 0
         cursor.execute( sql_ros, (ibl, ) )
-        for player, in cursor.fetchall():
+        for player, kind in cursor.fetchall():
             #print player, starts[player]
+            if kind == pitcher:
+                pitchers += 1
+            if kind == batter:
+                batters += 1
 
             # check if player has appearances left
             if starts[player][0] <= 0:
@@ -143,8 +153,9 @@ def main():
                 })
         else:
             print ibl,
-            print "total %s," % sum(ros.values()),
-            print "active %s," % ros[active],
+            print "total %s" % sum(ros.values()),
+            print "active %s" % ros[active],
+            print "(%2d/%2d)" % ( pitchers, batters ),
 
             print "starts (",
             for pos in range(10):
