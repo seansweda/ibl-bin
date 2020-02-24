@@ -7,6 +7,8 @@
 # -t: team
 # -a: list actives
 
+from __future__ import (print_function, unicode_literals)
+
 import os
 import sys
 import getopt
@@ -17,7 +19,7 @@ import DB
 import injreport
 
 def usage():
-    print "usage: %s [-i] [-w week] [-y year] [-t team]" % sys.argv[0]
+    print("usage: %s [-i] [-w week] [-y year] [-t team]" % sys.argv[0])
     sys.exit(1)
 
 def output( name, starts, inj, is_cgi ):
@@ -38,15 +40,15 @@ def main( starts = {}, module = False, report_week = 27 ):
         #import cgitb; cgitb.enable()
         form = cgi.FieldStorage()
         is_cgi = True
-        if form.has_key('json'):
+        if 'json' in form:
             import json
             do_json = True
-            print "Content-Type: application/json"
-            print
+            print("Content-Type: application/json")
+            print()
         else:
             do_json = False
-            print "Content-Type: text/csv"
-            print
+            print("Content-Type: text/csv")
+            print()
             #dumpenv(form)
 
     db = DB.connect()
@@ -55,7 +57,7 @@ def main( starts = {}, module = False, report_week = 27 ):
     do_active = 0
     team = ''
     if is_cgi:
-        if form.has_key('week'):
+        if 'week' in form:
             report_week = int(form.getfirst('week'))
     elif not module:
         for (opt, arg) in opts:
@@ -90,41 +92,41 @@ def main( starts = {}, module = False, report_week = 27 ):
             if not is_cgi:
                 for spc in range(0, do_active):
                     sys.stdout.write(' ')
-                print "MLB Name            GP  SP   C  1B  2B  3B  SS  LF  CF  RF INJ"
+                print("MLB Name            GP  SP   C  1B  2B  3B  SS  LF  CF  RF INJ")
             sql = "select tig_name, status from rosters where ibl_team = '%s' \
                     and item_type > 0 order by item_type, tig_name;" \
                     % team.upper()
             cursor.execute(sql)
             for tig_name, status in cursor.fetchall():
                 tig_name = tig_name.rstrip()
-                if inj.has_key(tig_name):
+                if tig_name in inj:
                     days = int(injreport.injdays( inj[tig_name], report_week ))
                 else:
                     days = 0
-                if starts.has_key(tig_name):
+                if tig_name in starts:
                     if do_active:
                         if status == 1:
                             sys.stdout.write(' ')
                         else:
                             sys.stdout.write('*')
-                    print output( tig_name, starts[tig_name], days, is_cgi )
+                    print(output( tig_name, starts[tig_name], days, is_cgi ))
         else:
             if not is_cgi:
-                print "MLB Name            GP  SP   C  1B  2B  3B  SS  LF  CF  RF INJ"
+                print("MLB Name            GP  SP   C  1B  2B  3B  SS  LF  CF  RF INJ")
             for tig_name in sorted(starts):
-                if inj.has_key(tig_name):
+                if tig_name in inj:
                     days = int(injreport.injdays( inj[tig_name], report_week ))
                 else:
                     days = 0
-                print output( tig_name, starts[tig_name], days, is_cgi )
+                print(output( tig_name, starts[tig_name], days, is_cgi ))
 
     db.close()
 
 if __name__ == "__main__":
     try:
         opts, args = getopt.getopt(sys.argv[1:], 't:w:y:ai')
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         usage()
 
     main()

@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from __future__ import (print_function, unicode_literals)
+
 import sys
 import re
 import getopt
@@ -9,8 +11,8 @@ import DB
 
 try:
     (opts, args) = getopt.getopt(sys.argv[1:], 'd')
-except getopt.GetoptError, err:
-    print str(err)
+except getopt.GetoptError as err:
+    print(str(err))
 
 debug = 0
 for (opt, arg) in opts:
@@ -79,10 +81,10 @@ if week and home and away:
         pass
 
     if debug:
-        print "WEEK %s" % week
-        print "HOME %s next: %s" % ( home, h_next )
-        print "AWAY %s next: %s" % ( away, a_next )
+        print("WEEK %s" % week)
+        print("HOME %s next: %s" % ( home, h_next ))
+        print("AWAY %s next: %s" % ( away, a_next ))
 
     if not admin:
-        print home, away, h_next, a_next
+        print(home, away, h_next, a_next)
 

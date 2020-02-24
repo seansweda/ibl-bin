@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from __future__ import (print_function, unicode_literals)
+
 import os
 import sys
 import getopt
@@ -8,21 +10,21 @@ import psycopg2
 import DB
 
 def usage():
-    print "usage: %s [-w week]" % sys.argv[0]
+    print("usage: %s [-w week]" % sys.argv[0])
     sys.exit(1)
 
 # dump environment and parameters for testing
 # not really necessary, mostly for learning purposes
 def dumpenv(form):
-    for (env, val) in os.environ.items():
-        print "<br>", env + " : ", val
-    print "<p>parameters"
-    for param in form.keys():
-        print "<br>", param + " : ",
+    for (env, val) in list(os.environ.items()):
+        print("<br>", env + " : ", val)
+    print("<p>parameters")
+    for param in list(form.keys()):
+        print("<br>", param + " : ", end=' ')
         for val in form.getlist(param):
-            print val,
-        print
-    print "<p>"
+            print(val, end=' ')
+        print()
+    print("<p>")
     return
 
 # sql table injury codes
@@ -43,9 +45,9 @@ arm = 32
 
 def injdays( player, stop, type = inj ):
     total = 0
-    for week in player.keys():
+    for week in list(player.keys()):
         if week <= stop:
-            for series in player[week].keys():
+            for series in list(player[week].keys()):
                 for x in player[week][series]:
                     if ( x & (type + sus)) > 0:
                         total += 1
@@ -62,8 +64,8 @@ def allstar( week ):
         return False
 
 def get_series( player, name, week, loc ):
-    if player[name].has_key(week):
-        if player[name][week].has_key(loc):
+    if week in player[name]:
+        if loc in player[name][week]:
             return player[name][week][loc]
         else:
             player[name][week][loc] = {}
@@ -91,12 +93,12 @@ def search( days, code ):
 
 def totals( week, code ):
     found = {}
-    for loc in week.keys():
+    for loc in list(week.keys()):
         found[loc] = 0
         for x in week[loc]:
             if x & code == code:
                 found[loc] += 1
-    return found.items()
+    return list(found.items())
 
 def update( days, code, length, day = 1 ):
     served = 0
@@ -147,7 +149,7 @@ def dcode( days ):
             output += "( OK  )"
         else:
             output += "( "
-            for val in dc.keys():
+            for val in list(dc.keys()):
                 if x & val != 0:
                     output += dc[val]
                     output += " "
@@ -180,17 +182,17 @@ def main( player = {}, module = False, report_week = 0 ):
         #import cgitb; cgitb.enable()
         form = cgi.FieldStorage()
         is_cgi = True
-        if form.has_key('json'):
+        if 'json' in form:
             import json
             do_json = True
-            print "Content-Type: application/json"
-            print
+            print("Content-Type: application/json")
+            print()
         else:
             do_json = False
-            print "Content-Type: text/html"
-            print
-            if not form.has_key('notitle'):
-                print "<html><head><title>IBL Injury Report</title></head><body>"
+            print("Content-Type: text/html")
+            print()
+            if 'notitle' not in form:
+                print("<html><head><title>IBL Injury Report</title></head><body>")
             #dumpenv(form)
 
     db = DB.connect()
@@ -200,9 +202,9 @@ def main( player = {}, module = False, report_week = 0 ):
     do_all = 1
 
     if is_cgi:
-        if form.has_key('week'):
+        if 'week' in form:
             report_week = int(form.getfirst('week'))
-        if form.has_key('active'):
+        if 'active' in form:
             do_all = 0
     elif not module:
         for (opt, arg) in opts:
@@ -211,7 +213,7 @@ def main( player = {}, module = False, report_week = 0 ):
             elif opt == '-w':
                 report_week = int(arg)
             else:
-                print "bad option:", opt
+                print("bad option:", opt)
                 usage()
 
     if report_week == 0:
@@ -225,7 +227,7 @@ def main( player = {}, module = False, report_week = 0 ):
                 break
 
     if is_cgi and not module:
-        print "<table>"
+        print("<table>")
 
     sql = "select week, home, away, day, type, ibl, ibl_team, status, \
              i.tig_name, length, dtd, description from %s i \
@@ -241,7 +243,7 @@ def main( player = {}, module = False, report_week = 0 ):
         if active != 1:
             active = 0
 
-        if not player.has_key(name):
+        if name not in player:
             player[name] = {}
 
         if week == 28:
@@ -276,8 +278,8 @@ def main( player = {}, module = False, report_week = 0 ):
                 code = no_dtd
                 length -= 1
             loc = 'ASB'
-            if player[name].has_key(week) and \
-                    player[name][week].has_key(loc):
+            if week in player[name] and \
+                    loc in player[name][week]:
                 series = player[name][week][loc]
             else:
                 series = [ 1, 1, 1 ]
@@ -314,8 +316,8 @@ def main( player = {}, module = False, report_week = 0 ):
                     code = no_dtd
                     length -= 1
                 loc = 'ASB'
-                if player[name].has_key(week) and \
-                        player[name][week].has_key(loc):
+                if week in player[name] and \
+                        loc in player[name][week]:
                     series = player[name][week][loc]
                 else:
                     series = [ 1, 1, 1 ]
@@ -377,7 +379,7 @@ def main( player = {}, module = False, report_week = 0 ):
                 if week_tot == 0:
                     # player available start of week, check previous
                     thru_week = week - 1
-                    if not player[name].has_key(thru_week):
+                    if thru_week not in player[name]:
                         player[name][thru_week] = {}
                     days_out = totals( player[name][thru_week], kind(code) )
                     days_out.sort( key = lambda s: s[1], reverse=True )
@@ -412,22 +414,22 @@ def main( player = {}, module = False, report_week = 0 ):
 
             if do_all or active:
                 if is_cgi:
-                    print '<tr><td>%s</td><td>"%s"</td></tr>' % \
-                            ( output + '.', desc )
+                    print('<tr><td>%s</td><td>"%s"</td></tr>' % \
+                            ( output + '.', desc ))
                 else:
-                    print '%-80s\t"%s"' % ( output + '.', desc )
+                    print('%-80s\t"%s"' % ( output + '.', desc ))
             # END if report_week
 
         # END injury loop
 
     if is_cgi and not module:
-        print "</table>"
+        print("</table>")
 
 if __name__ == "__main__":
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'aw:')
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         usage()
 
     main()

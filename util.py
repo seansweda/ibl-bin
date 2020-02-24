@@ -10,6 +10,8 @@
 # -s: start week
 # -e: end week
 
+from __future__ import (print_function, unicode_literals)
+
 import sys
 import getopt
 
@@ -26,7 +28,7 @@ left = 0
 right = 1
 
 def usage():
-    print "usage: %s [-ABP] <team>" % sys.argv[0]
+    print("usage: %s [-ABP] <team>" % sys.argv[0])
     sys.exit(1)
 
 def trim(string):
@@ -101,28 +103,28 @@ def bdump( team, stat, opt, afunc ):
             stat['vR'][0] += 1
 
         stat['avg'] = afunc( stat )
-        print "%s" % ( team ),
+        print("%s" % ( team ), end=' ')
         for d in 1, 2, 3:
-            print " %5.1f" % ( stat['vL'][d] / stat['vL'][0] ),
-        print " %4.3f" % ( stat['vL'][4] / stat['vL'][0] ),
-        print " %3d" % ( stat['vL'][5] / stat['vL'][0] + 0.5 ),
-        print ".",
+            print(" %5.1f" % ( stat['vL'][d] / stat['vL'][0] ), end=' ')
+        print(" %4.3f" % ( stat['vL'][4] / stat['vL'][0] ), end=' ')
+        print(" %3d" % ( stat['vL'][5] / stat['vL'][0] + 0.5 ), end=' ')
+        print(".", end=' ')
         for d in 1, 2, 3:
-            print " %5.1f" % ( stat['vR'][d] / stat['vR'][0] ),
-        print " %4.3f" % ( stat['vR'][4] / stat['vR'][0] ),
-        print " %3d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ),
-        print ".",
+            print(" %5.1f" % ( stat['vR'][d] / stat['vR'][0] ), end=' ')
+        print(" %4.3f" % ( stat['vR'][4] / stat['vR'][0] ), end=' ')
+        print(" %3d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ), end=' ')
+        print(".", end=' ')
         if opt == 0:
-            print "%5.1f" % ( 0.0 )
+            print("%5.1f" % ( 0.0 ))
         elif opt == overall:
-            print " %3d" % ( stat['avg'] + 0.5 )
+            print(" %3d" % ( stat['avg'] + 0.5 ))
         elif opt == platoon:
             # platoon differential
-            print "%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
-                    stat['vR'][5] / stat['vR'][0] )
+            print("%+5.1f" % ( stat['vL'][5] / stat['vL'][0] -
+                    stat['vR'][5] / stat['vR'][0] ))
         else:
             # vs average
-            print "%+5.1f" % ( stat['avg'] - opt )
+            print("%+5.1f" % ( stat['avg'] - opt ))
 
 def pdump( team, stat, opt, afunc ):
     if stat['vL'][0] > 0 or stat['vR'][0] > 0:
@@ -132,26 +134,26 @@ def pdump( team, stat, opt, afunc ):
             stat['vR'][0] += 1
 
         stat['avg'] = afunc( stat )
-        print "%s" % ( team ),
+        print("%s" % ( team ), end=' ')
         for d in 1, 2, 3, 4:
-            print " %5.1f" % ( stat['vL'][d] / stat['vL'][0] ),
-        print " %3d" % ( stat['vL'][5] / stat['vL'][0] + 0.5 ),
-        print ".",
+            print(" %5.1f" % ( stat['vL'][d] / stat['vL'][0] ), end=' ')
+        print(" %3d" % ( stat['vL'][5] / stat['vL'][0] + 0.5 ), end=' ')
+        print(".", end=' ')
         for d in 1, 2, 3, 4:
-            print " %5.1f" % ( stat['vR'][d] / stat['vR'][0] ),
-        print " %3d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ),
-        print ".",
+            print(" %5.1f" % ( stat['vR'][d] / stat['vR'][0] ), end=' ')
+        print(" %3d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ), end=' ')
+        print(".", end=' ')
         if opt == 0:
-            print "%5.1f" % ( 0.0 )
+            print("%5.1f" % ( 0.0 ))
         elif opt == overall:
-            print " %3d" % ( stat['avg'] + 0.5 )
+            print(" %3d" % ( stat['avg'] + 0.5 ))
         elif opt == platoon:
             # platoon differential
-            print "%+5.1f" % ( stat['vR'][5] / stat['vR'][0] -
-                    stat['vL'][5] / stat['vL'][0] )
+            print("%+5.1f" % ( stat['vR'][5] / stat['vR'][0] -
+                    stat['vL'][5] / stat['vL'][0] ))
         else:
             # vs average
-            print "%+5.1f" % ( opt - stat['avg'] )
+            print("%+5.1f" % ( opt - stat['avg'] ))
 
 # batter array: pa, h, ob, tb, pwr, woba
 def b_total( team, mlb, name ):
@@ -209,8 +211,8 @@ active = ''
 
 try:
     (opts, args) = getopt.getopt(sys.argv[1:], 'ABPMaopvws:e:y:')
-except getopt.GetoptError, err:
-    print str(err)
+except getopt.GetoptError as err:
+    print(str(err))
     usage()
 
 for (opt, arg) in opts:
@@ -243,7 +245,7 @@ for (opt, arg) in opts:
         do_mlb = True
         mlb_usage( MLB_P, MLB_B )
     else:
-        print "bad option:", opt
+        print("bad option:", opt)
         usage()
 
 if s_arg and s_arg.isdigit():
@@ -265,7 +267,7 @@ sql_weeks = "where week >= %d and week <= %d and " % ( start, end )
 
 if do_bat:
     if do_pit:
-        print "BATTERS"
+        print("BATTERS")
 
     sql_select = "select trim(mlb), trim(name), sum(vl), sum(vr) from %s "\
             % ( DB.usage )
@@ -294,7 +296,7 @@ if do_bat:
                 else:
                     bdump( team, ibl[team], overall, avg_B )
                 zero( ibl[team] )
-            print
+            print()
             continue
         if do_mlb:
             sql = "select trim(tig_name) from rosters where \
@@ -340,8 +342,8 @@ if do_bat:
 if do_pit:
     if do_bat:
         if not do_weekly:
-            print
-        print "PITCHERS"
+            print()
+        print("PITCHERS")
 
     sql_select = "select trim(mlb), trim(name), sum(bf) from %s "\
             % ( DB.usage )
@@ -370,7 +372,7 @@ if do_pit:
                 else:
                     pdump( team, ibl[team], overall, avg_P )
                 zero( ibl[team] )
-            print
+            print()
             continue
         if do_mlb:
             sql = "select trim(tig_name) from rosters where \

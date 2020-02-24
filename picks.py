@@ -7,17 +7,20 @@
 # -s: skip unusable picks
 # -S: skip & remove unusable picks
 
+from __future__ import (print_function, unicode_literals)
+
 import os
 import sys
 import getopt
 import time
 import yaml
 import psycopg2
+from io import open
 
 import DB
 
 def usage():
-    print "usage: %s " % sys.argv[0]
+    print("usage: %s " % sys.argv[0])
     sys.exit(1)
 
 db = DB.connect()
@@ -25,24 +28,24 @@ cursor = db.cursor()
 
 try:
     (opts, args) = getopt.getopt(sys.argv[1:], 'L:sSt:r:y:')
-except getopt.GetoptError, err:
-    print str(err)
+except getopt.GetoptError as err:
+    print(str(err))
     usage()
 
 try:
-    f = open( DB.bin_dir() + '/data/tiers.yml', 'rU')
-except IOError, err:
-    print str(err)
+    with open( DB.bin_dir() + '/data/tiers.yml', 'r', newline=None ) as f:
+        y = yaml.safe_load(f)
+
+        if 'year' in y:
+            year = str( y['year'] )
+        else:
+            # default is year + 1
+            year = int(time.strftime("%Y"))
+            year = "%s" % ( int(year) + 1 )
+
+except IOError as err:
+    print(str(err))
     sys.exit(1)
-
-y = yaml.safe_load(f)
-
-if y.has_key('year'):
-    year = str( y['year'] )
-else:
-    # default is year + 1
-    year = int(time.strftime("%Y"))
-    year = "%s" % ( int(year) + 1 )
 
 skip = 0
 remove = 0
@@ -91,12 +94,12 @@ cursor.execute( "select ibl_team, trim(tig_name) from rosters where item_type = 
 for ibl, pk in cursor.fetchall():
     picks[ pk.split()[0] ] = ibl
 
-for rnd in xrange( 1, last_round + 1 ):
+for rnd in range( 1, last_round + 1 ):
     pick = 1
-    for slot in xrange(1,25):
+    for slot in range(1,25):
         original = order1[ slot - 1 ] if rnd % 2 == 1 else order2[ slot - 1 ]
         pickstr = original + '#' + str(rnd)
-        if picks.has_key( pickstr ):
+        if pickstr in picks:
             owner = picks[ pickstr ]
         else:
             if not remove:
@@ -104,11 +107,11 @@ for rnd in xrange( 1, last_round + 1 ):
             continue
         if not skip or roster[owner] < 35:
             if ( all_teams or do_team == owner ) and ( all_rounds or do_round == rnd ):
-                print "%s%-5s  %3s  (%s)" % (
+                print("%s%-5s  %3s  (%s)" % (
                     ' ' if roster[owner] < 35 else '*',
                     str(rnd) + '-' + ( str(pick) if skip else str(slot) ),
                     owner, pickstr
-                    )
+                    ))
             roster[owner] += 1
             pick += 1
             continue
@@ -116,10 +119,10 @@ for rnd in xrange( 1, last_round + 1 ):
             pick += 1
 
     if ( all_teams and all_rounds):
-        print
+        print()
 
 if skip and not do_round:
     for team in sorted(roster):
         if roster[team] < 35:
-            print "\t%s: %i" % (team, 35 - roster[team])
+            print("\t%s: %i" % (team, 35 - roster[team]))
 

@@ -2,30 +2,33 @@
 # -w: week
 # -r: records only (no late penalties)
 
+from __future__ import (print_function, unicode_literals)
+
 import os
 import sys
 import getopt
 import psycopg2
 import yaml
+from io import open
 
 import DB
 
 def usage():
-    print "usage: %s [-w week]" % sys.argv[0]
+    print("usage: %s [-w week]" % sys.argv[0])
     sys.exit(1)
 
 # dump environment and parameters for testing
 # not really necessary, mostly for learning purposes
 def dumpenv(form):
-    for (env, val) in os.environ.items():
-        print "<br>", env + " : ", val
-    print "<p>parameters"
-    for param in form.keys():
-        print "<br>", param + " : ",
+    for (env, val) in list(os.environ.items()):
+        print("<br>", env + " : ", val)
+    print("<p>parameters")
+    for param in list(form.keys()):
+        print("<br>", param + " : ", end=' ')
         for val in form.getlist(param):
-            print val,
-        print
-    print "<p>"
+            print(val, end=' ')
+        print()
+    print("<p>")
     return
 
 def main():
@@ -36,16 +39,16 @@ def main():
         #import cgitb; cgitb.enable()
         form = cgi.FieldStorage()
         is_cgi = True
-        if form.has_key('json'):
+        if 'json' in form:
             import json
             do_json = True
-            print "Content-Type: application/json"
-            print
+            print("Content-Type: application/json")
+            print()
         else:
             do_json = False
-            print "Content-Type: text/html"
-            print
-            print "<html><head><title>Free Agent signing order</title></head><body>"
+            print("Content-Type: text/html")
+            print()
+            print("<html><head><title>Free Agent signing order</title></head><body>")
             #dumpenv(form)
 
     db = DB.connect()
@@ -74,7 +77,7 @@ def main():
 
     week = 1
     check_late = True
-    if is_cgi and form.has_key('week'):
+    if is_cgi and 'week' in form:
         week = int(form.getfirst('week'))
     else:
         for ( opt, arg ) in opts:
@@ -100,18 +103,18 @@ def main():
     lastyear = {}
 
     try:
-        f = open( DB.bin_dir() + '/data/fa.yml', 'rU' )
-    except IOError, err:
-        print str(err)
-        sys.exit(1)
+        with open( DB.bin_dir() + '/data/fa.yml', 'r', newline=None ) as f:
+            y = yaml.safe_load(f)
 
-    y = yaml.safe_load(f)
+            if 'lastyear' in y:
+                for rec in y['lastyear']:
+                    fa.append( rec[0] )
+                    lastyear[rec[0]] = float(rec[1])/(float(rec[1])+float(rec[2]))
+            else:
+                sys.exit(1)
 
-    if y.has_key('lastyear'):
-        for rec in y['lastyear']:
-            fa.append( rec[0] )
-            lastyear[rec[0]] = float(rec[1])/(float(rec[1])+float(rec[2]))
-    else:
+    except IOError as err:
+        print(str(err))
         sys.exit(1)
 
     #print fa
@@ -170,28 +173,28 @@ def main():
     #print fa
 
     if do_json:
-        print json.dumps({ "week": (week + 1), "teams": fa })
+        print(json.dumps({ "week": (week + 1), "teams": fa }))
     else:
         if is_cgi:
-            print "<br>",
-        print "FA signing priority for week %d" % (week + 1)
+            print("<br>", end=' ')
+        print("FA signing priority for week %d" % (week + 1))
         if is_cgi:
-            print "<br>",
-        print "(highest to lowest)"
+            print("<br>", end=' ')
+        print("(highest to lowest)")
         for team in fa:
             if is_cgi:
-                print "<br>",
-            print team
+                print("<br>", end=' ')
+            print(team)
 
         if is_cgi:
-            print "</body></html>"
+            print("</body></html>")
 
 
 if __name__ == "__main__":
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'rw:')
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         usage()
 
     main()

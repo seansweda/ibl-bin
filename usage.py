@@ -6,12 +6,15 @@
 # -P: pitchers only
 # -A: rostered players only
 
+from __future__ import (print_function, unicode_literals)
+
 import os
 import csv
 import sys
 import psycopg2
 import getopt
 import time
+from io import open
 
 import DB
 from card import cardpath
@@ -29,53 +32,53 @@ pitcher = 1
 batter = 2
 
 def usage():
-    print "usage: %s [-t team]" % sys.argv[0]
+    print("usage: %s [-t team]" % sys.argv[0])
     sys.exit(1)
 
 # dump environment and parameters for testing
 # not really necessary, mostly for learning purposes
 def dumpenv(form):
-    for (env, val) in os.environ.items():
-        print "<br>", env + " : ", val
-    print "<p>parameters"
-    for param in form.keys():
-        print "<br>", param + " : ",
+    for (env, val) in list(os.environ.items()):
+        print("<br>", env + " : ", val)
+    print("<p>parameters")
+    for param in list(form.keys()):
+        print("<br>", param + " : ", end=' ')
         for val in form.getlist(param):
-            print val,
-        print
-    print "<p>"
+            print(val, end=' ')
+        print()
+    print("<p>")
     return
 
 def mlb_usage( pit_U, bat_U ):
     mlb_file = cardpath() + '/usage_bf.txt'
     if not os.path.isfile(mlb_file):
-        print mlb_file + " not found"
+        print(mlb_file + " not found")
         sys.exit(1)
-    with open( mlb_file, 'rU' ) as s:
+    with open( mlb_file, 'r', newline=None ) as s:
         for line in csv.reader(s):
             pit_U[line[0].rstrip()] = float(line[1])
 
     mlb_file = cardpath() + '/usage_pa.txt'
     if not os.path.isfile(mlb_file):
-        print mlb_file + " not found"
+        print(mlb_file + " not found")
         sys.exit(1)
-    with open( mlb_file, 'rU' ) as s:
+    with open( mlb_file, 'r', newline=None ) as s:
         for line in csv.reader(s):
             bat_U[line[0].rstrip()] = float(line[1])
 
 def gp ( ibl ):
-    if IBL_G.has_key(ibl) and IBL_G[ibl]:
+    if ibl in IBL_G and IBL_G[ibl]:
         return float( IBL_G[ibl] )
     else:
         return 0.0
 
 def injdays ( name, role ):
-    if INJ.has_key(name):
+    if name in INJ:
         if role == batter:
             return injreport.injdays( INJ[name], 27 )
         elif role == pitcher:
             # two-way players use "arm" injury for pitching usage credit
-            if MLB_B.has_key(name):
+            if name in MLB_B:
                 return injreport.injdays( INJ[name], 27,
                         injreport.arm + injreport.inj )
             else:
@@ -96,9 +99,9 @@ def r_usage( name, role, g, do_o = False ):
 
     ibl_U = 0
     mlb_U = 0
-    if U.has_key(name):
+    if name in U:
         ibl_U = U[name]
-    if M.has_key(name):
+    if name in M:
         mlb_U = M[name]
 
     inj = injdays( name, role )
@@ -157,9 +160,9 @@ def g_usage( name, role, g, do_o = False ):
 
     ibl_U = 0
     mlb_U = 0
-    if U.has_key(name):
+    if name in U:
         ibl_U = U[name]
-    if M.has_key(name):
+    if name in M:
         mlb_U = M[name]
 
     inj = injdays( name, role )
@@ -255,9 +258,9 @@ def std_usage( name, role, g ):
 
     ibl_U = 0
     mlb_U = 0
-    if U.has_key(name):
+    if name in U:
         ibl_U = U[name]
-    if M.has_key(name):
+    if name in M:
         mlb_U = M[name]
 
     inj = injdays( name, role )
@@ -289,16 +292,16 @@ def main():
         #import cgitb; cgitb.enable()
         form = cgi.FieldStorage()
         is_cgi = True
-        if form.has_key('json'):
+        if 'json' in form:
             import json
             do_json = True
-            print "Content-Type: application/json"
-            print
+            print("Content-Type: application/json")
+            print()
         else:
             do_json = False
-            print "Content-Type: text/html"
-            print
-            print "<html><head><title>Usage Report</title></head><body>"
+            print("Content-Type: text/html")
+            print()
+            print("<html><head><title>Usage Report</title></head><body>")
             #dumpenv(form)
 
     db = DB.connect()
@@ -313,11 +316,11 @@ def main():
     do_pit = True
 
     if is_cgi:
-        if form.has_key('team'):
+        if 'team' in form:
             do_team = form.getfirst('team').upper()
-        if form.has_key('batters'):
+        if 'batters' in form:
             do_pit = False
-        if form.has_key('pitchers'):
+        if 'pitchers' in form:
             do_bat = False
     else:
         for (opt, arg) in opts:
@@ -343,10 +346,10 @@ def main():
 
     bfp_file = cardpath() + '/' + 'bfp.txt'
     if not os.path.isfile(bfp_file):
-        print bfp_file + " not found"
+        print(bfp_file + " not found")
         sys.exit(1)
 
-    with open( bfp_file, 'rU' ) as s:
+    with open( bfp_file, 'r', newline=None ) as s:
         for line in csv.reader(s):
             sp = line[1].strip()
             if sp.isdigit():
@@ -387,27 +390,27 @@ def main():
     cursor.execute(sql)
     for ibl, g in cursor.fetchall():
         IBL_G[ibl.rstrip()] = float(g)
-    if IBL_G.values():
+    if list(IBL_G.values()):
         IBL_G['FA'] = max( IBL_G.values() )
     else:
         IBL_G['FA'] = 0
 
     if is_cgi:
-        print "<pre>"
+        print("<pre>")
 
     if do_pit:
         if do_g:
             if do_o:
-                print "PITCHERS          133%   SP/f SP/24  RP/f RP/1d   150%  SP/f SP/24  RP/f RP/1d"
+                print("PITCHERS          133%   SP/f SP/24  RP/f RP/1d   150%  SP/f SP/24  RP/f RP/1d")
             else:
-                print "PITCHERS           75%   SP/f SP/24  RP/f RP/1d   133%  SP/f SP/24  RP/f RP/1d"
+                print("PITCHERS           75%   SP/f SP/24  RP/f RP/1d   133%  SP/f SP/24  RP/f RP/1d")
         elif do_r:
             if do_o:
-                print "PITCHERS          133%  per/g  per/w   150%  per/g  per/w     RATE    +INJ"
+                print("PITCHERS          133%  per/g  per/w   150%  per/g  per/w     RATE    +INJ")
             else:
-                print "PITCHERS           75%  per/g  per/w   133%  per/g  per/w     RATE    +INJ"
+                print("PITCHERS           75%  per/g  per/w   133%  per/g  per/w     RATE    +INJ")
         else:
-            print "PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
+            print("PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ")
 
         sql = "select ibl_team, r.tig_name from rosters r, players p where r.tig_name = p.tig_name and is_pitcher = 'Y'"
         sql += sql_team
@@ -416,30 +419,30 @@ def main():
         for ibl, tig_name, in cursor.fetchall():
             tig_name = tig_name.rstrip()
             ibl = ibl.rstrip()
-            if MLB_P.has_key(tig_name):
+            if tig_name in MLB_P:
                 if do_g:
-                    print g_usage( tig_name, pitcher, gp(ibl), do_o )
+                    print(g_usage( tig_name, pitcher, gp(ibl), do_o ))
                 elif do_r:
-                    print r_usage( tig_name, pitcher, gp(ibl), do_o )
+                    print(r_usage( tig_name, pitcher, gp(ibl), do_o ))
                 else:
-                    print std_usage( tig_name, pitcher, gp(ibl) )
+                    print(std_usage( tig_name, pitcher, gp(ibl) ))
 
     if do_bat and do_pit:
-        print
+        print()
 
     if do_bat:
         if do_g:
             if do_o:
-                print "BATTERS           133%    2/g   3/g   4/g   5/g   153%   2/g   3/g   4/g   5/g"
+                print("BATTERS           133%    2/g   3/g   4/g   5/g   153%   2/g   3/g   4/g   5/g")
             else:
-                print "BATTERS            75%    2/g   3/g   4/g   5/g   133%   2/g   3/g   4/g   5/g"
+                print("BATTERS            75%    2/g   3/g   4/g   5/g   133%   2/g   3/g   4/g   5/g")
         elif do_r:
             if do_o:
-                print "BATTERS           133%  per/g  per/w   150%  per/g  per/w     RATE    +INJ"
+                print("BATTERS           133%  per/g  per/w   150%  per/g  per/w     RATE    +INJ")
             else:
-                print "BATTERS            75%  per/g  per/w   133%  per/g  per/w     RATE    +INJ"
+                print("BATTERS            75%  per/g  per/w   133%  per/g  per/w     RATE    +INJ")
         else:
-            print "BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ"
+            print("BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ")
 
         sql = "select ibl_team, r.tig_name from rosters r, players p where r.tig_name = p.tig_name and is_batter = 'Y'"
         sql += sql_team
@@ -448,23 +451,23 @@ def main():
         for ibl, tig_name, in cursor.fetchall():
             tig_name = tig_name.rstrip()
             ibl = ibl.rstrip()
-            if MLB_B.has_key(tig_name):
+            if tig_name in MLB_B:
                 if do_g:
-                    print g_usage( tig_name, batter, gp(ibl), do_o )
+                    print(g_usage( tig_name, batter, gp(ibl), do_o ))
                 elif do_r:
-                    print r_usage( tig_name, batter, gp(ibl), do_o )
+                    print(r_usage( tig_name, batter, gp(ibl), do_o ))
                 else:
-                    print std_usage( tig_name, batter, gp(ibl) )
+                    print(std_usage( tig_name, batter, gp(ibl) ))
 
     if is_cgi:
-        print "</pre></body></html>"
+        print("</pre></body></html>")
 
 
 if __name__ == "__main__":
     try:
         opts, args = getopt.getopt(sys.argv[1:], 't:groABP')
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         usage()
 
     main()
