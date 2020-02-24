@@ -65,6 +65,11 @@ def main():
             # and use first week afterward
             week += 1
 
+    # current UC designation
+    sql = "select max(uncarded) from rosters;"
+    cursor.execute(sql)
+    ( UCyy, ) = cursor.fetchone()
+
     starts = {}
     startsdb.main( starts, module=True )
 
@@ -74,7 +79,6 @@ def main():
     # teams/status
     active = 1
     inactive = 2
-    uncarded = 3
 
     # item type
     pitcher = 1
@@ -91,7 +95,8 @@ def main():
             where ibl_team = (%s) and item_type != 0 \
             group by status;"
     sql_ros = "select trim(tig_name), item_type from rosters \
-            where ibl_team = (%s) and item_type != 0 and status = 1;"
+            where ibl_team = (%s) and item_type != 0 and status = 1 \
+            and uncarded < (%s);"
 
     if not do_json:
         if is_cgi:
@@ -112,7 +117,7 @@ def main():
 
         batters = 0
         pitchers = 0
-        cursor.execute( sql_ros, (ibl, ) )
+        cursor.execute( sql_ros, (ibl, UCyy ) )
         for player, kind in cursor.fetchall():
             #print player, starts[player]
             if kind == pitcher:
