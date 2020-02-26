@@ -265,6 +265,12 @@ p_cards = p_hash( cardpath() + '/' + pitchers )
 
 sql_weeks = "where week >= %d and week <= %d and " % ( start, end )
 
+if do_mlb:
+    # current UC designation
+    sql = "select max(uncarded) from rosters;"
+    cursor.execute(sql)
+    ( UCyy, ) = cursor.fetchone()
+
 if do_bat:
     if do_pit:
         print("BATTERS")
@@ -300,8 +306,8 @@ if do_bat:
             continue
         if do_mlb:
             sql = "select trim(tig_name) from rosters where \
-                    ibl_team = (%s) and uncarded = 0 and item_type = 2"
-            cursor.execute(sql + active, (team, ) )
+                    ibl_team = (%s) and uncarded < (%s) and item_type = 2"
+            cursor.execute(sql + active, (team, UCyy ) )
         elif do_opp:
             sql = sql_select + sql_weeks + \
                 " (home = (%s) or away = (%s)) and ibl != (%s) and bf = 0\
@@ -376,8 +382,8 @@ if do_pit:
             continue
         if do_mlb:
             sql = "select trim(tig_name) from rosters where \
-                    ibl_team = (%s) and uncarded = 0 and item_type = 1"
-            cursor.execute(sql + active, (team, ) )
+                    ibl_team = (%s) and uncarded < (%s) and item_type = 1"
+            cursor.execute(sql + active, (team, UCyy ) )
         elif do_opp:
             sql = sql_select + sql_weeks + \
                 " (home = (%s) or away = (%s)) and ibl != (%s) and bf > 0\
