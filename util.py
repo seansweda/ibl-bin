@@ -199,6 +199,7 @@ do_tot = False
 do_opp = False
 do_weekly = False
 do_mlb = False
+do_pt = False
 overall = 1
 platoon = 2
 avg = 3
@@ -210,7 +211,7 @@ e_arg = ''
 active = ''
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPMaopvws:e:y:')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPMatopvws:e:y:')
 except getopt.GetoptError as err:
     print(str(err))
     usage()
@@ -220,8 +221,6 @@ for (opt, arg) in opts:
         do_pit = False
     elif opt == '-P':
         do_bat = False
-    elif opt == '-a':
-        active = ' and status = 1'
     elif opt == '-o':
         do_opp = True
     elif opt == '-p':
@@ -244,6 +243,11 @@ for (opt, arg) in opts:
     elif opt == '-M':
         do_mlb = True
         mlb_usage( MLB_P, MLB_B )
+    elif opt == '-a':
+        active = ' and status = 1'
+    elif opt == '-t':
+        do_pt = True
+        do_tot = False
     else:
         print("bad option:", opt)
         usage()
@@ -334,7 +338,9 @@ if do_bat:
     #end arg loop
 
     for t in sorted(ibl):
-        if display == avg:
+        if do_mlb and do_pt:
+            print("%s %d" % (t, ibl[t]['vL'][0]) )
+        elif display == avg:
             tot['avg'] = avg_B( tot )
             bdump( t, ibl[t], tot['avg'], avg_B )
         else:
@@ -410,7 +416,9 @@ if do_pit:
     #end arg loop
 
     for t in sorted(ibl):
-        if display == avg:
+        if do_mlb and do_pt:
+            print("%s %d" % (t, ibl[t]['vL'][0]) )
+        elif display == avg:
             tot['avg'] = avg_P( tot )
             pdump( t, ibl[t], tot['avg'], avg_P )
         else:
