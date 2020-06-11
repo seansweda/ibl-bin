@@ -385,7 +385,7 @@ def main( player = {}, module = False, report_week = 0 ):
                     days_out.sort( key = lambda s: s[1], reverse=True )
                     days_out.sort( key = lambda s: s[0] == 'ASB' )
 
-                else:
+                elif reported_length > 0:
                     thru_week = week
 
                 if reported_length > 1:
