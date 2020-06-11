@@ -104,14 +104,14 @@ def update( days, code, length, day = 1 ):
     served = 0
     for x in range( day - 1, len(days) ):
         if code == injured:
-            if days[x] & inj == 0:
+            if length == 1 and days[x] & off == 0:
+                if days[x] & dtd == 0:
+                    days[x] += dtd
+                length -= 1
+                served += 1
+            elif days[x] & inj == 0:
                 if length > 1:
                     days[x] += inj
-                    length -= 1
-                    served += 1
-                elif length == 1 and days[x] & (inj + off) == 0:
-                    if days[x] & dtd == 0:
-                        days[x] += dtd
                     length -= 1
                     served += 1
         if code == no_dtd:
