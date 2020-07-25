@@ -71,6 +71,11 @@ def zero( stat ):
         stat['vR'].append( 0.0 )
 
 def b_avg( stat ):
+    # if split is zero (no PAs) simply return the opposite
+    if stat['vL'][5] == 0 and stat['vL'][0] == 1:
+        return( stat['vR'][5] / stat['vR'][0] )
+    if stat['vR'][5] == 0 and stat['vR'][0] == 1:
+        return( stat['vL'][5] / stat['vL'][0] )
     # woba weighted average (for offense)
     return( ( stat['vL'][5] + stat['vR'][5] ) / \
             ( stat['vL'][0] + stat['vR'][0] ) )
