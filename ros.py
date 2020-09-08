@@ -67,8 +67,11 @@ def cardval(p, kind, calc):
             sum_vL = wOBA(p, kind, 0)
             sum_vR = wOBA(p, kind, 1)
 
+        if sum_vL + sum_vR > 0:
+            harm = 2 * sum_vL * sum_vR / float(sum_vL + sum_vR)
+        else:
+            harm = 0
         mean = (sum_vL + sum_vR) / 2.0
-        harm = 2 * sum_vL * sum_vR / float(sum_vL + sum_vR)
         val = int(mean + abs(mean - harm) + 0.5)
 
         return ( p[24], p[25], p[26], p[23], str(sum_vL), '.',
@@ -83,7 +86,10 @@ def cardval(p, kind, calc):
             sum_vL = wOBA(p, kind, 0)
             sum_vR = wOBA(p, kind, 1)
 
-        harm = 2 * sum_vL * sum_vR / float(sum_vL + sum_vR)
+        if sum_vL + sum_vR > 0:
+            harm = 2 * sum_vL * sum_vR / float(sum_vL + sum_vR)
+        else:
+            harm = 0
         val = int(harm + 0.5)
 
         return ( p[21], p[22], p[23], p[24], str(sum_vL), '.',
