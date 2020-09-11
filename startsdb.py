@@ -68,7 +68,7 @@ def main( starts = {}, module = False, report_week = 27 ):
             elif opt == '-t':
                 team = arg
             elif opt == '-w':
-                report_week = arg
+                report_week = int(arg)
             elif opt == '-y':
                 DB.starts = 'starts' + arg
                 DB.inj = 'inj' + arg
@@ -77,7 +77,7 @@ def main( starts = {}, module = False, report_week = 27 ):
             sum(\"2b\"), sum(\"3b\"), sum(ss), sum(lf), sum(cf), sum(rf) \
             from %s where week is null or week <= %i \
             group by mlb, name order by mlb asc, name asc;" \
-            % ( DB.starts, int(report_week) )
+            % ( DB.starts, report_week )
 
     inj = {}
     injreport.main( inj, module=True )
