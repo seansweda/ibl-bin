@@ -1,30 +1,31 @@
 ---
-year: 2020
+year: 2021
 tier0:
-- MAD
-- SLG
 - KAT
-tier1:
-- BOW
-- SCS
-- NJR
-- BAL
-- EDG
-- GTY
-- COU
-- SDQ
-- NYK
+- RRG
 - SFP
-- SKY
-- OXY
-- CAN
-tier2:
+- SLG
+tier1:
+- SCS
 - SNH
-- MCM
-- TRI
-- LAD
-- PHI
+- ODM
+- CAN
+- SKY
+- BAL
+- EVE
+- NJR
 - WMS
+- MAD
+tier2:
+- PHI
+- OXY
+- SDQ
+- BOW
 - SEA
-tier3:
+- NYK
+- MCM
+- GTY
+- SFL
 - POR
+tier3:
+-
