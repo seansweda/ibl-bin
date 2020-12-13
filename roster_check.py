@@ -128,7 +128,10 @@ def main():
                 batters += 1
 
             # check if player has appearances left
-            if starts[player][0] <= 0:
+            try:
+                if starts[player][0] <= 0:
+                    continue
+            except KeyError:
                 continue
 
             # check if player is out for a series
@@ -139,8 +142,11 @@ def main():
                         continue
 
             for pos in range(10):
-                if starts[player][pos] > 0:
-                    legal[pos] += 1
+                try:
+                    if starts[player][pos] > 0:
+                        legal[pos] += 1
+                except KeyError:
+                    pass
 
         if sum(ros.values()) <= 35 \
                 and ( ros[active] <= 25 or ros[active] <= 35 and week >= 24 ) \
