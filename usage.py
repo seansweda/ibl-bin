@@ -5,6 +5,7 @@
 # -B: batters only
 # -P: pitchers only
 # -A: rostered players only
+# -O: old rosters
 
 from __future__ import (print_function, unicode_literals)
 
@@ -315,6 +316,9 @@ def main():
     do_bat = True
     do_pit = True
 
+    rosters = 'rosters'
+    players = 'players'
+
     if is_cgi:
         if 'team' in form:
             do_team = form.getfirst('team').upper()
@@ -332,6 +336,9 @@ def main():
                 do_pit = False
             elif opt == '-P':
                 do_bat = False
+            elif opt == '-O':
+                rosters = 'rosters_old'
+                players = 'players_old'
             elif opt == '-g':
                 do_g = True
             elif opt == '-r':
@@ -412,7 +419,7 @@ def main():
         else:
             print("PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ")
 
-        sql = "select ibl_team, r.tig_name from rosters r, players p where r.tig_name = p.tig_name and is_pitcher = 'Y'"
+        sql = "select ibl_team, r.tig_name from %s r, %s p where r.tig_name = p.tig_name and is_pitcher = 'Y'" % ( rosters, players )
         sql += sql_team
         sql += " order by tig_name;"
         cursor.execute(sql)
@@ -444,7 +451,7 @@ def main():
         else:
             print("BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ")
 
-        sql = "select ibl_team, r.tig_name from rosters r, players p where r.tig_name = p.tig_name and is_batter = 'Y'"
+        sql = "select ibl_team, r.tig_name from %s r, %s p where r.tig_name = p.tig_name and is_batter = 'Y'" % ( rosters, players )
         sql += sql_team
         sql += " order by tig_name;"
         cursor.execute(sql)
@@ -465,7 +472,7 @@ def main():
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 't:groABP')
+        opts, args = getopt.getopt(sys.argv[1:], 't:groABPO')
     except getopt.GetoptError as err:
         print(str(err))
         usage()
