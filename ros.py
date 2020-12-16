@@ -241,6 +241,9 @@ sql = "select max(uncarded) from %s;" % rosters
 cursor.execute(sql)
 ( UCyy, ) = cursor.fetchone()
 
+# skip UC in roster count?
+ignore_uc = True
+
 last = -1
 for arg in args:
     if last > 0:
@@ -278,6 +281,8 @@ for arg in args:
             p_num += 1
             if uc == UCyy:
                 uncarded += 1
+                if ignore_uc:
+                    p_num -= 1
             if status == 1:
                 active += 1
                 p_act += 1
@@ -318,6 +323,8 @@ for arg in args:
             b_num += 1
             if uc == UCyy:
                 uncarded += 1
+                if ignore_uc:
+                    b_num -= 1
             if status == 1:
                 active += 1
                 b_act += 1
@@ -360,6 +367,7 @@ for arg in args:
                         cols += 11
                     print(poslist( b_def[(mlb,name)][2:], maxC - cols ), end=' ')
                 print()
+
     if count and b_num and p_num:
         print("%s: %2s players (%2s pitchers, %2s batters, %s uncarded)" % \
                 (team, b_num + p_num, p_num, b_num, uncarded) + \

@@ -86,7 +86,19 @@ order2 = y['tier0'] + y['tier1'] + y['tier2'] + y['tier3']
 roster = {}
 picks = {}
 
-cursor.execute( "select ibl_team, count(*) from rosters where item_type > 0 group by ibl_team;" )
+# current UC designation
+sql = "select max(uncarded) from rosters;"
+cursor.execute(sql)
+( UCyy, ) = cursor.fetchone()
+
+# skip UC in roster count?
+ignore_uc = True
+
+sql_count = "select ibl_team, count(*) from rosters where item_type > 0 and uncarded < (%s) group by ibl_team;"
+if ignore_uc:
+    cursor.execute( sql_count, ( UCyy, ) )
+else:
+    cursor.execute( sql_count, ( UCyy + 1, ) )
 for ibl, count in cursor.fetchall():
     roster[ibl] = count
 

@@ -72,6 +72,9 @@ def main():
     cursor.execute(sql)
     ( UCyy, ) = cursor.fetchone()
 
+    # skip UC in roster count?
+    ignore_uc = True
+
     starts = {}
     startsdb.main( starts, module=True )
 
@@ -94,7 +97,7 @@ def main():
         return True
 
     sql_count = "select status, count(*) from rosters \
-            where ibl_team = (%s) and item_type != 0 \
+            where ibl_team = (%s) and item_type != 0 and uncarded < (%s) \
             group by status;"
     sql_ros = "select trim(tig_name), item_type from rosters \
             where ibl_team = (%s) and item_type != 0 and status = 1 \
@@ -109,7 +112,10 @@ def main():
                             where ibl_team != 'FA' order by ibl_team;")
     for (ibl, ) in cursor.fetchall():
         ros = {}
-        cursor.execute( sql_count, (ibl, ) )
+        if ignore_uc:
+            cursor.execute( sql_count, (ibl, UCyy ) )
+        else:
+            cursor.execute( sql_count, (ibl, UCyy + 1 ) )
         for status, count in cursor.fetchall():
             ros[status] = count
 
