@@ -287,8 +287,12 @@ for arg in args:
                 active += 1
                 p_act += 1
             if status == 1 and do_active or status > 1 and do_inactive:
-                print("%s %-3s %-15s" % ( star(status, throws), mlb, name ), end=' ')
-                cols += 23
+                if (do_card or do_def) and uc == UCyy and ignore_uc:
+                    continue
+                else:
+                    print("%s %-3s %-15s" %
+                            ( star(status, throws), mlb, name ), end=' ')
+                    cols += 23
                 if do_card and (mlb, name) in p_cards:
                     if do_val:
                         for num in cardval(p_cards[(mlb,name)], kind, do_val):
@@ -329,8 +333,12 @@ for arg in args:
                 active += 1
                 b_act += 1
             if status == 1 and do_active or status > 1 and do_inactive:
-                print("%s %-3s %-15s" % ( star(status, bats), mlb, name ), end=' ')
-                cols += 23
+                if (do_card or do_def) and uc == UCyy and ignore_uc:
+                    continue
+                else:
+                    print("%s %-3s %-15s" %
+                            ( star(status, bats), mlb, name ), end=' ')
+                    cols += 23
                 if do_card and (mlb, name) in b_cards:
                     if do_val:
                         for num in cardval(b_cards[(mlb,name)], kind, do_val):
