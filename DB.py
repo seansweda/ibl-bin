@@ -7,14 +7,14 @@ import sys
 import psycopg2
 
 # tables for current season
-starts = 'starts2020'
-bat    = 'bat2020'
-pit    = 'pit2020'
-teams  = 'teams2020'
-sched  = 'sched2020'
-extra  = 'extra2020'
-inj    = 'inj2020'
-usage  = 'usage2020'
+starts = 'starts2021'
+bat    = 'bat2021'
+pit    = 'pit2021'
+teams  = 'teams2021'
+sched  = 'sched2021'
+extra  = 'extra2021'
+inj    = 'inj2021'
+usage  = 'usage2021'
 
 
 def bin_dir():
