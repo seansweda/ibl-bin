@@ -29,6 +29,9 @@ IBL_B = {}
 IBL_P = {}
 IBL_G = {}
 
+season = 162.0  # games in season
+week = 6.0      # games played per week
+
 pitcher = 1
 batter = 2
 
@@ -106,7 +109,7 @@ def r_usage( name, role, g, do_o = False ):
         mlb_U = M[name]
 
     inj = injdays( name, role )
-    credit = int( 1 + mlb_U / 162 ) * inj
+    credit = int( 1 + mlb_U / season ) * inj
 
     if do_o:
         U_75 = int ( mlb_U * 4 / 3 )
@@ -127,23 +130,23 @@ def r_usage( name, role, g, do_o = False ):
         rate = 0
         injrate = 0
     else:
-        rate = ( ibl_U * 162 / g ) / mlb_U * 100
-        injrate = ( ibl_U * 162 / g + credit ) / mlb_U * 100
+        rate = ( ibl_U * season / g ) / mlb_U * 100
+        injrate = ( ibl_U * season / g + credit ) / mlb_U * 100
 
     output = "%-18s" % injreport.space(name)
     output += "%4i " % U_75
-    if g >= 162 or U_75 <= 0:
+    if g >= season or U_75 <= 0:
         output += "%6s %6s" % ( '-', '-' )
     else:
         output += "%6.1f %6.1f" \
-            % ( U_75 / (162 - g), min( U_75 / (162.0 - g) * 6.0, U_75 ) )
+            % ( U_75 / (season - g), min( U_75 / (season - g) * week, U_75 ) )
 
     output += "   %4i " % U_133
-    if g >= 162 or U_133 <= 0:
+    if g >= season or U_133 <= 0:
         output += "%6s %6s" % ( '-', '-' )
     else:
         output += "%6.1f %6.1f" \
-            % ( U_133 / (162 - g), min( U_133 / (162.0 - g) * 6.0, U_133 ) )
+            % ( U_133 / (season - g), min( U_133 / (season - g) * week, U_133 ) )
 
     output += "  %6.1f%% %6.1f%%" % ( rate, injrate )
 
@@ -167,7 +170,7 @@ def g_usage( name, role, g, do_o = False ):
         mlb_U = M[name]
 
     inj = injdays( name, role )
-    credit = int( 1 + mlb_U / 162 ) * inj
+    credit = int( 1 + mlb_U / season ) * inj
 
     if do_o:
         U_75 = int ( mlb_U * 4 / 3 )
@@ -265,7 +268,7 @@ def std_usage( name, role, g ):
         mlb_U = M[name]
 
     inj = injdays( name, role )
-    credit = int( 1 + mlb_U / 162 ) * inj
+    credit = int( 1 + mlb_U / season ) * inj
 
     U_75 = mlb_U * 3 / 4
     U_133 = mlb_U * 4 / 3
@@ -275,8 +278,8 @@ def std_usage( name, role, g ):
         rate = 0
         injrate = 0
     else:
-        rate = ( ibl_U * 162 / g ) / mlb_U * 100
-        injrate = ( ibl_U * 162 / g + credit ) / mlb_U * 100
+        rate = ( ibl_U * season / g ) / mlb_U * 100
+        injrate = ( ibl_U * season / g + credit ) / mlb_U * 100
 
     output = "%-18s %4.0f %4.0f %4i %4i %7.1f %7.1f %7.1f %6.1f%% %6.1f%%" %\
             ( injreport.space(name), mlb_U, ibl_U, inj, credit, \
