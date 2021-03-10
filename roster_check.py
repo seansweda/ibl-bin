@@ -11,6 +11,10 @@ import DB
 import injreport as IR
 import startsdb
 
+maxR = 35   # max players on roster
+maxA = 25   # max active players
+allA = 24   # first week where all players can be active
+
 # dump environment and parameters for testing
 # not really necessary, mostly for learning purposes
 def dumpenv(form):
@@ -154,8 +158,9 @@ def main():
                 except KeyError:
                     pass
 
-        if sum(ros.values()) <= 35 \
-                and ( ros[active] <= 25 or ros[active] <= 35 and week >= 24 ) \
+        if sum(ros.values()) <= maxR \
+                and ( ros[active] <= maxA or \
+                    ros[active] <= maxR and week >= allA ) \
                 and legal[1] >= 4 \
                 and len( [z for z in legal[2:] if z >= 2] ) == 8:
             status = "LEGAL"
