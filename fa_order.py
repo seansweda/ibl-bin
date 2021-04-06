@@ -31,6 +31,9 @@ def dumpenv(form):
     print("<p>")
     return
 
+# first week that current standings are used
+FIRST_WEEK = 4
+
 def main():
     do_json = False
     is_cgi = False
@@ -75,20 +78,18 @@ def main():
         #  return 0, team has nothing outstanding
         return 0
 
-    week = 1
+    week = sign = 0
     check_late = True
     if is_cgi and 'week' in form:
         week = int(form.getfirst('week'))
     else:
         for ( opt, arg ) in opts:
             if opt == '-w':
-                week = int(arg)
+                sign = int(arg)
             elif opt == '-r':
                 check_late = False
-    # user inputs FA signing week (not results week), so subtract 1
-    week -= 1
 
-    if week == 0:
+    if sign == 0:
         # find latest week with reported results
         cursor.execute("select week, count(*) from games\
                 group by week order by week desc;");
@@ -96,6 +97,10 @@ def main():
         for week, num in cursor.fetchall():
             if num > 8:
                 break
+        sign = week + 1;
+    else:
+        # user inputs FA signing week (not results week)
+        week = sign - 1;
 
     # start with last year
     # lastyear should be ordered to break ties
@@ -124,10 +129,10 @@ def main():
     fa.sort( key=lambda v: lastyear[v] )
     #print fa
 
-    # we begin using current season standings as of week 3
+    # we begin using current season standings as of FIRST_WEEK
     standings = {}
-    if week >= 3:
-        for w in range(2, week):
+    if sign >= FIRST_WEEK:
+        for w in range(1, week):
             sql = "select ibl,\
                     sum(case when home_team_id = fcode and\
                     home_score > away_score then 1\
@@ -143,10 +148,11 @@ def main():
             cursor.execute(sql)
             standings = { line[0]: float(line[1])/(float(line[1])+float(line[2])) for line in cursor.fetchall() }
 
-            #print w, standings
+            #print( w, standings )
             # sort by standings
-            fa.sort( key=lambda v: standings[v] )
-            #print fa
+            if bool( standings ):
+                fa.sort( key=lambda v: standings[v] )
+                #print( fa )
 
     status = {}
     for ibl in fa:
@@ -173,11 +179,11 @@ def main():
     #print fa
 
     if do_json:
-        print(json.dumps({ "week": (week + 1), "teams": fa }))
+        print(json.dumps({ "week": sign, "teams": fa }))
     else:
         if is_cgi:
             print("<br>", end=' ')
-        print("FA signing priority for week %d" % (week + 1))
+        print("FA signing priority for week %d" % sign )
         if is_cgi:
             print("<br>", end=' ')
         print("(highest to lowest)")
