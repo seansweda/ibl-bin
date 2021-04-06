@@ -27,6 +27,11 @@ def dumpenv(form):
     print("<p>")
     return
 
+# schedule
+DAYS_OFF = ( 2, 5, 8, 10, 13, 18, 21, 24 )
+LAST = 27
+ASB = 15
+
 # sql table injury codes
 injured = 0
 no_dtd = 1
@@ -54,11 +59,11 @@ def injdays( player, stop, type = inj ):
     return total
 
 def offday( week ):
-    offweeks = ( 2, 5, 8, 10, 13, 18, 21, 24 )
+    offweeks = DAYS_OFF
     return offweeks.count( week )
 
 def allstar( week ):
-    if week == 15:
+    if week == ASB:
         return True
     else:
         return False
@@ -289,7 +294,7 @@ def main( player = {}, module = False, report_week = 0 ):
             ##print "week %2i %s: %i served (%3i) %s" % \
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
-        while length > 0 and week < 27:
+        while length > 0 and week < LAST:
             loc = loc_q[0]
             week += 1
             series = get_series( player, name, week, loc )
@@ -331,7 +336,7 @@ def main( player = {}, module = False, report_week = 0 ):
 
         if length > 0:
             # post-season
-            if week == 27:
+            if week == LAST:
                 week += 1
             loc = 'playoffs'
             series = get_series( player, name, week, loc )
