@@ -31,6 +31,7 @@ IBL_G = {}
 
 season = 162.0  # games in season
 week = 6.0      # games played per week
+scale = 1.0     # scale MLB usage
 
 pitcher = 1
 batter = 2
@@ -60,7 +61,7 @@ def mlb_usage( pit_U, bat_U ):
         sys.exit(1)
     with open( mlb_file, 'r', newline=None ) as s:
         for line in csv.reader(s):
-            pit_U[line[0].rstrip()] = float(line[1])
+            pit_U[line[0].rstrip()] = round( float(line[1]) * scale, 0 )
 
     mlb_file = cardpath() + '/usage_pa.txt'
     if not os.path.isfile(mlb_file):
@@ -68,7 +69,7 @@ def mlb_usage( pit_U, bat_U ):
         sys.exit(1)
     with open( mlb_file, 'r', newline=None ) as s:
         for line in csv.reader(s):
-            bat_U[line[0].rstrip()] = float(line[1])
+            bat_U[line[0].rstrip()] = round( float(line[1]) * scale, 0 )
 
 def gp ( ibl ):
     if ibl in IBL_G and IBL_G[ibl]:
