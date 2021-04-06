@@ -32,7 +32,7 @@ def dumpenv(form):
     return
 
 # first week that current standings are used
-FIRST_WEEK = 4
+FIRST_WEEK = 3
 
 def main():
     do_json = False

@@ -28,8 +28,8 @@ def dumpenv(form):
     return
 
 # schedule
-DAYS_OFF = ( 2, 5, 8, 10, 13, 18, 21, 24 )
-LAST = 27
+DAYS_OFF = ( 4, 8 )
+LAST = 11
 ASB = 15
 
 # sql table injury codes

@@ -12,7 +12,7 @@ import injreport as IR
 import startsdb
 
 maxR = 35   # max players on roster
-maxA = 25   # max active players
+maxA = 26   # max active players
 allA = 24   # first week where all players can be active
 
 # dump environment and parameters for testing

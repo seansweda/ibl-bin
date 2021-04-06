@@ -29,9 +29,9 @@ IBL_B = {}
 IBL_P = {}
 IBL_G = {}
 
-season = 162.0  # games in season
+season = 66.0   # games in season
 week = 6.0      # games played per week
-scale = 1.0     # scale MLB usage
+scale = 1.1     # scale MLB usage
 
 pitcher = 1
 batter = 2
