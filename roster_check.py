@@ -44,6 +44,7 @@ def main():
         if 'json' in form:
             import json
             do_json = True
+            j={}
             print("Content-Type: application/json")
             print()
         else:
@@ -168,13 +169,11 @@ def main():
             status = "ILLEGAL"
 
         if do_json:
-            print(json.dumps({
-                'ibl': ibl,
-                'total': sum(ros.values()),
-                'active': ros[active],
-                'starts': legal,
-                'status': status
-                }))
+            j[ibl] = { 'total': sum(ros.values()),\
+                    'active': ros[active],\
+                    'starts': legal,\
+                    'status': status
+                    }
         else:
             print(ibl, end=' ')
             print("total %s" % sum(ros.values()), end=' ')
@@ -187,7 +186,9 @@ def main():
             print(")", end=' ')
             print(status)
 
-    if not do_json:
+    if do_json:
+        print( json.dumps(j) )
+    else:
         if is_cgi:
             print("</pre>")
             if do_header:
