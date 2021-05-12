@@ -523,7 +523,7 @@ while (<DATA>) {
 		    print "line $lines invalid IBL team: $ibl\n";
 		    $fatalerr++;
 		}
-		if ( $updates && !$fatalerr ) {
+		if ( $updates && $week && $home && $away && !$fatalerr ) {
 		    $loop = $dbh->prepare("
 			insert into $injdb
 			values ( $week, '$home', '$away', $day, $tcode,
@@ -679,7 +679,7 @@ while (<DATA>) {
 		print "line $lines invalid IBL team: $ibl\n";
 		$fatalerr++;
 	    }
-	    if ( $updates && !$fatalerr ) {
+	    if ( $updates && $week && $home && $away && !$fatalerr ) {
 		$dbh->do("
 		    insert into $startsdb
 		    values ( '$starts[0]', '$starts[1]', 0, $psp, $psc, $ps1b, $ps2b, $ps3b, $psss, $pslf, $pscf, $psrf, 0, 0, 0, $week, '$home', '$away' );
@@ -878,7 +878,7 @@ while (<DATA>) {
 		}
 	    }
 
-	    if ( $updates && !$fatalerr ) {
+	    if ( $updates && $week && $home && $away && !$fatalerr ) {
 		# assign pitcher games in PITCHERS block
 		if ( $pos eq 'p' ) {
 		    $g = 0;
@@ -1055,7 +1055,7 @@ while (<DATA>) {
 		    $fatalerr++;
 		}
 
-		if ( $updates && !$fatalerr ) {
+		if ( $updates && $week && $home && $away && !$fatalerr ) {
 		    $ip = outs($ip);
 		    $dbh->do("
 			insert into $pitdb
@@ -1144,7 +1144,7 @@ if ( $#trunc > 0 ) {
 # printf "%s HBP: %d\n", $index, $xhb{$index};
 # printf "%s WP: %d\n", $index, $xwp{$index};
 # printf "%s BALK: %d\n", $index, $xbk{$index};
-if ( $updates && !$fatalerr ) {
+if ( $updates && $week && $home && $away && !$fatalerr ) {
     foreach $index ( $away, $home ) {
 	$sth = $dbh->prepare( "
 		insert into $extradb
