@@ -174,18 +174,16 @@ def g_usage( name, role, g, do_o = False ):
     credit = int( 1 + mlb_U / season ) * inj
 
     if do_o:
-        U_75 = int ( mlb_U * 4 / 3 )
+        U_75 = mlb_U * 4 // 3
         U_75 -= ibl_U
 
-        U_133 = int( mlb_U * 3 / 2 )
+        U_133 = mlb_U * 3 // 2
         U_133 -= ibl_U
     else:
-        U_75 = mlb_U * 3 / 4
-        if U_75 != int ( U_75 ):
-            U_75 = int ( U_75 ) + 1
+        U_75 = mlb_U * 3 // 4 + (mlb_U * 3 % 4 > 0)
         U_75 -= ( ibl_U + credit )
 
-        U_133 = int ( mlb_U * 4 / 3 )
+        U_133 = mlb_U * 4 // 3
         U_133 -= ibl_U
 
     g75 = []
@@ -198,32 +196,32 @@ def g_usage( name, role, g, do_o = False ):
             g75 += [ 0, 0, 0, 0 ]
         else:
             if fat_SP > 0:
-                g75.append( U_75 / fat_SP )
-                g75.append( U_75 / 24.0 )
+                g75.append( U_75 // fat_SP + (U_75 % fat_SP > 0 and not do_o) )
+                g75.append( U_75 // 24 + (U_75 % 24 > 0 and not do_o) )
             else:
                 g75 += [ 0, 0 ]
             if fat_RP > 0:
-                g75.append( U_75 / fat_RP )
+                g75.append( U_75 // fat_RP + (U_75 % fat_RP > 0 and not do_o) )
             else:
                 g75.append( 0 )
             if rest1 > 0:
-                g75.append( U_75 / rest1 )
+                g75.append( U_75 // rest1 + (U_75 % rest1 > 0 and not do_o) )
             else:
                 g75.append( 0 )
         if U_133 <= 0:
             g133 += [ 0, 0, 0, 0 ]
         else:
             if fat_SP > 0:
-                g133.append( U_133 / fat_SP )
-                g133.append( U_133 / 24.0 )
+                g133.append( U_133 // fat_SP )
+                g133.append( U_133 // 24 )
             else:
                 g133 += [ 0, 0 ]
             if fat_RP > 0:
-                g133.append( U_133 / fat_RP )
+                g133.append( U_133 // fat_RP )
             else:
                 g133.append( 0 )
             if rest1 > 0:
-                g133.append( U_133 / rest1 )
+                g133.append( U_133 // rest1 )
             else:
                 g133.append( 0 )
 
@@ -232,22 +230,22 @@ def g_usage( name, role, g, do_o = False ):
             g75 += [ 0, 0, 0, 0 ]
         else:
             for p in range(2,6):
-                g75.append( U_75 / float(p) )
+                g75.append( U_75 // p + (U_75 % p > 0 and not do_o) )
         if U_133 <= 0:
             g133 += [ 0, 0, 0, 0 ]
         else:
             for p in range(2,6):
-                g133.append( U_133 / float(p) )
+                g133.append( U_133 // p )
 
     output = "%-18s" % injreport.space(name)
     output += "%4i " % U_75
     g75.reverse()
     while len(g75):
-        output += " %5.0f" % round( g75.pop(), 0 )
+        output += " %5i" % g75.pop()
     output += "   %4i" % U_133
     g133.reverse()
     while len(g133):
-        output += " %5i" % int( g133.pop() )
+        output += " %5i" % g133.pop()
 
     return output
 
