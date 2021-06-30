@@ -197,7 +197,10 @@ def g_usage( name, role, g, do_o = False ):
         else:
             if fat_SP > 0:
                 g75.append( U_75 // fat_SP + (U_75 % fat_SP > 0 and not do_o) )
-                g75.append( U_75 // 24 + (U_75 % 24 > 0 and not do_o) )
+                if do_o:
+                    g75.append( U_75 // 24 )
+                else:
+                    g75.append( U_75 // 27 + (U_75 % 27 > 0) )
             else:
                 g75 += [ 0, 0 ]
             if fat_RP > 0:
@@ -412,7 +415,7 @@ def main():
             if do_o:
                 print("PITCHERS          133%   SP/f SP/24  RP/f RP/1d   150%  SP/f SP/24  RP/f RP/1d")
             else:
-                print("PITCHERS           75%   SP/f SP/24  RP/f RP/1d   133%  SP/f SP/24  RP/f RP/1d")
+                print("PITCHERS           75%   SP/f SP/27  RP/f RP/1d   133%  SP/f SP/24  RP/f RP/1d")
         elif do_r:
             if do_o:
                 print("PITCHERS          133%  per/g  per/w   150%  per/g  per/w     RATE    +INJ")
