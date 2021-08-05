@@ -78,7 +78,7 @@ def get_series( player, name, week, loc ):
         player[name][week] = {}
         player[name][week][loc] = {}
 
-    if week == 28:
+    if week == (LAST + 1):
         obj = []
         for x in range(40):
             obj.append(0)
@@ -251,7 +251,7 @@ def main( player = {}, module = False, report_week = 0 ):
         if name not in player:
             player[name] = {}
 
-        if week == 28:
+        if week == (LAST + 1):
             loc_q = [ 'playoffs' ]
         elif inj_team == home:
             loc_q = [ 'home', 'away' ]
