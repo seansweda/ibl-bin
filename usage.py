@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -t <team>: usage for specific team
 # -g: per game output
 # -r: rates output
