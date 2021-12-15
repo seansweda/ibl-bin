@@ -92,7 +92,7 @@ cursor.execute(sql)
 ( UCyy, ) = cursor.fetchone()
 
 # skip UC in roster count?
-ignore_uc = True
+ignore_uc = False
 
 sql_count = "select ibl_team, count(*) from rosters where item_type > 0 and uncarded < (%s) group by ibl_team;"
 if ignore_uc:

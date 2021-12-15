@@ -242,7 +242,7 @@ cursor.execute(sql)
 ( UCyy, ) = cursor.fetchone()
 
 # skip UC in roster count?
-ignore_uc = True
+ignore_uc = False
 
 last = -1
 for arg in args:

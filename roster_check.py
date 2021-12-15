@@ -78,7 +78,7 @@ def main():
     ( UCyy, ) = cursor.fetchone()
 
     # skip UC in roster count?
-    ignore_uc = True
+    ignore_uc = False
 
     starts = {}
     startsdb.main( starts, module=True )
