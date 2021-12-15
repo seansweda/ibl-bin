@@ -47,6 +47,7 @@ except IOError as err:
     print(str(err))
     sys.exit(1)
 
+ros_max = 36    # max players on roster
 skip = 0
 remove = 0
 all_teams = 1
@@ -117,10 +118,10 @@ for rnd in range( 1, last_round + 1 ):
             if not remove:
                 pick += 1
             continue
-        if not skip or roster[owner] < 35:
+        if not skip or roster[owner] < ros_max:
             if ( all_teams or do_team == owner ) and ( all_rounds or do_round == rnd ):
                 print("%s%-5s  %3s  (%s)" % (
-                    ' ' if roster[owner] < 35 else '*',
+                    ' ' if roster[owner] < ros_max else '*',
                     str(rnd) + '-' + ( str(pick) if skip else str(slot) ),
                     owner, pickstr
                     ))
@@ -135,6 +136,6 @@ for rnd in range( 1, last_round + 1 ):
 
 if skip and not do_round:
     for team in sorted(roster):
-        if roster[team] < 35:
-            print("\t%s: %i" % (team, 35 - roster[team]))
+        if roster[team] < ros_max:
+            print("\t%s: %i" % (team, ros_max - roster[team]))
 
