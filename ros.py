@@ -211,18 +211,20 @@ if not do_active and not do_inactive:
 # status: 1 = active, 2 = inactive
 # item_type: 0 = pick, 1 = pitcher, 2 = batter
 if do_find:
-    sqlbase = "select t.tig_name, rpad(ibl_team, 3, ' ') || ' - ' ||\
-            case when comments is not null then comments else '' end,\
-            status, item_type, uncarded, bats, throws from %s t\
-            left outer join %s p on (t.tig_name = p.tig_name) "\
+    sqlbase = "select t.tig_name, rpad(ibl_team, 3, ' ') || ' - ' || \
+            case when comments is not null then comments else '' end, \
+            status, item_type, uncarded, bats, throws from %s t \
+            left outer join %s p on (t.tig_name = p.tig_name) " \
             % ( rosters, players );
-    sqlbase += "where t.tig_name ~* (%s) order by item_type, tig_name;"
+    sqlbase += "where t.tig_name ~* (%s) "
 else:
-    sqlbase = "select t.tig_name, comments, status, item_type, uncarded,\
-            bats, throws from %s t\
-            left outer join %s p on (t.tig_name = p.tig_name) "\
+    sqlbase = "select t.tig_name, comments, status, item_type, uncarded, \
+            bats, throws from %s t \
+            left outer join %s p on (t.tig_name = p.tig_name) " \
             % ( rosters, players );
-    sqlbase += "where ibl_team = (%s) order by item_type, tig_name;"
+    sqlbase += "where ibl_team = (%s) "
+sqlbase += "and item_type %s (%s) = (%s) order by tig_name;" \
+        % ( "|" if do_picks else "&", "%s", "%s" )
 
 if do_card or do_def:
     b_cards = p_hash( cardpath() + '/' + batters )
@@ -244,11 +246,13 @@ cursor.execute(sql)
 # skip UC in roster count?
 ignore_uc = False
 
-last = -1
+first = True
 for arg in args:
-    if last > 0:
-        last = -1
+    # skip line between multiple args
+    if not first:
         print(eol)
+    first = False
+
     b_num = 0
     p_num = 0
     active = 0
@@ -257,124 +261,137 @@ for arg in args:
     uncarded = 0
 
     team = arg.upper()
-    cursor.execute(sqlbase, (team,))
-    for tigname, how, status, kind, uc, bats, throws in cursor.fetchall():
-        mlb, name = p_split( trim(tigname) )
-        cols = 0
-        if kind > last:
-            if do_find:
-                header = ''
-            else:
-                header = team + " "
-            if kind == 0 and do_picks and do_header:
-                print(header + 'PICKS')
-            elif kind == 1 and do_pit and do_header:
-                print(header + 'PITCHERS')
-            elif kind == 2 and do_bat and do_header:
-                if p_num > 0:
-                    print()
-                print(header + 'BATTERS')
-            last = kind
-        if kind == 0 and do_picks:
-            print("%-15s %-40s" % ( trim(tigname), trim(how) ))
-        if kind == 1 and do_pit:
-            p_num += 1
-            if uc == UCyy:
-                uncarded += 1
-                if ignore_uc:
-                    p_num -= 1
-            if status == 1:
-                active += 1
-                p_act += 1
-            if status == 1 and do_active or status > 1 and do_inactive:
-                if (do_card or do_def) and uc == UCyy and ignore_uc:
-                    continue
-                else:
-                    print("%s %-3s %-15s" %
-                            ( star(status, throws), mlb, name ), end=' ')
-                    cols += 23
-                if do_card and (mlb, name) in p_cards:
-                    if do_val:
-                        for num in cardval(p_cards[(mlb,name)], kind, do_val):
-                            if num.isdigit():
-                                print("%3s" % num, end=' ')
-                                cols += 4
-                            else:
-                                print("%s" % num, end=' ')
-                                cols += len(num) + 1
-                    else:
-                        for num in cardtop(p_cards[(mlb,name)], kind):
-                            if num.isdigit():
-                                print("%3s" % num, end=' ')
-                                cols += 4
-                            else:
-                                print("%s" % num, end=' ')
-                                cols += len(num) + 1
-                    if (mlb, name) in p_def:
-                        print(".", pitfat(p_fat[(mlb,name)]), end=' ')
-                        cols += 19
-                    if cols + 25 < maxC and (mlb, name) in p_def:
-                        print(" %-24s" % ( pitrat(p_def[(mlb,name)]) ), end=' ')
-                elif not (do_card or do_def):
-                    print(" %-20s" % ( trim(how) ), end=' ')
-                    if uc > 0:
-                        print(" [UC%s]" % uc, end=' ')
-                elif (cols + 24 < maxC or do_def) and (mlb, name) in p_def:
-                    print("%-24s" % ( pitrat(p_def[(mlb,name)]) ), end=' ')
-                    print(". ",pitfat(p_fat[(mlb,name)]), end=' ')
+    for item in 0, 1, 2:
+        # do picks or players, not both
+        if do_picks:
+            if item > 0:
+                continue
+        else:
+            if item == 0:
+                continue
+
+        cursor.execute(sqlbase, (team, item, item, ))
+        # skip null query
+        if cursor.rowcount == 0:
+            continue
+
+        # print header
+        if do_find:
+            header = ''
+        else:
+            header = team + ' '
+        if item == 0 and do_picks and do_header:
+            print(header + 'PICKS')
+        elif item == 1 and do_pit and do_header:
+            print(header + 'PITCHERS')
+        elif item == 2 and do_bat and do_header:
+            if p_num > 0:
                 print()
-        if kind == 2 and do_bat:
-            b_num += 1
-            if uc == UCyy:
-                uncarded += 1
-                if ignore_uc:
-                    b_num -= 1
-            if status == 1:
-                active += 1
-                b_act += 1
-            if status == 1 and do_active or status > 1 and do_inactive:
-                if (do_card or do_def) and uc == UCyy and ignore_uc:
-                    continue
-                else:
-                    print("%s %-3s %-15s" %
-                            ( star(status, bats), mlb, name ), end=' ')
-                    cols += 23
-                if do_card and (mlb, name) in b_cards:
-                    if do_val:
-                        for num in cardval(b_cards[(mlb,name)], kind, do_val):
-                            if num.isdigit():
-                                print("%3s" % num, end=' ')
-                                cols += 4
-                            else:
-                                print("%s" % num, end=' ')
-                                cols += len(num) + 1
+            print(header + 'BATTERS')
+
+        for tigname, how, status, kind, uc, bats, throws in cursor.fetchall():
+            mlb, name = p_split( trim(tigname) )
+            cols = 0
+            if item == 0 and do_picks:
+                print("%-15s %-40s" % ( trim(tigname), trim(how) ))
+            if item & kind == 1 and do_pit:
+                p_num += 1
+                if uc == UCyy:
+                    uncarded += 1
+                    if ignore_uc:
+                        p_num -= 1
+                if status == 1:
+                    active += 1
+                    p_act += 1
+                if status == 1 and do_active or status > 1 and do_inactive:
+                    if (do_card or do_def) and uc == UCyy and ignore_uc:
+                        continue
                     else:
-                        for num in cardtop(b_cards[(mlb,name)], kind):
-                            if num.isdigit():
-                                print("%3s" % num, end=' ')
-                                cols += 4
+                        print("%s %-3s %-15s" %
+                                ( star(status, throws), mlb, name ), end=' ')
+                        cols += 23
+                    if do_card and (mlb, name) in p_cards:
+                        if do_val:
+                            for num in cardval(p_cards[(mlb,name)], item, do_val):
+                                if num.isdigit():
+                                    print("%3s" % num, end=' ')
+                                    cols += 4
+                                else:
+                                    print("%s" % num, end=' ')
+                                    cols += len(num) + 1
+                        else:
+                            for num in cardtop(p_cards[(mlb,name)], item):
+                                if num.isdigit():
+                                    print("%3s" % num, end=' ')
+                                    cols += 4
+                                else:
+                                    print("%s" % num, end=' ')
+                                    cols += len(num) + 1
+                        if (mlb, name) in p_def:
+                            print(".", pitfat(p_fat[(mlb,name)]), end=' ')
+                            cols += 19
+                        if cols + 25 < maxC and (mlb, name) in p_def:
+                            print(" %-24s" % ( pitrat(p_def[(mlb,name)]) ), end=' ')
+                    elif not (do_card or do_def):
+                        print(" %-20s" % ( trim(how) ), end=' ')
+                        if uc > 0:
+                            print(" [UC%s]" % uc, end=' ')
+                    elif (cols + 24 < maxC or do_def) and (mlb, name) in p_def:
+                        print("%-24s" % ( pitrat(p_def[(mlb,name)]) ), end=' ')
+                        print(". ",pitfat(p_fat[(mlb,name)]), end=' ')
+                    print()
+            if item & kind == 2 and do_bat:
+                b_num += 1
+                if uc == UCyy:
+                    uncarded += 1
+                    if ignore_uc:
+                        b_num -= 1
+                if status == 1:
+                    active += 1
+                    b_act += 1
+                if status == 1 and do_active or status > 1 and do_inactive:
+                    if (do_card or do_def) and uc == UCyy and ignore_uc:
+                        continue
+                    else:
+                        print("%s %-3s %-15s" %
+                                ( star(status, bats), mlb, name ), end=' ')
+                        cols += 23
+                    if do_card and (mlb, name) in b_cards:
+                        if do_val:
+                            for num in cardval(b_cards[(mlb,name)], item, do_val):
+                                if num.isdigit():
+                                    print("%3s" % num, end=' ')
+                                    cols += 4
+                                else:
+                                    print("%s" % num, end=' ')
+                                    cols += len(num) + 1
+                        else:
+                            for num in cardtop(b_cards[(mlb,name)], item):
+                                if num.isdigit():
+                                    print("%3s" % num, end=' ')
+                                    cols += 4
+                                else:
+                                    print("%s" % num, end=' ')
+                                    cols += len(num) + 1
+                        if (mlb, name) in b_def:
+                            if do_br:
+                                print(".", end=' ')
+                                print(brun( b_run[(mlb,name)] ), ".", end=' ')
+                                cols += 11
                             else:
-                                print("%s" % num, end=' ')
-                                cols += len(num) + 1
-                    if (mlb, name) in b_def:
+                                print(".", end=' ')
+                                cols += 2
+                            print(poslist( b_def[(mlb,name)][2:], maxC - cols ), end=' ')
+                    elif not (do_card or do_def):
+                        print(" %-20s" % ( trim(how) ), end=' ')
+                        if uc > 0:
+                            print(" [UC%s]" % uc, end=' ')
+                    elif do_def and (mlb, name) in b_def:
                         if do_br:
-                            print(".", end=' ')
                             print(brun( b_run[(mlb,name)] ), ".", end=' ')
                             cols += 11
-                        else:
-                            print(".", end=' ')
-                            cols += 2
                         print(poslist( b_def[(mlb,name)][2:], maxC - cols ), end=' ')
-                elif not (do_card or do_def):
-                    print(" %-20s" % ( trim(how) ), end=' ')
-                    if uc > 0:
-                        print(" [UC%s]" % uc, end=' ')
-                elif do_def and (mlb, name) in b_def:
-                    if do_br:
-                        print(brun( b_run[(mlb,name)] ), ".", end=' ')
-                        cols += 11
-                    print(poslist( b_def[(mlb,name)][2:], maxC - cols ), end=' ')
-                print()
+                    print()
 
     if count and b_num and p_num:
         print("%s: %2s players (%2s pitchers, %2s batters, %s uncarded)" % \

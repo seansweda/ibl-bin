@@ -315,7 +315,7 @@ if do_bat:
             continue
         if do_mlb:
             sql = "select trim(tig_name) from rosters where \
-                    ibl_team = (%s) and uncarded < (%s) and item_type = 2"
+                    ibl_team = (%s) and uncarded < (%s) and item_type & 2 = 2"
             cursor.execute(sql + active, (team, UCyy ) )
         elif do_opp:
             sql = sql_select + sql_weeks + \
@@ -393,7 +393,7 @@ if do_pit:
             continue
         if do_mlb:
             sql = "select trim(tig_name) from rosters where \
-                    ibl_team = (%s) and uncarded < (%s) and item_type = 1"
+                    ibl_team = (%s) and uncarded < (%s) and item_type & 1 = 1"
             cursor.execute(sql + active, (team, UCyy ) )
         elif do_opp:
             sql = sql_select + sql_weeks + \

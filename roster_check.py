@@ -133,9 +133,9 @@ def main():
         cursor.execute( sql_ros, (ibl, UCyy ) )
         for player, kind in cursor.fetchall():
             #print player, starts[player]
-            if kind == pitcher:
+            if kind & pitcher == pitcher:
                 pitchers += 1
-            if kind == batter:
+            if kind & batter == batter:
                 batters += 1
 
             # check if player has appearances left
