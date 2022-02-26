@@ -61,20 +61,23 @@ def main():
     results = 1
 
     def late(team):
-        # array is (boxes, results)
-        # teams on probation pick last
-        if team in y['probation']:
-            return 2
-        # teams under caretaker control are exempt from late penalty
-        if team in y['exempt']:
-            return 0
-        # results or boxes must be current
-        if status[team][results] < week and status[team][boxes] < week:
-            return 1
-        # boxes must be no more than 1 week behind
-        if week > 1:
-            if status[team][boxes] < week - 1:
+        ## array is (boxes, results)
+        try:
+            # teams on probation pick last
+            if team in y['probation']:
+                return 2
+            # teams under caretaker control are exempt from late penalty
+            if team in y['exempt']:
+                return 0
+            # results or boxes must be current
+            if status[team][results] < week and status[team][boxes] < week:
                 return 1
+            # boxes must be no more than 1 week behind
+            if week > 1:
+                if status[team][boxes] < week - 1:
+                    return 1
+        except KeyError:
+            pass
         #  return 0, team has nothing outstanding
         return 0
 
