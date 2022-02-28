@@ -234,9 +234,12 @@ if do_card or do_def:
     p_def = p_hash( cardpath() + '/pitrat.txt' )
     p_fat = p_hash( cardpath() + '/bfp.txt' )
 
-maxR, maxC = subprocess.check_output(['stty', 'size']).split()
-maxR = int(maxR)
-maxC = int(maxC)
+if sys.stdout.isatty():
+    maxR, maxC = subprocess.check_output(['stty', 'size']).split()
+    maxR = int(maxR)
+    maxC = int(maxC)
+else:
+    maxR = maxC = 256
 
 # current UC designation
 sql = "select max(uncarded) from %s;" % rosters
