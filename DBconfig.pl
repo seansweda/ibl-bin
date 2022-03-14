@@ -4,11 +4,11 @@ $host = 'localhost';
 $dbname = ibl_stats;
 
 # tables for current season
-$startsdb = starts2021;
-$batdb = bat2021;
-$pitdb = pit2021;
-$teamdb = teams2021;
-$scheddb = sched2021;
-$extradb = extra2021;
-$injdb = inj2021;
-$usagedb = usage2021;
+$startsdb = starts2022;
+$batdb = bat2022;
+$pitdb = pit2022;
+$teamdb = teams2022;
+$scheddb = sched2022;
+$extradb = extra2022;
+$injdb = inj2022;
+$usagedb = usage2022;
