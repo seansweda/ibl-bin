@@ -6,6 +6,7 @@
 # -r: baserunning
 # -t: ob + tb totals
 # -w: wOBA totals
+# -u: MLB usage
 # -a: active roster
 # -i: inactive roster
 # -n: number of players
@@ -30,6 +31,7 @@ import psycopg2
 import DB
 
 from card import p_split, p_hash, cardpath, batters, pitchers, wOBA
+from usage import mlb_usage
 
 def usage():
     print("usage: %s " % sys.argv[0])
@@ -141,6 +143,7 @@ do_card = False
 do_def = False
 do_br = False
 do_find = False
+do_usage = False
 count = False
 eol = ''
 do_val = 0
@@ -148,12 +151,14 @@ do_tot = 1
 do_wOBA = 2
 rosters = 'rosters'
 players = 'players'
+MLB_B = {}
+MLB_P = {}
 
 db = DB.connect()
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'ABHOPfpaincdrtwL')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABHOPfpaincdrtwuL')
 except getopt.GetoptError as err:
     print(str(err))
     usage()
@@ -190,6 +195,9 @@ for (opt, arg) in opts:
         do_val = do_tot
     elif opt == '-w':
         do_val = do_wOBA
+    elif opt == '-u':
+        do_usage = True
+        mlb_usage( MLB_P, MLB_B )
     elif opt == '-L':
         eol = ''
     elif opt == '-n':
@@ -330,6 +338,9 @@ for arg in args:
                                 else:
                                     print("%s" % num, end=' ')
                                     cols += len(num) + 1
+                        if do_usage and mlb + " " + name in MLB_P:
+                            print(". %3.0f" % MLB_P[mlb + " " + name], end=' ')
+                            cols += 6
                         if (mlb, name) in p_def:
                             print(".", pitfat(p_fat[(mlb,name)]), end=' ')
                             cols += 19
@@ -376,6 +387,9 @@ for arg in args:
                                 else:
                                     print("%s" % num, end=' ')
                                     cols += len(num) + 1
+                        if do_usage and mlb + " " + name in MLB_B:
+                            print(". %3.0f" % MLB_B[mlb + " " + name], end=' ')
+                            cols += 6
                         if (mlb, name) in b_def:
                             if do_br:
                                 print(".", end=' ')
