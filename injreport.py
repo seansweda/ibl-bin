@@ -30,7 +30,7 @@ def dumpenv(form):
 # schedule
 DAYS_OFF = ( 3, 5, 8, 11, 16, 18, 21, 23 )
 LONG_SERIES = ( 4, 5, 12, 13, 24, 25 )
-LAST = 25
+LAST_WEEK = 25
 ASB = 13
 
 # sql table injury codes
@@ -75,7 +75,7 @@ def get_series( player, name, week, loc ):
         player[name][week] = {}
         player[name][week][loc] = {}
 
-    if week == (LAST + 1):
+    if week == (LAST_WEEK + 1):
         obj = []
         for x in range(40):
             obj.append(0)
@@ -250,7 +250,7 @@ def main( player = {}, module = False, report_week = 0 ):
         if name not in player:
             player[name] = {}
 
-        if week == (LAST + 1):
+        if week == (LAST_WEEK + 1):
             loc_q = [ 'playoffs' ]
         elif inj_team == home:
             loc_q = [ 'home', 'away' ]
@@ -293,7 +293,7 @@ def main( player = {}, module = False, report_week = 0 ):
             ##print "week %2i %s: %i served (%3i) %s" % \
             ##    (week, loc, served, length, dcode(player[name][week][loc]))
 
-        while length > 0 and week < LAST:
+        while length > 0 and week < LAST_WEEK:
             loc = loc_q[0]
             week += 1
             series = get_series( player, name, week, loc )
@@ -335,7 +335,7 @@ def main( player = {}, module = False, report_week = 0 ):
 
         if length > 0:
             # post-season
-            if week == LAST:
+            if week == LAST_WEEK:
                 week += 1
             loc = 'playoffs'
             series = get_series( player, name, week, loc )

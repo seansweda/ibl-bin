@@ -20,6 +20,7 @@ import DB
 
 from card import p_split, p_hash, cardpath, batters, pitchers, wOBA
 from usage import mlb_usage
+from injreport import LAST_WEEK
 
 # identifiers
 pit = 1
@@ -210,7 +211,7 @@ platoon = 2
 avg = 3
 display = overall
 start = 1
-end = 27
+end = LAST_WEEK
 s_arg = ''
 e_arg = ''
 active = ''

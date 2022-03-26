@@ -18,6 +18,8 @@ import psycopg2
 import DB
 import injreport
 
+from injreport import LAST_WEEK
+
 def usage():
     print("usage: %s [-i] [-w week] [-y year] [-t team]" % sys.argv[0])
     sys.exit(1)
@@ -32,7 +34,7 @@ def output( name, starts, inj, is_cgi ):
     return fmt % ( injreport.space(name), \
             gp, p, c, b1, b2, b3, ss, lf, cf, rf, inj )
 
-def main( starts = {}, module = False, report_week = 27 ):
+def main( starts = {}, module = False, report_week = LAST_WEEK ):
     do_json = False
     is_cgi = False
     if not module and 'GATEWAY_INTERFACE' in os.environ:
