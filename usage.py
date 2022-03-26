@@ -21,6 +21,8 @@ import DB
 from card import cardpath
 import injreport
 
+from injreport import LAST_WEEK
+
 INJ = {}
 BFP = {}
 MLB_B = {}
@@ -28,9 +30,9 @@ MLB_P = {}
 IBL_B = {}
 IBL_P = {}
 IBL_G = {}
+IBL_W = {}
 
 season = 162.0  # games in season
-week = 6.0      # games played per week
 scale = 1.0     # scale MLB usage
 
 pitcher = 1
@@ -77,22 +79,28 @@ def gp ( ibl ):
     else:
         return 0.0
 
+def wkp ( ibl ):
+    if ibl in IBL_W and IBL_W[ibl]:
+        return float( IBL_W[ibl] )
+    else:
+        return 0.0
+
 def injdays ( name, role ):
     if name in INJ:
         if role == batter:
-            return injreport.injdays( INJ[name], 27 )
+            return injreport.injdays( INJ[name], LAST_WEEK )
         elif role == pitcher:
             # two-way players use "arm" injury for pitching usage credit
             if name in MLB_B:
-                return injreport.injdays( INJ[name], 27,
+                return injreport.injdays( INJ[name], LAST_WEEK,
                         injreport.arm + injreport.inj )
             else:
-                return injreport.injdays( INJ[name], 27 )
+                return injreport.injdays( INJ[name], LAST_WEEK )
 
     # no match, return 0
     return 0
 
-def r_usage( name, role, g, do_o = False ):
+def r_usage( name, role, g, wk, do_o ):
     if role == pitcher:
         U = IBL_P
         M = MLB_P
@@ -133,6 +141,7 @@ def r_usage( name, role, g, do_o = False ):
     else:
         rate = ( ibl_U * season / g ) / mlb_U * 100
         injrate = ( ibl_U * season / g + credit ) / mlb_U * 100
+    weeks = LAST_WEEK - wk
 
     output = "%-18s" % injreport.space(name)
     output += "%4i " % U_75
@@ -140,14 +149,14 @@ def r_usage( name, role, g, do_o = False ):
         output += "%6s %6s" % ( '-', '-' )
     else:
         output += "%6.1f %6.1f" \
-            % ( U_75 / (season - g), min( U_75 / (season - g) * week, U_75 ) )
+            % ( U_75 / (season - g), U_75 if weeks == 0 else U_75 / weeks )
 
     output += "   %4i " % U_133
     if g >= season or U_133 <= 0:
         output += "%6s %6s" % ( '-', '-' )
     else:
         output += "%6.1f %6.1f" \
-            % ( U_133 / (season - g), min( U_133 / (season - g) * week, U_133 ) )
+            % ( U_133 / (season - g), U_133 if weeks == 0 else U_133 / weeks )
 
     output += "  %6.1f%% %6.1f%%" % ( rate, injrate )
 
@@ -398,14 +407,15 @@ def main():
         tig_name = mlb.rstrip() + " " + name.rstrip()
         IBL_P[tig_name] = float(u)
 
-    sql = "select ibl, sum(gs) from %s group by ibl;" % DB.pit
+    IBL_G['FA'] = 0
+    IBL_W['FA'] = 0
+    sql = "select ibl, sum(gs), max(week) from %s group by ibl;" % DB.pit
     cursor.execute(sql)
-    for ibl, g in cursor.fetchall():
+    for ibl, g, wk in cursor.fetchall():
         IBL_G[ibl.rstrip()] = float(g)
-    if list(IBL_G.values()):
-        IBL_G['FA'] = max( IBL_G.values() )
-    else:
-        IBL_G['FA'] = 0
+        IBL_W[ibl.rstrip()] = float(wk)
+    IBL_G['FA'] = max( IBL_G.values() )
+    IBL_W['FA'] = max( IBL_W.values() )
 
     if is_cgi:
         print("<pre>")
@@ -435,7 +445,7 @@ def main():
                 if do_g:
                     print(g_usage( tig_name, pitcher, gp(ibl), do_o ))
                 elif do_r:
-                    print(r_usage( tig_name, pitcher, gp(ibl), do_o ))
+                    print(r_usage( tig_name, pitcher, gp(ibl), wkp(ibl), do_o ))
                 else:
                     print(std_usage( tig_name, pitcher, gp(ibl) ))
 
@@ -467,7 +477,7 @@ def main():
                 if do_g:
                     print(g_usage( tig_name, batter, gp(ibl), do_o ))
                 elif do_r:
-                    print(r_usage( tig_name, batter, gp(ibl), do_o ))
+                    print(r_usage( tig_name, batter, gp(ibl), wkp(ibl), do_o ))
                 else:
                     print(std_usage( tig_name, batter, gp(ibl) ))
 
