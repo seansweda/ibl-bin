@@ -28,9 +28,10 @@ def dumpenv(form):
     return
 
 # schedule
-DAYS_OFF = ( 2, 5, 8, 10, 13, 18, 21, 24 )
-LAST = 27
-ASB = 15
+DAYS_OFF = ( 3, 5, 8, 11, 16, 18, 21, 23 )
+LONG_SERIES = ( 4, 5, 12, 13, 24, 25 )
+LAST = 25
+ASB = 13
 
 # sql table injury codes
 injured = 0
@@ -80,6 +81,8 @@ def get_series( player, name, week, loc ):
             obj.append(0)
     else:
         obj = [ 0, 0, 0 ]
+        if week in LONG_SERIES:
+            obj.append(0)
         if week in DAYS_OFF:
             obj.append(1)
     return obj
