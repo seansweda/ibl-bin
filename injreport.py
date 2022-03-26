@@ -58,10 +58,6 @@ def injdays( player, stop, type = inj ):
                         total += 1
     return total
 
-def offday( week ):
-    offweeks = DAYS_OFF
-    return offweeks.count( week )
-
 def allstar( week ):
     if week == ASB:
         return True
@@ -84,7 +80,7 @@ def get_series( player, name, week, loc ):
             obj.append(0)
     else:
         obj = [ 0, 0, 0 ]
-        for x in range( offday(week) ):
+        if week in DAYS_OFF:
             obj.append(1)
     return obj
 
