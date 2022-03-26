@@ -13,7 +13,7 @@ import startsdb
 
 ros_max = 36    # max players on roster
 ros_lim = 26    # active player limit
-ros_exp = 24    # first week where all players can be active
+ros_exp = 22    # first week where all players can be active
 
 # dump environment and parameters for testing
 # not really necessary, mostly for learning purposes
