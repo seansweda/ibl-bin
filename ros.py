@@ -144,6 +144,7 @@ do_def = False
 do_br = False
 do_find = False
 do_usage = False
+is_tty = False
 count = False
 eol = ''
 do_val = 0
@@ -158,7 +159,7 @@ db = DB.connect()
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'ABHOPfpaincdrtwuL')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABHOPfpaincdrtwuLT')
 except getopt.GetoptError as err:
     print(str(err))
     usage()
@@ -204,6 +205,8 @@ for (opt, arg) in opts:
         count = True
     elif opt == '-f':
         do_find = True
+    elif opt == '-T':
+        is_tty = True
     else:
         print("bad option:", opt)
         usage()
@@ -242,12 +245,11 @@ if do_card or do_def:
     p_def = p_hash( cardpath() + '/pitrat.txt' )
     p_fat = p_hash( cardpath() + '/bfp.txt' )
 
-if sys.stdout.isatty():
+if sys.stdout.isatty() or is_tty:
     maxR, maxC = subprocess.check_output(['stty', 'size']).split()
-    maxR = int(maxR)
     maxC = int(maxC)
 else:
-    maxR = maxC = 256
+    maxC = 256
 
 # current UC designation
 sql = "select max(uncarded) from %s;" % rosters
