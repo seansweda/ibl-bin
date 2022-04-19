@@ -273,8 +273,8 @@ def main( player = {}, module = False, report_week = 0 ):
             served = update( series, code, length, day )
             length -= served
         player[name][week][loc] = series
-        ##print "week %2i %s: %i served (%3i) %s" % \
-        ##    (week, loc, served, length, dcode(player[name][week][loc]))
+        ##print( "week %2i %s: %i served (%3i) %s" % \
+        ##    (week, loc, served, length, dcode(player[name][week][loc])) )
 
         if length > 0 and allstar( week ) and code != suspended:
             # dtd expires during ASB
@@ -290,8 +290,8 @@ def main( player = {}, module = False, report_week = 0 ):
             served = update( series, code, length )
             length -= served
             player[name][week][loc] = series
-            ##print "week %2i %s: %i served (%3i) %s" % \
-            ##    (week, loc, served, length, dcode(player[name][week][loc]))
+            ##print( "week %2i %s: %i served (%3i) %s" % \
+            ##    (week, loc, served, length, dcode(player[name][week][loc])) )
 
         while length > 0 and week < LAST_WEEK:
             loc = loc_q[0]
@@ -300,8 +300,8 @@ def main( player = {}, module = False, report_week = 0 ):
             served = update( series, code, length )
             length -= served
             player[name][week][loc] = series
-            ##print "week %2i %s: %i served (%3i) %s" % \
-            ##    (week, loc, served, length, dcode(player[name][week][loc]))
+            ##print( "week %2i %s: %i served (%3i) %s" % \
+            ##    (week, loc, served, length, dcode(player[name][week][loc])) )
 
             if length == 0:
                 break
@@ -311,8 +311,8 @@ def main( player = {}, module = False, report_week = 0 ):
             served = update( series, code, length )
             length -= served
             player[name][week][loc] = series
-            ##print "week %2i %s: %i served (%3i) %s" % \
-            ##    (week, loc, served, length, dcode(player[name][week][loc]))
+            ##print( "week %2i %s: %i served (%3i) %s" % \
+            ##    (week, loc, served, length, dcode(player[name][week][loc])) )
 
             if length > 0 and allstar( week ) and code != suspended:
                 # dtd expires during ASB
@@ -328,8 +328,8 @@ def main( player = {}, module = False, report_week = 0 ):
                 served = update( series, code, length )
                 length -= served
                 player[name][week][loc] = series
-                ##print "week %2i %s: %i served (%3i) %s" % \
-                ##    (week, loc, served, length, dcode(player[name][week][loc]))
+                ##print( "week %2i %s: %i served (%3i) %s" % \
+                ##    (week, loc, served, length, dcode(player[name][week][loc])) )
 
             # END while length loop
 
@@ -342,8 +342,8 @@ def main( player = {}, module = False, report_week = 0 ):
             served = update( series, code, length )
             length -= served
             player[name][week][loc] = series
-            ##print "week %2i %s: %i served (%3i) %s" % \
-            ##    (week, loc, served, length, dcode(player[name][week][loc]))
+            ##print( "week %2i %s: %i served (%3i) %s" % \
+            ##    (week, loc, served, length, dcode(player[name][week][loc])) )
 
         if not module and week >= report_week:
             if not ibl:
