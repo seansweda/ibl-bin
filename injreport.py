@@ -366,8 +366,16 @@ def main( player = {}, module = False, report_week = 0 ):
 
             if reported_length > 1:
                 output += "from "
-            output += "week %s (%s day %s)" \
-                    % ( reported_week, reported_loc, reported_day )
+
+            rep_series = get_series(player, name, reported_week, reported_loc)
+            if reported_length > 0 and reported_day > len(rep_series):
+                # injury begins the following week
+                output += "week %s (%s day %s)" \
+                        % ( reported_week + 1, reported_loc, \
+                            reported_day - len(rep_series) )
+            else:
+                output += "week %s (%s day %s)" \
+                        % ( reported_week, reported_loc, reported_day )
 
             if length > 0:
                 output += " through end of season"
