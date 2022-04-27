@@ -94,6 +94,11 @@ def main():
     pitcher = 1
     batter = 2
 
+    # minimum SP for legal roster
+    sp_min = 4
+    if week in IR.LONG_SERIES:
+        sp_min += 1
+
     def ok( week ):
         for series in list(week.keys()):
             out = [z & (IR.off + IR.inj + IR.sus) for z in week[series]]
@@ -162,7 +167,7 @@ def main():
         if sum(ros.values()) <= ros_max \
                 and ( ros[active] <= ros_lim or \
                     ros[active] <= ros_max and week >= ros_exp ) \
-                and legal[1] >= 4 \
+                and legal[1] >= sp_min \
                 and len( [z for z in legal[2:] if z >= 2] ) == 8:
             status = "LEGAL"
         else:
