@@ -1,30 +1,30 @@
 ---
-year: 2022
+year: 2023
 tier0:
-- SFP
-- ODM
-- RRG
-- CAN
-- KAT
 - EVE
-tier1:
-- WMS
-- OXY
+- RRG
 - POR
+- CAN
+- SFP
+- KAT
 - BAL
-- SLG
-- MAD
+- ODM
+- SNH
+tier1:
+- SKY
 - SCS
 - SFL
-- SNH
+- MAD
 tier2:
+- BOW
 - PHI
-- MCM
 - GTY
-- SEA
-- SKY
+- SLG
+- WMS
+- MCM
+- OXY
 - NYK
 - NJR
-- SDQ
 tier3:
-- BOW
+- SEA
+- SDQ
