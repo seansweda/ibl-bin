@@ -331,7 +331,6 @@ def main():
     do_pit = True
 
     rosters = 'rosters'
-    players = 'players'
 
     if is_cgi:
         if 'team' in form:
@@ -352,7 +351,6 @@ def main():
                 do_bat = False
             elif opt == '-O':
                 rosters = 'rosters_old'
-                players = 'players_old'
             elif opt == '-g':
                 do_g = True
             elif opt == '-r':
@@ -434,7 +432,7 @@ def main():
         else:
             print("PITCHERS            MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ")
 
-        sql = "select ibl_team, r.tig_name from %s r, %s p where r.tig_name = p.tig_name and is_pitcher = 'Y'" % ( rosters, players )
+        sql = "select ibl_team, tig_name from %s r where item_type & %s = %s" % ( rosters, pitcher, pitcher )
         sql += sql_team
         sql += " order by tig_name;"
         cursor.execute(sql)
@@ -466,7 +464,7 @@ def main():
         else:
             print("BATTERS             MLB  IBL  INJ CRED     75%    133%    150%    RATE    +INJ")
 
-        sql = "select ibl_team, r.tig_name from %s r, %s p where r.tig_name = p.tig_name and is_batter = 'Y'" % ( rosters, players )
+        sql = "select ibl_team, tig_name from %s r where item_type & %s = %s" % ( rosters, batter, batter )
         sql += sql_team
         sql += " order by tig_name;"
         cursor.execute(sql)
