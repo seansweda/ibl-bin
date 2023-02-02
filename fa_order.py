@@ -121,7 +121,7 @@ def main():
             else:
                 sys.exit(1)
 
-    except IOError as err:
+    except OSError as err:
         print(str(err))
         sys.exit(1)
 

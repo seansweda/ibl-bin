@@ -50,7 +50,7 @@ try:
 
         avg_pwr = "Av"
 
-except IOError as err:
+except OSError as err:
     print(str(err))
     sys.exit(1)
 
@@ -78,7 +78,7 @@ def p_hash(datafile, lower=False):
                 else:
                     myhash[ ( player[0], player[1] ) ] = player[:]
 
-    except IOError as err:
+    except OSError as err:
         print(str(err))
         sys.exit(1)
 
@@ -92,9 +92,6 @@ def p_grep(player, datafile):
 
     try: 
         fp = subprocess.Popen( cmd, stdout=subprocess.PIPE, universal_newlines=True )
-    except IOError as err:
-        print(str(err))
-        sys.exit(1)
     except OSError as err:
         print(str(err))
         sys.exit(1)
