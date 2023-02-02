@@ -43,6 +43,9 @@ try:
             year = int(time.strftime("%Y"))
             year = "%s" % ( int(year) + 1 )
 
+except PermissionError:
+    print("Permission denied")
+    sys.exit(1)
 except OSError as err:
     print(str(err))
     sys.exit(1)

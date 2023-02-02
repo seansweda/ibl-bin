@@ -50,6 +50,9 @@ try:
 
         avg_pwr = "Av"
 
+except PermissionError:
+    print("Permission denied")
+    sys.exit(1)
 except OSError as err:
     print(str(err))
     sys.exit(1)
@@ -78,6 +81,9 @@ def p_hash(datafile, lower=False):
                 else:
                     myhash[ ( player[0], player[1] ) ] = player[:]
 
+    except PermissionError:
+        print("Permission denied")
+        sys.exit(1)
     except OSError as err:
         print(str(err))
         sys.exit(1)
@@ -91,7 +97,7 @@ def p_grep(player, datafile):
     cmd.append(datafile)
 
     try: 
-        fp = subprocess.Popen( cmd, stdout=subprocess.PIPE, universal_newlines=True )
+        fp = subprocess.Popen( cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True )
     except OSError as err:
         print(str(err))
         sys.exit(1)

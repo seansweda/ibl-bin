@@ -121,6 +121,9 @@ def main():
             else:
                 sys.exit(1)
 
+    except PermissionError:
+        print("Permission denied")
+        sys.exit(1)
     except OSError as err:
         print(str(err))
         sys.exit(1)

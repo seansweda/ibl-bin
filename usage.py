@@ -58,20 +58,28 @@ def dumpenv(form):
 
 def mlb_usage( pit_U, bat_U ):
     mlb_file = cardpath() + '/usage_bf.txt'
-    if not os.path.isfile(mlb_file):
-        print(mlb_file + " not found")
+    try:
+        with open( mlb_file, 'r', newline=None ) as s:
+            for line in csv.reader(s):
+                pit_U[line[0].rstrip()] = round( float(line[1]) * scale, 0 )
+    except PermissionError:
+        print("Permission denied")
         sys.exit(1)
-    with open( mlb_file, 'r', newline=None ) as s:
-        for line in csv.reader(s):
-            pit_U[line[0].rstrip()] = round( float(line[1]) * scale, 0 )
+    except OSError as err:
+        print(str(err))
+        sys.exit(1)
 
     mlb_file = cardpath() + '/usage_pa.txt'
-    if not os.path.isfile(mlb_file):
-        print(mlb_file + " not found")
+    try:
+        with open( mlb_file, 'r', newline=None ) as s:
+            for line in csv.reader(s):
+                bat_U[line[0].rstrip()] = round( float(line[1]) * scale, 0 )
+    except PermissionError:
+        print("Permission denied")
         sys.exit(1)
-    with open( mlb_file, 'r', newline=None ) as s:
-        for line in csv.reader(s):
-            bat_U[line[0].rstrip()] = round( float(line[1]) * scale, 0 )
+    except OSError as err:
+        print(str(err))
+        sys.exit(1)
 
 def gp ( ibl ):
     if ibl in IBL_G and IBL_G[ibl]:
@@ -364,30 +372,33 @@ def main():
     mlb_usage( MLB_P, MLB_B )
 
     bfp_file = cardpath() + '/' + 'bfp.txt'
-    if not os.path.isfile(bfp_file):
-        print(bfp_file + " not found")
-        sys.exit(1)
-
-    with open( bfp_file, 'r', newline=None ) as s:
-        for line in csv.reader(s):
-            sp = line[1].strip()
-            if sp.isdigit():
-                sp = float( sp )
-            else:
-                sp = float( 0 )
-            rp = line[2].strip()
-            if rp.isdigit():
-                rp = float( rp )
-            else:
-                rp = float( 0 )
-            rest = []
-            for x in line[3].split('/'):
-                val = x.strip()
-                if val.isdigit():
-                    rest.append( float(val) )
+    try:
+        with open( bfp_file, 'r', newline=None ) as s:
+            for line in csv.reader(s):
+                sp = line[1].strip()
+                if sp.isdigit():
+                    sp = float( sp )
                 else:
-                    rest.append( float(0) )
-            BFP[line[0].rstrip()] = (sp, rp, rest )
+                    sp = float( 0 )
+                rp = line[2].strip()
+                if rp.isdigit():
+                    rp = float( rp )
+                else:
+                    rp = float( 0 )
+                rest = []
+                for x in line[3].split('/'):
+                    val = x.strip()
+                    if val.isdigit():
+                        rest.append( float(val) )
+                    else:
+                        rest.append( float(0) )
+                BFP[line[0].rstrip()] = (sp, rp, rest )
+    except PermissionError:
+        print("Permission denied")
+        sys.exit(1)
+    except OSError as err:
+        print(str(err))
+        sys.exit(1)
 
     injreport.main( INJ, module=True )
 
