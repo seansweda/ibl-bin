@@ -180,7 +180,7 @@ def main():
 
     #print status
     # sort teams who are up to date ahead of those who are not
-    if week > 0 and check_late:
+    if check_late:
         fa.sort( key=late )
     #print fa
 
