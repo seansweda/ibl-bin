@@ -1,15 +1,21 @@
 exempt:
   -
 probation:
-  -
+  - SEA
+  - SKY
+  - EVE
+  - NJR
+  - SFP
+  - OXY
+  - SCS
 lastyear:
-  - [ ODM, 53, 109 ]
+  - [ BFD, 53, 109 ]
   - [ RRG, 55, 107 ]
   - [ SNH, 64, 98 ]
   - [ BAL, 69, 93 ]
   - [ BOW, 71, 91 ]
   - [ MAD, 72, 90 ]
-  - [ POR, 74, 88 ]
+  - [ BUF, 74, 88 ]
   - [ SKY, 74, 88 ]
   - [ SCS, 78, 84 ]
   - [ SFP, 79, 83 ]
