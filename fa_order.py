@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-# -w: week
+#
 # -r: records only (no late penalties)
+# -w <week>: select week
 
 from __future__ import (print_function, unicode_literals)
 
@@ -13,8 +14,11 @@ from io import open
 
 import DB
 
+from man import help
+
 def usage():
-    print("usage: %s [-w week]" % sys.argv[0])
+    print("usage: %s [flags]" % sys.argv[0])
+    help( __file__ )
     sys.exit(1)
 
 # dump environment and parameters for testing
@@ -87,6 +91,8 @@ def main():
         week = int(form.getfirst('week'))
     else:
         for ( opt, arg ) in opts:
+            if opt == '--help':
+                usage()
             if opt == '-w':
                 sign = int(arg)
             elif opt == '-r':
@@ -204,7 +210,7 @@ def main():
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'rw:')
+        opts, args = getopt.getopt(sys.argv[1:], 'rw:', ["help"])
     except getopt.GetoptError as err:
         print(str(err))
         usage()

@@ -1,14 +1,18 @@
 #!/usr/bin/env python
 #
-# flags
 # -B: batters only
 # -P: batters only
 # -A: all teams
-# -M: MLB usage (-a for active only)
 # -p: platoon differential
 # -v: vs average
-# -s: start week
-# -e: end week
+# -o: opponent data
+# -w: weekly data
+# -M: MLB usage
+# -a: MLB usage (actives only)
+# -t: usage total
+# -s <week>: start week
+# -e <week>: end week
+# -y <year>: override season
 
 from __future__ import (print_function, unicode_literals)
 
@@ -18,6 +22,7 @@ import getopt
 import psycopg2
 import DB
 
+from man import help
 from card import p_split, p_hash, cardpath, batters, pitchers, wOBA
 from usage import mlb_usage
 from injreport import LAST_WEEK
@@ -29,7 +34,8 @@ left = 0
 right = 1
 
 def usage():
-    print("usage: %s [-ABP] <team>" % sys.argv[0])
+    print("usage: %s [flags] <team>" % sys.argv[0])
+    help( __file__ )
     sys.exit(1)
 
 def trim(string):
@@ -217,12 +223,14 @@ e_arg = ''
 active = ''
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPMatopvws:e:y:')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABPMatopvws:e:y:', ["help"])
 except getopt.GetoptError as err:
     print(str(err))
     usage()
 
 for (opt, arg) in opts:
+    if opt == '--help':
+        usage()
     if opt == '-B':
         do_pit = False
     elif opt == '-P':

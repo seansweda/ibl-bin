@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+#
+# -a: active only
+# -w <week>: select week
 
 from __future__ import (print_function, unicode_literals)
 
@@ -9,8 +12,11 @@ import psycopg2
 
 import DB
 
+from man import help
+
 def usage():
-    print("usage: %s [-w week]" % sys.argv[0])
+    print("usage: %s [flags]" % sys.argv[0])
+    help( __file__ )
     sys.exit(1)
 
 # dump environment and parameters for testing
@@ -212,6 +218,8 @@ def main( player = {}, module = False, report_week = 0 ):
             do_all = 0
     elif not module:
         for (opt, arg) in opts:
+            if opt == '--help':
+                usage()
             if opt == '-a':
                 do_all = 0;
             elif opt == '-w':
@@ -439,7 +447,7 @@ def main( player = {}, module = False, report_week = 0 ):
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'aw:')
+        opts, args = getopt.getopt(sys.argv[1:], 'aw:', ["help"])
     except getopt.GetoptError as err:
         print(str(err))
         usage()

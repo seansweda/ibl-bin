@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 #
-# flags
-# -A: average card
 # -b: batter card
 # -p: pitcher card
 # -g: grep mode (default)
+# -w: use grep -w
 # -h: hash mode
+# -A: average card
+# -P <power>: override power rating
+# -d <dir>: override data directory
 
 from __future__ import (print_function, unicode_literals)
 
@@ -19,6 +21,8 @@ import time
 from io import open
 
 import DB
+
+from man import help
 
 batters = "d1.genbat"
 pitchers = "d1.genpit"
@@ -59,7 +63,8 @@ except OSError as err:
 
 
 def usage():
-    print("usage: %s { -b | -p } ( -g | -h ) player(s)" % sys.argv[0])
+    print("usage: %s [flags] <player> .." % sys.argv[0])
+    help( __file__ )
     sys.exit(1)
 
 def cardpath():
@@ -280,12 +285,14 @@ def main():
     datadir = cardpath()
 
     try:
-        (opts, args) = getopt.getopt(sys.argv[1:], 'Apbghwd:P:')
+        (opts, args) = getopt.getopt(sys.argv[1:], 'Apbghwd:P:', ["help"])
     except getopt.GetoptError as err:
         print(str(err))
         usage()
 
     for (opt, arg) in opts:
+        if opt == '--help':
+            usage()
         if opt == '-b':
             bat = 1
         elif opt == '-p':

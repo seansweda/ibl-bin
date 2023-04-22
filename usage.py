@@ -1,7 +1,9 @@
 #!/usr/bin/env python
-# -t <team>: usage for specific team
+#
+# -t <team>: select team
 # -g: per game output
 # -r: rates output
+# -o: rates output (overuse)
 # -B: batters only
 # -P: pitchers only
 # -A: rostered players only
@@ -18,9 +20,10 @@ import time
 from io import open
 
 import DB
+
+from man import help
 from card import cardpath
 import injreport
-
 from injreport import LAST_WEEK
 
 INJ = {}
@@ -39,7 +42,8 @@ pitcher = 1
 batter = 2
 
 def usage():
-    print("usage: %s [-t team]" % sys.argv[0])
+    print("usage: %s [flags]" % sys.argv[0])
+    help( __file__ )
     sys.exit(1)
 
 # dump environment and parameters for testing
@@ -349,6 +353,8 @@ def main():
             do_bat = False
     else:
         for (opt, arg) in opts:
+            if opt == '--help':
+                usage()
             if opt == '-t':
                 do_team = arg.upper()
             elif opt == '-A':
@@ -496,7 +502,7 @@ def main():
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 't:groABPO')
+        opts, args = getopt.getopt(sys.argv[1:], 't:groABPO', ["help"])
     except getopt.GetoptError as err:
         print(str(err))
         usage()

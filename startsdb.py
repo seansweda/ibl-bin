@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 #
-# flags
-# -i: initial starts/limits
-# -w: week
-# -y: override year
-# -t: team
+# -t <team>: select team
+# -w <week>: select week
+# -y <year>: override season
 # -a: list actives
+# -i: initial starts/limits
 
 from __future__ import (print_function, unicode_literals)
 
@@ -18,10 +17,12 @@ import psycopg2
 import DB
 import injreport
 
+from man import help
 from injreport import LAST_WEEK
 
 def usage():
-    print("usage: %s [-i] [-w week] [-y year] [-t team]" % sys.argv[0])
+    print("usage: %s [flags]" % sys.argv[0])
+    help( __file__ )
     sys.exit(1)
 
 def output( name, starts, inj, is_cgi ):
@@ -63,6 +64,8 @@ def main( starts = {}, module = False, report_week = LAST_WEEK ):
             report_week = int(form.getfirst('week'))
     elif not module:
         for (opt, arg) in opts:
+            if opt == '--help':
+                usage()
             if opt == '-i':
                 report_week = 0
             if opt == '-a':
@@ -126,7 +129,7 @@ def main( starts = {}, module = False, report_week = LAST_WEEK ):
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 't:w:y:ai')
+        opts, args = getopt.getopt(sys.argv[1:], 't:w:y:ai', ["help"])
     except getopt.GetoptError as err:
         print(str(err))
         usage()

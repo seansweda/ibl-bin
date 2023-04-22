@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# flags
-# -y: year
-# -r: round
-# -L: last round
-# -t: team
+#
+# -t <team>: select team
+# -r <round>: select round
+# -L <round>: last round
+# -y <year>: override season
 # -s: skip unusable picks
 # -S: skip & remove unusable picks
 
@@ -19,15 +19,18 @@ from io import open
 
 import DB
 
+from man import help
+
 def usage():
-    print("usage: %s " % sys.argv[0])
+    print("usage: %s [flags]" % sys.argv[0])
+    help( __file__ )
     sys.exit(1)
 
 db = DB.connect()
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'L:sSt:r:y:')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'L:sSt:r:y:', ["help"])
 except getopt.GetoptError as err:
     print(str(err))
     usage()
@@ -59,6 +62,8 @@ last_round = 10
 do_round = 0
 
 for (opt, arg) in opts:
+    if opt == '--help':
+        usage()
     if opt == '-y':
         year = arg
     elif opt == '-s':

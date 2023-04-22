@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 #
-# flags
 # -c: card info
 # -d: defensive ratings
 # -r: baserunning
@@ -18,6 +17,7 @@
 # -A: all teams
 # -O: old rosters
 # -L: page breaks 
+# -T: tty
 
 from __future__ import (print_function, unicode_literals)
 
@@ -30,11 +30,13 @@ import psycopg2
 
 import DB
 
+from man import help
 from card import p_split, p_hash, cardpath, batters, pitchers, wOBA
 from usage import mlb_usage
 
 def usage():
-    print("usage: %s " % sys.argv[0])
+    print("usage: %s [flags] <team>" % sys.argv[0])
+    help( __file__ )
     sys.exit(1)
 
 def trim(string):
@@ -159,12 +161,14 @@ db = DB.connect()
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'ABHOPfpaincdrtwuLT')
+    (opts, args) = getopt.getopt(sys.argv[1:], 'ABHOPfpaincdrtwuLT', ["help"])
 except getopt.GetoptError as err:
     print(str(err))
     usage()
 
 for (opt, arg) in opts:
+    if opt == '--help':
+        usage()
     if opt == '-B':
         do_pit = False
     elif opt == '-P':
