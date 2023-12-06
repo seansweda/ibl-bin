@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # $Id$
 
@@ -10,7 +10,7 @@
 
 use FindBin;
 do "$FindBin::Bin/DBconfig.pl";
-$username = 'ibl';
+do "$FindBin::Bin/DBpasswd.pl";
 
 $totals = 0;
 $home = 0;
@@ -110,7 +110,7 @@ while (@ARGV) {
     push @teams, shift @ARGV;
 }
 
-$dbh = DBI->connect("dbi:Pg:dbname=$dbname", "$username");
+$dbh = DBI->connect("dbi:Pg:dbname=$dbname;host=$host", "$username", "$password");
 
 if ( $totals ) {
     if ( @teams ) {
