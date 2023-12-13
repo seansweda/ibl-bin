@@ -351,6 +351,8 @@ def main():
             do_pit = False
         if 'pitchers' in form:
             do_bat = False
+        if 'rosters' in form:
+            rosters = 'rosters_old'
     else:
         for (opt, arg) in opts:
             if opt == '--help':
