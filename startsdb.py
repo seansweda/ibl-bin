@@ -6,8 +6,6 @@
 # -a: list actives
 # -i: initial starts/limits
 
-from __future__ import (print_function, unicode_literals)
-
 import os
 import sys
 import getopt

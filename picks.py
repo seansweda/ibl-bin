@@ -7,8 +7,6 @@
 # -s: skip unusable picks
 # -S: skip & remove unusable picks
 
-from __future__ import (print_function, unicode_literals)
-
 import os
 import sys
 import getopt

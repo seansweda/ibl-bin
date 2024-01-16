@@ -3,8 +3,6 @@
 # -r: records only (no late penalties)
 # -w <week>: select week
 
-from __future__ import (print_function, unicode_literals)
-
 import os
 import sys
 import getopt

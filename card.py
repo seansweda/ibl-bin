@@ -9,8 +9,6 @@
 # -P <power>: override power rating
 # -d <dir>: override data directory
 
-from __future__ import (print_function, unicode_literals)
-
 import os
 import sys
 import yaml

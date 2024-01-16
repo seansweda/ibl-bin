@@ -14,8 +14,6 @@
 # -e <week>: end week
 # -y <year>: override season
 
-from __future__ import (print_function, unicode_literals)
-
 import sys
 import getopt
 
