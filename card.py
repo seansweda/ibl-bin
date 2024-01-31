@@ -69,7 +69,7 @@ def cardpath():
     if 'IBL_CARDPATH' in list(os.environ.keys()):
         cardpath = os.environ.get('IBL_CARDPATH')
     else:
-        cardpath = "/home/iblgame/" + time.strftime("%Y") + "/build"
+        cardpath = "/home/ibl/cards"
     return cardpath
 
 def p_hash(datafile, lower=False):
