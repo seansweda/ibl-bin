@@ -203,9 +203,6 @@ def main( player = {}, module = False, report_week = 0 ):
                 print("<html><head><title>IBL Injury Report</title></head><body>")
             #dumpenv(form)
 
-    db = DB.connect()
-    cursor = db.cursor()
-
     # unset for actives only
     do_all = 1
 
@@ -225,6 +222,9 @@ def main( player = {}, module = False, report_week = 0 ):
             else:
                 print("bad option:", opt)
                 usage()
+
+    db = DB.connect()
+    cursor = db.cursor()
 
     if report_week == 0:
     # no user supplied week, use latest week without all inj reported

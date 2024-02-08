@@ -329,9 +329,6 @@ def main():
             print("<html><head><title>Usage Report</title></head><body>")
             #dumpenv(form)
 
-    db = DB.connect()
-    cursor = db.cursor()
-
     do_team = ''
     sql_team = ''
     do_g = False
@@ -371,6 +368,9 @@ def main():
                 do_r = True
             elif opt == '-o':
                 do_o = True
+
+    db = DB.connect()
+    cursor = db.cursor()
 
     if len( do_team ) > 0 and len( sql_team ) == 0:
         sql_team = " and ibl_team = '%s'" % do_team

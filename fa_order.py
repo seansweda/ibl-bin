@@ -56,9 +56,6 @@ def main():
             print("<html><head><title>Free Agent signing order</title></head><body>")
             #dumpenv(form)
 
-    db = DB.connect()
-    cursor = db.cursor()
-
     boxes = 0
     results = 1
 
@@ -95,6 +92,9 @@ def main():
                 sign = int(arg)
             elif opt == '-r':
                 check_late = False
+
+    db = DB.connect()
+    cursor = db.cursor()
 
     if sign == 0:
         # find latest week with reported results

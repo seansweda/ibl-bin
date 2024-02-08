@@ -52,9 +52,6 @@ def main( starts = {}, module = False, report_week = LAST_WEEK ):
             print()
             #dumpenv(form)
 
-    db = DB.connect()
-    cursor = db.cursor()
-
     do_active = 0
     team = ''
     if is_cgi:
@@ -75,6 +72,9 @@ def main( starts = {}, module = False, report_week = LAST_WEEK ):
             elif opt == '-y':
                 DB.starts = 'starts' + arg
                 DB.inj = 'inj' + arg
+
+    db = DB.connect()
+    cursor = db.cursor()
 
     sql = "select mlb, trim(name), sum(g), sum(p), sum(c), sum(\"1b\"), \
             sum(\"2b\"), sum(\"3b\"), sum(ss), sum(lf), sum(cf), sum(rf) \

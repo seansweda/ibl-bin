@@ -88,9 +88,6 @@ def main():
             print("<html><head><title>Playoff Eligibility</title></head><body>")
             #dumpenv(form)
 
-    db = DB.connect()
-    cursor = db.cursor()
-
     team = ''
     rosters = 'rosters'
 
@@ -105,6 +102,9 @@ def main():
                 team = arg.upper()
             elif opt == '-O':
                 rosters = 'rosters_old'
+
+    db = DB.connect()
+    cursor = db.cursor()
 
     mlb_usage( MLB_P, MLB_B )
 

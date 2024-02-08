@@ -195,9 +195,6 @@ def p_total( team, mlb, name ):
         ibl[team]['vL'][5] += wOBA(p_cards[mlb, name], pit, left) * bf
         ibl[team]['vR'][5] += wOBA(p_cards[mlb, name], pit, right) * bf
 
-db = DB.connect()
-cursor = db.cursor()
-
 # globals
 ibl = {}
 tot = {}
@@ -210,6 +207,7 @@ do_opp = False
 do_weekly = False
 do_mlb = False
 do_pt = False
+do_all = False
 overall = 1
 platoon = 2
 avg = 3
@@ -249,9 +247,7 @@ for (opt, arg) in opts:
         DB.usage = 'usage' + arg
     elif opt == '-A':
         do_tot = True
-        cursor.execute("select distinct(ibl_team) from rosters \
-                where ibl_team != 'FA';")
-        args += [ row[0] for row in sorted(cursor.fetchall()) ]
+        do_all = True
     elif opt == '-M':
         do_mlb = True
         mlb_usage( MLB_P, MLB_B )
@@ -276,10 +272,18 @@ if do_weekly and ( s_arg or e_arg or do_opp or display == avg ):
 if do_mlb and ( do_weekly or do_opp ):
     usage()
 
+db = DB.connect()
+cursor = db.cursor()
+
 b_cards = p_hash( cardpath() + '/' + batters )
 p_cards = p_hash( cardpath() + '/' + pitchers )
 
 sql_weeks = "where week >= %d and week <= %d and " % ( start, end )
+
+if do_all:
+    cursor.execute("select distinct(ibl_team) from rosters \
+            where ibl_team != 'FA';")
+    args += [ row[0] for row in sorted(cursor.fetchall()) ]
 
 if do_mlb:
     # current UC designation

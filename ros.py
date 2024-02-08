@@ -144,6 +144,7 @@ do_def = False
 do_br = False
 do_find = False
 do_usage = False
+do_all = False
 is_tty = False
 count = False
 eol = ''
@@ -154,9 +155,6 @@ rosters = 'rosters'
 players = 'players'
 MLB_B = {}
 MLB_P = {}
-
-db = DB.connect()
-cursor = db.cursor()
 
 try:
     (opts, args) = getopt.getopt(sys.argv[1:], 'ABHOPfpaincdrtwuLT', ["help"])
@@ -185,9 +183,7 @@ for (opt, arg) in opts:
         do_pit = False
         do_bat = False
     elif opt == '-A':
-        cursor.execute("select distinct(ibl_team) from rosters \
-                where ibl_team != 'FA';")
-        args += [ row[0] for row in sorted(cursor.fetchall()) ]
+        do_all = True
     elif opt == '-c':
         do_card = True
     elif opt == '-d':
@@ -219,6 +215,9 @@ if not do_bat and not do_pit and not do_picks:
 if not do_active and not do_inactive:
     print("may only choose one of -a | -i")
     usage()
+
+db = DB.connect()
+cursor = db.cursor()
 
 # teams table
 # status: 1 = active, 2 = inactive
@@ -252,6 +251,11 @@ if sys.stdout.isatty() or is_tty:
     maxC = int(maxC)
 else:
     maxC = 256
+
+if do_all:
+    cursor.execute("select distinct(ibl_team) from rosters \
+            where ibl_team != 'FA';")
+    args += [ row[0] for row in sorted(cursor.fetchall()) ]
 
 # current UC designation
 sql = "select max(uncarded) from %s;" % rosters
