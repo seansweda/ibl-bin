@@ -108,7 +108,7 @@ def p_grep(player, datafile):
     return fp.stdout.readlines()
 
 def p_split(p_str, lower=False):
-    p_list = re.split('\W+', p_str, maxsplit=1)
+    p_list = re.split(r'\W+', p_str, maxsplit=1)
     if len(p_list) == 2:
         if lower:
             return ( p_list[0].lower(), p_list[1].lower() )
