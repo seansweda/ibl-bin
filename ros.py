@@ -369,7 +369,9 @@ for arg in args:
                     if ignore_uc:
                         b_num -= 1
                 if status == 1:
-                    active += 1
+                    if kind != 3:
+                        # already counted two-way player as pitcher
+                        active += 1
                     b_act += 1
                 if status == 1 and do_active or status > 1 and do_inactive:
                     if (do_card or do_def) and uc == UCyy and ignore_uc:
