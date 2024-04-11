@@ -1,5 +1,6 @@
 exempt:
-  -
+  - BAL
+  - RRG
 probation:
   -
 lastyear:
