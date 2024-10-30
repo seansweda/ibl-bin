@@ -108,7 +108,7 @@ def main():
 
     mlb_usage( MLB_P, MLB_B )
 
-    sql = "select trim(r.tig_name), retro_id, c, b1, b2, b3, ss, lf, cf, rf from %s r, (select concat(trim(mlb), ' ', trim(name)) as tig_name, c, \"1b\" as b1, \"2b\" as b2, \"3b\" as b3, ss, lf, cf, rf from starts2023 where week is null) as s where trim(r.tig_name) = trim(s.tig_name) and ibl_team = '%s' order by item_type, r.tig_name;" % ( rosters, team )
+    sql = "select trim(r.tig_name), retro_id, c, b1, b2, b3, ss, lf, cf, rf from %s r, (select concat(trim(mlb), ' ', trim(name)) as tig_name, c, \"1b\" as b1, \"2b\" as b2, \"3b\" as b3, ss, lf, cf, rf from %s where week is null) as s where trim(r.tig_name) = trim(s.tig_name) and ibl_team = '%s' order by item_type, r.tig_name;" % ( rosters, DB.starts, team )
 
     if not team:
         usage()
