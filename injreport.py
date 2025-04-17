@@ -111,39 +111,30 @@ def totals( week, code ):
 def update( days, code, length, day = 1 ):
     served = 0
     for x in range( day - 1, len(days) ):
-        if code == injured:
-            if length == 1 and days[x] & off == 0:
-                if days[x] & dtd == 0:
-                    days[x] += dtd
+        if length > 0:
+            # last day of inj stint is DTD
+            if code == injured and length == 1:
+                # no DTD rolls on regular season off-days
+                if days[x] & off == 0:
+                    days[x] = days[x] | dtd
+                    length -= 1
+                    served += 1
+            elif code == injured or code == no_dtd:
+                days[x] = days[x] | inj
                 length -= 1
                 served += 1
-            elif days[x] & inj == 0:
-                if length > 1:
-                    days[x] += inj
+            elif code == suspended:
+                # suspensions not served concurrently (or on off days)
+                if days[x] & (sus + off) == 0:
+                    days[x] = days[x] | sus
                     length -= 1
                     served += 1
-        if code == no_dtd:
-            if days[x] & inj == 0:
-                if length > 0:
-                    days[x] += inj
-                    length -= 1
-                    served += 1
-        if code == arm_trouble:
-            if days[x] & arm == 0:
-                if length > 0:
-                    days[x] += arm
-                    length -= 1
-                    served += 1
-        if code == suspended:
-            if days[x] & (sus + off) == 0:
-                if length > 0:
-                    days[x] += sus
-                    length -= 1
-                    served += 1
-        if code == adjustment:
-            if length > 0:
-                if days[x] & adj == 0:
-                    days[x] += adj
+            elif code == adjustment:
+                days[x] = days[x] | adj
+                length -= 1
+                served += 1
+            elif code == arm_trouble:
+                days[x] = days[x] | arm
                 length -= 1
                 served += 1
 
