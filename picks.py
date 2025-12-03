@@ -4,8 +4,8 @@
 # -r <round>: select round
 # -L <round>: last round
 # -y <year>: override season
-# -s: skip unusable picks
-# -S: skip & remove unusable picks
+# -S: skip unusable picks
+# -R: remove/renumber picks
 
 import os
 import sys
@@ -28,7 +28,7 @@ db = DB.connect()
 cursor = db.cursor()
 
 try:
-    (opts, args) = getopt.getopt(sys.argv[1:], 'L:sSt:r:y:', ["help"])
+    (opts, args) = getopt.getopt(sys.argv[1:], 'L:SRt:r:y:', ["help"])
 except getopt.GetoptError as err:
     print(str(err))
     usage()
@@ -64,10 +64,9 @@ for (opt, arg) in opts:
         usage()
     if opt == '-y':
         year = arg
-    elif opt == '-s':
-        skip = 1
     elif opt == '-S':
         skip = 1
+    elif opt == '-R':
         remove = 1
     elif opt == '-t':
         all_teams = 0
@@ -120,22 +119,36 @@ for rnd in range( 1, last_round + 1 ):
         pickstr = original + '#' + str(rnd)
         if pickstr in picks:
             owner = picks[ pickstr ]
+            nopicks = owner in y['nopick']
         else:
             if not remove:
                 pick += 1
             continue
-        if not skip or roster[owner] < ros_max:
+
+        if nopicks:
+            label = '!'
+        elif roster[owner] >= ros_max:
+            label = '*'
+        else:
+            label = ''
+
+        if skip and len(label) > 0:
+            if not remove:
+                pick += 1
+            continue
+        elif remove and label == '!':
+            continue
+        else:
+        # print pick
             if ( all_teams or do_team == owner ) and ( all_rounds or do_round == rnd ):
-                print("%s%-5s  %3s  (%s)" % (
-                    ' ' if roster[owner] < ros_max else '*',
-                    str(rnd) + '-' + ( str(pick) if skip else str(slot) ),
+                print("%1s%-5s  %3s  (%s)" % (
+                    label,
+                    str(rnd) + '-' + ( str(pick) if remove else str(slot) ),
                     owner, pickstr
                     ))
-            roster[owner] += 1
-            pick += 1
-            continue
-        if skip and not remove:
-            pick += 1
+
+        roster[owner] += 1
+        pick += 1
 
     if ( all_teams and all_rounds):
         print()
