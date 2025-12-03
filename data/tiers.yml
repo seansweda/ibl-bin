@@ -1,30 +1,35 @@
 ---
-year: 2025
+year: 2026
 tier0:
-- BAL
-- EVE
-- RRG
-- BFD
-- MAD
-tier1:
-- SKY
-- SCS
-- KAT
-- SFP
-- NJR
-- NYK
-- CAN
 - GTY
-- BUF
+- EVE
+- BAL
+- RRG
 - OXY
+- MAD
+- NJR
+tier1:
+- SFP
+- CAN
+- NYK
+- SKY
 - BOW
-tier2:
-- SDQ
-- SFL
-- PHI
+- SCS
 - SLG
-- WIS
-tier3:
-- SEA
-- MCM
+- BFD
+tier2:
+- KAT
 - WMS
+- SDQ
+- BUF
+- PHI
+tier3:
+- SFL
+- MCM
+- WIS
+- SEA
+nopick:
+- BAL
+- RRG
+- OXY
+- SCS
