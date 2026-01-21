@@ -58,6 +58,7 @@ all_teams = 1
 all_rounds = 1
 last_round = 10
 do_round = 0
+do_team = ''
 
 for (opt, arg) in opts:
     if opt == '--help':
@@ -155,6 +156,7 @@ for rnd in range( 1, last_round + 1 ):
 
 if skip and not do_round:
     for team in sorted(roster):
-        if roster[team] < ros_max and ( all_teams or do_team == team ):
-            print("\t%s: %i" % (team, ros_max - roster[team]))
+        if roster[team] < ros_max:
+            if all_teams and team not in y['nopick'] or do_team == team:
+                print("\t%s: %i" % (team, ros_max - roster[team]))
 
