@@ -105,7 +105,7 @@ def pE_avg( stat ):
     wR = stat['vR'][5] / stat['vR'][0]
     return( wL * 0.43 + wR * 0.57 )
 
-def bdump( team, stat, opt, afunc ):
+def bdump( team, stat, opt, afunc, pt ):
     if stat['vL'][0] > 0 or stat['vR'][0] > 0:
         if stat['vL'][0] == 0:
             stat['vL'][0] += 1
@@ -118,12 +118,17 @@ def bdump( team, stat, opt, afunc ):
             print(" %5.1f" % ( stat['vL'][d] / stat['vL'][0] ), end=' ')
         print(" %4.3f" % ( stat['vL'][4] / stat['vL'][0] ), end=' ')
         print(" %3d" % ( stat['vL'][5] / stat['vL'][0] + 0.5 ), end=' ')
+        if pt:
+            print(" %4d" % ( stat['vL'][0] ), end=' ')
         print(".", end=' ')
         for d in 1, 2, 3:
             print(" %5.1f" % ( stat['vR'][d] / stat['vR'][0] ), end=' ')
         print(" %4.3f" % ( stat['vR'][4] / stat['vR'][0] ), end=' ')
         print(" %3d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ), end=' ')
+        if pt:
+            print(" %4d" % ( stat['vR'][0] ), end=' ')
         print(".", end=' ')
+
         if opt == 0:
             print("%5.1f" % ( 0.0 ))
         elif opt == overall:
@@ -136,7 +141,7 @@ def bdump( team, stat, opt, afunc ):
             # vs average
             print("%+5.1f" % ( stat['avg'] - opt ))
 
-def pdump( team, stat, opt, afunc ):
+def pdump( team, stat, opt, afunc, pt ):
     if stat['vL'][0] > 0 or stat['vR'][0] > 0:
         if stat['vL'][0] == 0:
             stat['vL'][0] += 1
@@ -148,11 +153,16 @@ def pdump( team, stat, opt, afunc ):
         for d in 1, 2, 3, 4:
             print(" %5.1f" % ( stat['vL'][d] / stat['vL'][0] ), end=' ')
         print(" %3d" % ( stat['vL'][5] / stat['vL'][0] + 0.5 ), end=' ')
+        if pt:
+            print(" %4d" % ( stat['vL'][0] ), end=' ')
         print(".", end=' ')
         for d in 1, 2, 3, 4:
             print(" %5.1f" % ( stat['vR'][d] / stat['vR'][0] ), end=' ')
         print(" %3d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ), end=' ')
+        if pt:
+            print(" %4d" % ( stat['vR'][0] ), end=' ')
         print(".", end=' ')
+
         if opt == 0:
             print("%5.1f" % ( 0.0 ))
         elif opt == overall:
@@ -318,9 +328,9 @@ if do_bat:
                 for mlb, name, paL, paR in cursor.fetchall():
                     b_total( team, mlb, name )
                 if display == platoon:
-                    bdump( team, ibl[team], platoon, avg_B )
+                    bdump( team, ibl[team], platoon, avg_B, do_pt )
                 else:
-                    bdump( team, ibl[team], overall, avg_B )
+                    bdump( team, ibl[team], overall, avg_B, do_pt )
                 zero( ibl[team] )
             print()
             continue
@@ -354,18 +364,16 @@ if do_bat:
     #end arg loop
 
     for t in sorted(ibl):
-        if do_mlb and do_pt:
-            print("%s %d" % (t, ibl[t]['vL'][0]) )
-        elif display == avg:
+        if display == avg:
             tot['avg'] = avg_B( tot )
-            bdump( t, ibl[t], tot['avg'], avg_B )
+            bdump( t, ibl[t], tot['avg'], avg_B, do_pt )
         else:
-            bdump( t, ibl[t], display, avg_B )
+            bdump( t, ibl[t], display, avg_B, do_pt )
     if do_tot:
         if display == avg:
-            bdump( '---', tot, 0, avg_B )
+            bdump( '---', tot, 0, avg_B, do_pt )
         else:
-            bdump( '---', tot, display, avg_B )
+            bdump( '---', tot, display, avg_B, do_pt )
 
 if do_pit:
     if do_bat:
@@ -396,9 +404,9 @@ if do_pit:
                 for mlb, name, bf in cursor.fetchall():
                     p_total( team, mlb, name )
                 if display == platoon:
-                    pdump( team, ibl[team], platoon, avg_P )
+                    pdump( team, ibl[team], platoon, avg_P, do_pt )
                 else:
-                    pdump( team, ibl[team], overall, avg_P )
+                    pdump( team, ibl[team], overall, avg_P, do_pt )
                 zero( ibl[team] )
             print()
             continue
@@ -432,18 +440,16 @@ if do_pit:
     #end arg loop
 
     for t in sorted(ibl):
-        if do_mlb and do_pt:
-            print("%s %d" % (t, ibl[t]['vL'][0]) )
-        elif display == avg:
+        if display == avg:
             tot['avg'] = avg_P( tot )
-            pdump( t, ibl[t], tot['avg'], avg_P )
+            pdump( t, ibl[t], tot['avg'], avg_P, do_pt )
         else:
-            pdump( t, ibl[t], display, avg_P )
+            pdump( t, ibl[t], display, avg_P, do_pt )
     if do_tot:
         if display == avg:
-            pdump( '---', tot, 0, avg_P )
+            pdump( '---', tot, 0, avg_P, do_pt )
         else:
-            pdump( '---', tot, display, avg_P )
+            pdump( '---', tot, display, avg_P, do_pt )
 
 db.close()
 
