@@ -116,8 +116,8 @@ def main():
             print("<pre>")
         print("WEEK %-2s                pit/bat           #  1  2  3  4  5  6  7  8  9" % week)
 
-    cursor.execute("select distinct(ibl_team) from rosters \
-                            where ibl_team != 'FA' order by ibl_team;")
+    sql = "select distinct(ibl) from %s order by ibl;" % ( DB.teams )
+    cursor.execute(sql)
     for (ibl, ) in cursor.fetchall():
         ros = {}
         if ignore_uc:

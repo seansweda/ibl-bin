@@ -291,8 +291,8 @@ p_cards = p_hash( cardpath() + '/' + pitchers )
 sql_weeks = "where week >= %d and week <= %d and " % ( start, end )
 
 if do_all:
-    cursor.execute("select distinct(ibl_team) from rosters \
-            where ibl_team != 'FA';")
+    sql = "select distinct(ibl) from %s order by ibl;" % ( DB.teams )
+    cursor.execute(sql)
     args += [ row[0] for row in sorted(cursor.fetchall()) ]
 
 if do_mlb:

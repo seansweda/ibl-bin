@@ -253,8 +253,8 @@ else:
     maxC = 256
 
 if do_all:
-    cursor.execute("select distinct(ibl_team) from rosters \
-            where ibl_team != 'FA';")
+    sql = "select distinct(ibl) from %s order by ibl;" % ( DB.teams )
+    cursor.execute(sql)
     args += [ row[0] for row in sorted(cursor.fetchall()) ]
 
 # current UC designation
