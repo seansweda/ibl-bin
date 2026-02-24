@@ -132,12 +132,12 @@ def main():
         print(str(err))
         sys.exit(1)
 
-    #print fa
-    #print lastyear
+    #print( fa )
+    #print( lastyear )
 
     # initial sort by last year's standings
     fa.sort( key=lambda v: lastyear[v] )
-    #print fa
+    #print( fa )
 
     # we begin using current season standings as of FIRST_WEEK
     standings = {}
@@ -173,20 +173,22 @@ def main():
             group by ibl;" %  ( DB.sched, DB.teams, int(week) )
     cursor.execute(sql)
     for ibl, box in cursor.fetchall():
-        status[ibl][boxes] = box
+        if ibl in fa:
+            status[ibl][boxes] = box
 
     sql = "select ibl, sum(scores) as results\
             from %s s, %s t where week <= %i and home = code\
             group by ibl;" %  ( DB.sched, DB.teams, int(week) )
     cursor.execute(sql)
     for ibl, result in cursor.fetchall():
-        status[ibl][results] = result
+        if ibl in fa:
+            status[ibl][results] = result
 
-    #print status
+    #print( status )
     # sort teams who are up to date ahead of those who are not
     if check_late:
         fa.sort( key=late )
-    #print fa
+    #print( fa )
 
     if do_json:
         print(json.dumps({ "week": sign, "teams": fa }))
