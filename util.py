@@ -119,14 +119,20 @@ def bdump( team, stat, opt, afunc, pt ):
         print(" %4.3f" % ( stat['vL'][4] / stat['vL'][0] ), end=' ')
         print(" %3d" % ( stat['vL'][5] / stat['vL'][0] + 0.5 ), end=' ')
         if pt:
-            print(" %4d" % ( stat['vL'][0] ), end=' ')
+            if stat['vL'][0] > 9999:
+                print(" %3dK" % ( stat['vL'][0] / 1000 ), end=' ')
+            else:
+                print(" %4d" % ( stat['vL'][0] ), end=' ')
         print(".", end=' ')
         for d in 1, 2, 3:
             print(" %5.1f" % ( stat['vR'][d] / stat['vR'][0] ), end=' ')
         print(" %4.3f" % ( stat['vR'][4] / stat['vR'][0] ), end=' ')
         print(" %3d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ), end=' ')
         if pt:
-            print(" %4d" % ( stat['vR'][0] ), end=' ')
+            if stat['vR'][0] > 9999:
+                print(" %3dK" % ( stat['vR'][0] / 1000 ), end=' ')
+            else:
+                print(" %4d" % ( stat['vR'][0] ), end=' ')
         print(".", end=' ')
 
         if opt == 0:
@@ -154,13 +160,19 @@ def pdump( team, stat, opt, afunc, pt ):
             print(" %5.1f" % ( stat['vL'][d] / stat['vL'][0] ), end=' ')
         print(" %3d" % ( stat['vL'][5] / stat['vL'][0] + 0.5 ), end=' ')
         if pt:
-            print(" %4d" % ( stat['vL'][0] ), end=' ')
+            if stat['vL'][0] > 9999:
+                print(" %3dK" % ( stat['vL'][0] / 1000 ), end=' ')
+            else:
+                print(" %4d" % ( stat['vL'][0] ), end=' ')
         print(".", end=' ')
         for d in 1, 2, 3, 4:
             print(" %5.1f" % ( stat['vR'][d] / stat['vR'][0] ), end=' ')
         print(" %3d" % ( stat['vR'][5] / stat['vR'][0] + 0.5 ), end=' ')
         if pt:
-            print(" %4d" % ( stat['vR'][0] ), end=' ')
+            if stat['vR'][0] > 9999:
+                print(" %3dK" % ( stat['vR'][0] / 1000 ), end=' ')
+            else:
+                print(" %4d" % ( stat['vR'][0] ), end=' ')
         print(".", end=' ')
 
         if opt == 0:
@@ -265,7 +277,6 @@ for (opt, arg) in opts:
         active = ' and status = 1'
     elif opt == '-t':
         do_pt = True
-        do_tot = False
     else:
         print("bad option:", opt)
         usage()
