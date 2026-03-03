@@ -32,10 +32,10 @@ def dumpenv(form):
     return
 
 # schedule
-DAYS_OFF = ( 3, 5, 8, 11, 16, 18, 21, 23 )
-LONG_SERIES = ( 4, 5, 12, 13, 24, 25 )
-LAST_WEEK = 25
-ASB = 13
+DAYS_OFF = ( 2, 5, 8, 11, 17, 20, 22, 25 )
+LONG_SERIES = ()
+LAST_WEEK = 27
+ASB = 14
 
 # sql table injury codes
 injured = 0

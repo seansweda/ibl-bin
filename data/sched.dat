@@ -1,66 +1,169 @@
-# cross-division pass 1
-8	5	8	7	6	9	12	11	10	1	4	3	2
-9	8	7	6	5	12	11	10	9	4	3	2	1
-10	7	6	5	8	11	10	9	12	3	2	1	4
-11	6	5	8	7	10	9	12	11	2	1	4	3
-# cross-division pass 2
-1	11	10	9	12	2	3	4	1	8	7	6	5
-2	9	12	11	10	4	1	2	3	6	5	8	7
-3	12	11	10	9	1	2	3	4	5	8	7	6
-6	10	9	12	11	3	4	1	2	7	6	5	8
-# cross-division pass 3
-20	6	5	8	7	11	10	9	12	4	3	2	1
-21	7	6	5	8	12	11	10	9	1	4	3	2
-22	5	8	7	6	10	9	12	11	3	2	1	4
-23	8	7	6	5	9	12	11	10	2	1	4	3
-# cross-division pass 4
-14	12	11	10	9	3	2	1	4	6	5	8	7
-15	9	12	11	10	4	3	2	1	7	6	5	8
-17	11	10	9	12	2	1	4	3	5	8	7	6
-18	10	9	12	11	1	4	3	2	8	7	6	5
-# intra-division pass 1
-12	4	1	2	3	8	5	6	7	12	9	10	11
-16	3	4	1	2	7	8	5	6	11	12	9	10
-13	2	3	4	1	6	7	8	5	10	11	12	9
-# intra-division pass 2
-4	3	4	2	1	7	8	6	5	11	12	10	9
-7	2	1	4	3	6	5	8	7	10	9	12	11
-5	4	3	1	2	8	7	5	6	12	11	9	10
-# intra-division pass 3
-24	2	4	1	3	6	8	5	7	10	12	9	11
-19	4	3	2	1	8	7	6	5	12	11	10	9
-25	3	1	4	2	7	5	8	6	11	9	12	10
-#  1 apr	x-div 1
-#  2 apr	x-div 1
-#  3 apr	x-div 1
-#	OFF
-#  4 apr	4g div 3@1 4@2 2@3 1@4
-#  5 may	4g div 1@3 2@4 3@2 4@1
-#	WEEK OFF
-#  6 may	x-div 1
-#  7 may	div 1/2 3/4
-#  8 may	x-div 2
-#	OFF
-#  9 jun	x-div 2
-# 10 jun	x-div 2
-# 11 jun	x-div 2
-#	OFF
-# 12 jun	4g div 4@1 1@2 2@3 3@4
-# 13 jul	4g div 1@4 2@1 3@2 4@3
-#	WEEK OFF (ASB)
-# 14 jul	x-div 3
-# 15 jul	x-div 3
-# 16 jul	div 1/3 2/4
-#	OFF
-# 17 aug	x-div 3
-# 18 aug	x-div 3
-#	OFF
-# 19 aug	div 1/4 2/3
-# 20 aug	x-div 4
-# 21 aug	x-div 4
-#	WEEK OFF
-# 22 sep	x-div 4
-# 23 sep	x-div 4
-#	OFF
-# 24 sep	4g div 2@1 4@2 1@3 3@4
-# 25 sep	4g div 1@2 2@4 3@1 4@3
+# wk	1	2	3	4	5	6	7	8	9	10
+# division pass 1
+1	3	4	5	1	2	8	9	10	6	7
+3	4	5	1	2	3	9	10	6	7	8
+6	5	1	2	3	4	10	6	7	8	9
+8	2	3	4	5	1	7	8	9	10	6
+# division pass 2
+11	2	5	4	1	3	7	10	9	6	8
+14	4	1	5	3	2	9	6	10	8	7
+15	3	4	2	5	1	8	9	7	10	6
+17	5	3	1	2	4	10	8	6	7	9
+# division pass 3
+20	4	5	2	3	1	9	10	7	8	6
+23	5	3	4	1	2	10	8	9	6	7
+25	3	1	5	2	4	8	6	10	7	9
+27	2	4	1	5	3	7	9	6	10	8
+# conference pass 1
+2	6	7	8	9	10	3	4	5	1	2
+5	7	8	9	10	6	2	3	4	5	1
+7	8	9	10	6	7	1	2	3	4	5
+10	9	10	6	7	8	5	1	2	3	4
+12	10	6	7	8	9	4	5	1	2	3
+# conference pass 2
+16	8	9	10	6	7	5	1	2	3	4
+19	9	10	6	7	8	4	5	1	2	3
+21	10	6	7	8	9	3	4	5	1	2
+24	6	7	8	9	10	2	3	4	5	1
+26	7	8	9	10	6	1	2	3	4	5
+# 1	apr		D1
+# 2	apr		C1
+# 		DAY OFF
+# 3	apr		D2
+# 4	apr		X1
+# 5	may		C2
+# 		DAY OFF
+# 6	may		D3
+# 7	may		C3
+# 8	may		D4
+# 		DAY OFF
+# 9	may		X2
+# 10	jun		C4
+# 11	jun		D5
+# 		WEEK OFF
+# 12	jun		C5
+# 13	jun		X3
+# 14	jul		D6
+# 		ASB
+# 15	jul		D7
+# 16	jul		C6
+# 17	jul		D8
+# 		DAY OFF
+# 18	jul		X4
+# 19	aug		C7
+# 20	aug		D9
+# 		DAY OFF
+# 21	aug		C8
+# 22	aug		X5
+# 		WEEK OFF (trade deadline)
+# 23	sep		D10
+# 24	sep		C9
+# 25	sep		D11
+# 		DAY OFF
+# 26	sep		C10
+# 27	sep		D12
+##
+# insert into schedXXXX ( week, home, away ) values ( 4, 'a01', 'n01' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'a02', 'n02' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'a03', 'n03' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'a04', 'n04' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'a05', 'n05' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'a06', 'n06' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'a07', 'n07' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'a08', 'n08' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'a09', 'n09' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'a10', 'n10' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'n01', 'a06' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'n02', 'a07' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'n03', 'a08' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'n04', 'a09' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'n05', 'a10' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'n06', 'a01' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'n07', 'a02' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'n08', 'a03' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'n09', 'a04' );
+# insert into schedXXXX ( week, home, away ) values ( 4, 'n10', 'a05' );
+##
+# insert into schedXXXX ( week, home, away ) values ( 9, 'a01', 'n02' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'a02', 'n03' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'a03', 'n04' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'a04', 'n05' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'a05', 'n01' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'a06', 'n07' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'a07', 'n08' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'a08', 'n09' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'a09', 'n10' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'a10', 'n06' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'n01', 'a07' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'n02', 'a08' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'n03', 'a09' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'n04', 'a10' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'n05', 'a06' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'n06', 'a02' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'n07', 'a03' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'n08', 'a04' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'n09', 'a05' );
+# insert into schedXXXX ( week, home, away ) values ( 9, 'n10', 'a01' );
+##
+# insert into schedXXXX ( week, home, away ) values ( 13, 'a01', 'n03' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'a02', 'n04' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'a03', 'n05' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'a04', 'n01' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'a05', 'n02' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'a06', 'n08' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'a07', 'n09' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'a08', 'n10' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'a09', 'n06' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'a10', 'n07' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'n01', 'a08' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'n02', 'a09' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'n03', 'a10' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'n04', 'a06' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'n05', 'a07' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'n06', 'a03' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'n07', 'a04' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'n08', 'a05' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'n09', 'a01' );
+# insert into schedXXXX ( week, home, away ) values ( 13, 'n10', 'a02' );
+##
+# insert into schedXXXX ( week, home, away ) values ( 18, 'a01', 'n04' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'a02', 'n05' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'a03', 'n01' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'a04', 'n02' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'a05', 'n03' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'a06', 'n09' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'a07', 'n10' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'a08', 'n06' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'a09', 'n07' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'a10', 'n08' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'n01', 'a09' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'n02', 'a10' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'n03', 'a06' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'n04', 'a07' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'n05', 'a08' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'n06', 'a04' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'n07', 'a05' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'n08', 'a01' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'n09', 'a02' );
+# insert into schedXXXX ( week, home, away ) values ( 18, 'n10', 'a03' );
+##
+# insert into schedXXXX ( week, home, away ) values ( 22, 'a01', 'n05' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'a02', 'n01' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'a03', 'n02' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'a04', 'n03' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'a05', 'n04' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'a06', 'n10' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'a07', 'n06' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'a08', 'n07' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'a09', 'n08' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'a10', 'n09' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'n01', 'a10' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'n02', 'a06' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'n03', 'a07' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'n04', 'a08' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'n05', 'a09' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'n06', 'a05' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'n07', 'a01' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'n08', 'a02' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'n09', 'a03' );
+# insert into schedXXXX ( week, home, away ) values ( 22, 'n10', 'a04' );
