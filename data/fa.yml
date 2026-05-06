@@ -1,5 +1,6 @@
 exempt:
-  -
+  - EVE
+  - MAD
 probation:
   -
 lastyear:
