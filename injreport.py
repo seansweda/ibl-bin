@@ -217,13 +217,18 @@ def main( player = {}, module = False, report_week = 0 ):
     db = DB.connect()
     cursor = db.cursor()
 
+    # no user supplied week
     if report_week == 0:
-    # no user supplied week, use latest week without all inj reported
+        # get team count
+        sql = "select count(*) from %s;" % DB.teams
+        cursor.execute(sql)
+        ( teams, ) = cursor.fetchone()
+        # find latest week without all teams reporting
         sql = "select week, count(*) from %s where inj = 1\
                 group by week order by week desc;" % DB.sched
         cursor.execute(sql)
         for week, num in cursor.fetchall():
-            if num == 24:
+            if num == teams:
                 report_week = week + 1
                 break
 
