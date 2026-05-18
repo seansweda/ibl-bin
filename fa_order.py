@@ -23,12 +23,10 @@ def usage():
 # not really necessary, mostly for learning purposes
 def dumpenv(form):
     for (env, val) in list(os.environ.items()):
-        print("<br>", env + " : ", val)
+        print("<br>", env + " :", val)
     print("<p>parameters")
-    for param in list(form.keys()):
-        print("<br>", param + " : ", end=' ')
-        for val in form.getlist(param):
-            print(val, end=' ')
+    for param, val in form.items():
+        print("<br>", param + " :", val, end=' ')
         print()
     print("<p>")
     return
@@ -39,10 +37,10 @@ FIRST_WEEK = 4
 def main():
     do_json = False
     is_cgi = False
-    if 'GATEWAY_INTERFACE' in os.environ:
-        import cgi
-        #import cgitb; cgitb.enable()
-        form = cgi.FieldStorage()
+    if 'QUERY_STRING' in os.environ:
+        from urllib.parse import parse_qs
+        qs = os.environ.get('QUERY_STRING', '')
+        form = parse_qs(qs)
         is_cgi = True
         if 'json' in form:
             import json
@@ -83,7 +81,7 @@ def main():
     week = sign = 0
     check_late = True
     if is_cgi and 'week' in form:
-        week = int(form.getfirst('week'))
+        sign = int(form['week'][0])
     else:
         for ( opt, arg ) in opts:
             if opt == '--help':

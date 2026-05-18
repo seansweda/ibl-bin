@@ -21,12 +21,10 @@ def usage():
 # not really necessary, mostly for learning purposes
 def dumpenv(form):
     for (env, val) in list(os.environ.items()):
-        print("<br>", env + " : ", val)
+        print("<br>", env + " :", val)
     print("<p>parameters")
-    for param in list(form.keys()):
-        print("<br>", param + " : ", end=' ')
-        for val in form.getlist(param):
-            print(val, end=' ')
+    for param, val in form.items():
+        print("<br>", param + " :", val, end=' ')
         print()
     print("<p>")
     return
@@ -176,10 +174,10 @@ def space ( tigname ):
 def main( player = {}, module = False, report_week = 0 ):
     do_json = False
     is_cgi = False
-    if not module and 'GATEWAY_INTERFACE' in os.environ:
-        import cgi
-        #import cgitb; cgitb.enable()
-        form = cgi.FieldStorage()
+    if not module and 'QUERY_STRING' in os.environ:
+        from urllib.parse import parse_qs
+        qs = os.environ.get('QUERY_STRING', '')
+        form = dict(parse_qs(qs))
         is_cgi = True
         if 'json' in form:
             import json
@@ -199,7 +197,7 @@ def main( player = {}, module = False, report_week = 0 ):
 
     if is_cgi:
         if 'week' in form:
-            report_week = int(form.getfirst('week'))
+            report_week = int(form['week'][0])
         if 'active' in form:
             do_all = 0
     elif not module:

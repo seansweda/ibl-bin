@@ -36,10 +36,10 @@ def output( name, starts, inj, is_cgi ):
 def main( starts = {}, module = False, report_week = LAST_WEEK ):
     do_json = False
     is_cgi = False
-    if not module and 'GATEWAY_INTERFACE' in os.environ:
-        import cgi
-        #import cgitb; cgitb.enable()
-        form = cgi.FieldStorage()
+    if not module and 'QUERY_STRING' in os.environ:
+        from urllib.parse import parse_qs
+        qs = os.environ.get('QUERY_STRING', '')
+        form = dict(parse_qs(qs))
         is_cgi = True
         if 'json' in form:
             import json
@@ -50,13 +50,12 @@ def main( starts = {}, module = False, report_week = LAST_WEEK ):
             do_json = False
             print("Content-Type: text/csv")
             print()
-            #dumpenv(form)
 
     do_active = 0
     team = ''
     if is_cgi:
         if 'week' in form:
-            report_week = int(form.getfirst('week'))
+            report_week = int(form['week'][0])
     elif not module:
         for (opt, arg) in opts:
             if opt == '--help':

@@ -32,12 +32,10 @@ def usage():
 # not really necessary, mostly for learning purposes
 def dumpenv(form):
     for (env, val) in list(os.environ.items()):
-        print("<br>", env + " : ", val)
+        print("<br>", env + " :", val)
     print("<p>parameters")
-    for param in list(form.keys()):
-        print("<br>", param + " : ", end=' ')
-        for val in form.getlist(param):
-            print(val, end=' ')
+    for param, val in form.items():
+        print("<br>", param + " :", val, end=' ')
         print()
     print("<p>")
     return
@@ -71,10 +69,10 @@ def mlb_usage( pit_U, bat_U ):
 def main():
     do_json = False
     is_cgi = False
-    if 'GATEWAY_INTERFACE' in os.environ:
-        import cgi
-        #import cgitb; cgitb.enable()
-        form = cgi.FieldStorage()
+    if 'QUERY_STRING' in os.environ:
+        from urllib.parse import parse_qs
+        qs = os.environ.get('QUERY_STRING', '')
+        form = dict(parse_qs(qs))
         is_cgi = True
         if 'json' in form:
             import json
@@ -93,7 +91,7 @@ def main():
 
     if is_cgi:
         if 'team' in form:
-            team = form.getfirst('team').upper()
+            team = form['team'][0].upper()
     else:
         for (opt, arg) in opts:
             if opt == '--help':
@@ -112,6 +110,9 @@ def main():
 
     if not team:
         usage()
+
+    if is_cgi:
+        print("<pre>")
 
     cursor.execute(sql)
     for line in cursor.fetchall():
@@ -165,6 +166,9 @@ def main():
         else:
             print( "-- -- -- -- -- -- -- -- -- -- --", end=' ' )
         print()
+
+    if is_cgi:
+        print("</pre></body></html>")
 
 if __name__ == "__main__":
     try:

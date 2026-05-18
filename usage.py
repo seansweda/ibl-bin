@@ -48,12 +48,10 @@ def usage():
 # not really necessary, mostly for learning purposes
 def dumpenv(form):
     for (env, val) in list(os.environ.items()):
-        print("<br>", env + " : ", val)
+        print("<br>", env + " :", val)
     print("<p>parameters")
-    for param in list(form.keys()):
-        print("<br>", param + " : ", end=' ')
-        for val in form.getlist(param):
-            print(val, end=' ')
+    for param, val in form.items():
+        print("<br>", param + " :", val, end=' ')
         print()
     print("<p>")
     return
@@ -312,10 +310,10 @@ def std_usage( name, role, g ):
 def main():
     do_json = False
     is_cgi = False
-    if 'GATEWAY_INTERFACE' in os.environ:
-        import cgi
-        #import cgitb; cgitb.enable()
-        form = cgi.FieldStorage()
+    if 'QUERY_STRING' in os.environ:
+        from urllib.parse import parse_qs
+        qs = os.environ.get('QUERY_STRING', '')
+        form = parse_qs(qs)
         is_cgi = True
         if 'json' in form:
             import json
@@ -341,7 +339,7 @@ def main():
 
     if is_cgi:
         if 'team' in form:
-            do_team = form.getfirst('team').upper()
+            do_team = form['team'][0].upper()
         if 'batters' in form:
             do_pit = False
         if 'pitchers' in form:
