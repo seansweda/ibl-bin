@@ -568,6 +568,10 @@ while (<DATA>) {
 		last;
 	    }
 	    else {
+		if ( $updates && $redo ) {
+		    undostats();
+		    $redo = 0;
+		}
 		( $slot, $pos, $ibl, $mlb, $name ) = @line;
 		@starts = find( $mlb, $name, $lines);
 		$pos =~ tr/A-Z/a-z/;
